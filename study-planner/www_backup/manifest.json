@@ -1,0 +1,338 @@
+{
+  "_ResourceCard-D1U2Jxos.js": {
+    "file": "assets/ResourceCard-D1U2Jxos.js",
+    "name": "ResourceCard",
+    "imports": [
+      "_api-DnaInzf5.js"
+    ]
+  },
+  "_StatCard-abRoW6ov.js": {
+    "file": "assets/StatCard-abRoW6ov.js",
+    "name": "StatCard",
+    "imports": [
+      "_api-DnaInzf5.js"
+    ]
+  },
+  "__plugin-vue_export-helper-BDNMzG2s.js": {
+    "file": "assets/_plugin-vue_export-helper-BDNMzG2s.js",
+    "name": "_plugin-vue_export-helper"
+  },
+  "_admin-DIxa7W7w.js": {
+    "file": "assets/admin-DIxa7W7w.js",
+    "name": "admin",
+    "imports": [
+      "_api-DnaInzf5.js"
+    ]
+  },
+  "_api-DnaInzf5.js": {
+    "file": "assets/api-DnaInzf5.js",
+    "name": "api"
+  },
+  "_app-CcWa_Aru.css": {
+    "file": "assets/app-CcWa_Aru.css",
+    "src": "_app-CcWa_Aru.css"
+  },
+  "_auth-Bzvsj_Wq.js": {
+    "file": "assets/auth-Bzvsj_Wq.js",
+    "name": "auth",
+    "imports": [
+      "_api-DnaInzf5.js"
+    ]
+  },
+  "_runtime-dom.esm-bundler-DT1c_oeb.js": {
+    "file": "assets/runtime-dom.esm-bundler-DT1c_oeb.js",
+    "name": "runtime-dom.esm-bundler",
+    "imports": [
+      "_api-DnaInzf5.js"
+    ]
+  },
+  "_student-BKLtpkup.js": {
+    "file": "assets/student-BKLtpkup.js",
+    "name": "student",
+    "imports": [
+      "_api-DnaInzf5.js"
+    ]
+  },
+  "_useApi-BPuI6ZR9-bgRHheMB.js": {
+    "file": "assets/useApi-BPuI6ZR9-bgRHheMB.js",
+    "name": "useApi-BPuI6ZR9",
+    "imports": [
+      "_api-DnaInzf5.js"
+    ]
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-Cpxx4qwr.js",
+    "name": "app",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "css": [
+      "assets/app-CcWa_Aru.css"
+    ]
+  },
+  "resources/js/app.ts": {
+    "file": "assets/app-2GYRDtKL.js",
+    "name": "app",
+    "src": "resources/js/app.ts",
+    "isEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_runtime-dom.esm-bundler-DT1c_oeb.js",
+      "_useApi-BPuI6ZR9-bgRHheMB.js",
+      "_auth-Bzvsj_Wq.js",
+      "__plugin-vue_export-helper-BDNMzG2s.js"
+    ],
+    "dynamicImports": [
+      "resources/js/views/auth/LoginView.vue",
+      "resources/js/views/auth/RegisterView.vue",
+      "resources/js/layouts/StudentLayout.vue",
+      "resources/js/views/student/DashboardView.vue",
+      "resources/js/views/student/SubjectsView.vue",
+      "resources/js/views/student/SubjectDetailView.vue",
+      "resources/js/views/student/TasksView.vue",
+      "resources/js/views/student/StudyPlanView.vue",
+      "resources/js/views/student/QuizzesView.vue",
+      "resources/js/views/student/QuizDetailView.vue",
+      "resources/js/views/student/RecommendationsView.vue",
+      "resources/js/views/student/ProgressView.vue",
+      "resources/js/views/student/NotificationsView.vue",
+      "resources/js/layouts/AdminLayout.vue",
+      "resources/js/views/admin/ResourcesView.vue",
+      "resources/js/views/admin/SubjectsView.vue",
+      "resources/js/views/admin/UsersView.vue",
+      "resources/js/views/admin/SettingsView.vue",
+      "resources/js/stores/auth.ts"
+    ],
+    "css": [
+      "assets/app-vSZ8ofsn.css",
+      "assets/app-CcWa_Aru.css"
+    ]
+  },
+  "resources/js/layouts/AdminLayout.vue": {
+    "file": "assets/AdminLayout-7hfQ2h3T.js",
+    "name": "AdminLayout",
+    "src": "resources/js/layouts/AdminLayout.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_useApi-BPuI6ZR9-bgRHheMB.js",
+      "_auth-Bzvsj_Wq.js",
+      "__plugin-vue_export-helper-BDNMzG2s.js"
+    ],
+    "css": [
+      "assets/AdminLayout-meOLpMQc.css"
+    ]
+  },
+  "resources/js/layouts/StudentLayout.vue": {
+    "file": "assets/StudentLayout-BNZLs1JX.js",
+    "name": "StudentLayout",
+    "src": "resources/js/layouts/StudentLayout.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_useApi-BPuI6ZR9-bgRHheMB.js",
+      "_auth-Bzvsj_Wq.js",
+      "__plugin-vue_export-helper-BDNMzG2s.js",
+      "_student-BKLtpkup.js"
+    ],
+    "css": [
+      "assets/StudentLayout-DbgsPzbw.css"
+    ]
+  },
+  "resources/js/stores/auth.ts": {
+    "file": "assets/auth-B5t00uZs.js",
+    "name": "auth",
+    "src": "resources/js/stores/auth.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "_auth-Bzvsj_Wq.js"
+    ]
+  },
+  "resources/js/views/admin/ResourcesView.vue": {
+    "file": "assets/ResourcesView-mbyR38K4.js",
+    "name": "ResourcesView",
+    "src": "resources/js/views/admin/ResourcesView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_runtime-dom.esm-bundler-DT1c_oeb.js",
+      "_admin-DIxa7W7w.js"
+    ]
+  },
+  "resources/js/views/admin/SettingsView.vue": {
+    "file": "assets/SettingsView-BWFFJb3K.js",
+    "name": "SettingsView",
+    "src": "resources/js/views/admin/SettingsView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_admin-DIxa7W7w.js"
+    ]
+  },
+  "resources/js/views/admin/SubjectsView.vue": {
+    "file": "assets/SubjectsView-OBQbguj2.js",
+    "name": "SubjectsView",
+    "src": "resources/js/views/admin/SubjectsView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_runtime-dom.esm-bundler-DT1c_oeb.js",
+      "_admin-DIxa7W7w.js"
+    ]
+  },
+  "resources/js/views/admin/UsersView.vue": {
+    "file": "assets/UsersView-Dn8gk7Dj.js",
+    "name": "UsersView",
+    "src": "resources/js/views/admin/UsersView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_runtime-dom.esm-bundler-DT1c_oeb.js",
+      "_admin-DIxa7W7w.js"
+    ]
+  },
+  "resources/js/views/auth/LoginView.vue": {
+    "file": "assets/LoginView-DDh_BupB.js",
+    "name": "LoginView",
+    "src": "resources/js/views/auth/LoginView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_runtime-dom.esm-bundler-DT1c_oeb.js",
+      "_useApi-BPuI6ZR9-bgRHheMB.js",
+      "_auth-Bzvsj_Wq.js",
+      "__plugin-vue_export-helper-BDNMzG2s.js"
+    ],
+    "css": [
+      "assets/LoginView-CFtR9Hmy.css"
+    ]
+  },
+  "resources/js/views/auth/RegisterView.vue": {
+    "file": "assets/RegisterView-CC3VFLGh.js",
+    "name": "RegisterView",
+    "src": "resources/js/views/auth/RegisterView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_runtime-dom.esm-bundler-DT1c_oeb.js",
+      "_useApi-BPuI6ZR9-bgRHheMB.js",
+      "_auth-Bzvsj_Wq.js",
+      "__plugin-vue_export-helper-BDNMzG2s.js"
+    ],
+    "css": [
+      "assets/RegisterView-DmWVwQ2K.css"
+    ]
+  },
+  "resources/js/views/student/DashboardView.vue": {
+    "file": "assets/DashboardView-BpjucVgv.js",
+    "name": "DashboardView",
+    "src": "resources/js/views/student/DashboardView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_auth-Bzvsj_Wq.js",
+      "_student-BKLtpkup.js",
+      "_StatCard-abRoW6ov.js",
+      "_ResourceCard-D1U2Jxos.js"
+    ]
+  },
+  "resources/js/views/student/NotificationsView.vue": {
+    "file": "assets/NotificationsView-DU5EKco1.js",
+    "name": "NotificationsView",
+    "src": "resources/js/views/student/NotificationsView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_runtime-dom.esm-bundler-DT1c_oeb.js",
+      "_student-BKLtpkup.js"
+    ]
+  },
+  "resources/js/views/student/ProgressView.vue": {
+    "file": "assets/ProgressView-CkUrCclK.js",
+    "name": "ProgressView",
+    "src": "resources/js/views/student/ProgressView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_student-BKLtpkup.js",
+      "_StatCard-abRoW6ov.js"
+    ]
+  },
+  "resources/js/views/student/QuizDetailView.vue": {
+    "file": "assets/QuizDetailView-CP90IZeV.js",
+    "name": "QuizDetailView",
+    "src": "resources/js/views/student/QuizDetailView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_runtime-dom.esm-bundler-DT1c_oeb.js",
+      "_useApi-BPuI6ZR9-bgRHheMB.js",
+      "_student-BKLtpkup.js"
+    ]
+  },
+  "resources/js/views/student/QuizzesView.vue": {
+    "file": "assets/QuizzesView-CvhNV8_G.js",
+    "name": "QuizzesView",
+    "src": "resources/js/views/student/QuizzesView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_student-BKLtpkup.js"
+    ]
+  },
+  "resources/js/views/student/RecommendationsView.vue": {
+    "file": "assets/RecommendationsView-L3YMSFeG.js",
+    "name": "RecommendationsView",
+    "src": "resources/js/views/student/RecommendationsView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_student-BKLtpkup.js",
+      "_ResourceCard-D1U2Jxos.js"
+    ]
+  },
+  "resources/js/views/student/StudyPlanView.vue": {
+    "file": "assets/StudyPlanView-BkQ4eHyC.js",
+    "name": "StudyPlanView",
+    "src": "resources/js/views/student/StudyPlanView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_runtime-dom.esm-bundler-DT1c_oeb.js",
+      "_student-BKLtpkup.js"
+    ]
+  },
+  "resources/js/views/student/SubjectDetailView.vue": {
+    "file": "assets/SubjectDetailView-CGsp1SeN.js",
+    "name": "SubjectDetailView",
+    "src": "resources/js/views/student/SubjectDetailView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_runtime-dom.esm-bundler-DT1c_oeb.js",
+      "_useApi-BPuI6ZR9-bgRHheMB.js",
+      "_student-BKLtpkup.js"
+    ]
+  },
+  "resources/js/views/student/SubjectsView.vue": {
+    "file": "assets/SubjectsView-D7cGL_9G.js",
+    "name": "SubjectsView",
+    "src": "resources/js/views/student/SubjectsView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_runtime-dom.esm-bundler-DT1c_oeb.js",
+      "_student-BKLtpkup.js"
+    ]
+  },
+  "resources/js/views/student/TasksView.vue": {
+    "file": "assets/TasksView-_RuPwYOO.js",
+    "name": "TasksView",
+    "src": "resources/js/views/student/TasksView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-DnaInzf5.js",
+      "_runtime-dom.esm-bundler-DT1c_oeb.js",
+      "_student-BKLtpkup.js"
+    ]
+  }
+}

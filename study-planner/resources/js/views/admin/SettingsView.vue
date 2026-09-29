@@ -1,0 +1,82 @@
+<template>
+  <div class="space-y-8">
+    <div>
+      <h1 class="text-2xl font-bold text-text-primary">System Settings</h1>
+      <p class="mt-1 text-sm text-text-secondary">Configure application-wide settings and thresholds.</p>
+    </div>
+
+    <div v-if="loading" class="flex justify-center py-12" role="status" aria-label="Loading settings">
+      <svg class="animate-spin h-8 w-8 text-status-info" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+      </svg>
+    </div>
+
+    <div v-else class="bg-brand-navbar-cards-alt border border-brand-borders rounded-xl overflow-hidden">
+      <div class="divide-y divide-brand-borders">
+        <div v-for="setting in settings" :key="setting.id" class="px-6 py-6 hover:bg-brand-navbar-cards">
+          <div class="flex items-center justify-between">
+            <div class="flex-1 min-w-0">
+              <h3 class="text-lg font-medium text-text-primary">{{ formatKey(setting.key) }}</h3>
+              <p class="mt-1 text-sm text-text-secondary">{{ setting.description }}</p>
+              <p class="mt-1 text-xs text-text-secondary font-mono">Key: {{ setting.key }} · Type: {{ setting.type }}</p>
+            </div>
+            <div class="ml-4 flex items-center space-x-4">
+              <SettingInput :setting="setting" @update="updateSetting" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { onMounted, ref } from 'vue';
+import { useAdminStore } from '@/stores/admin';
+import type { SystemSetting } from '@/types';
+
+const adminStore = useAdminStore();
+
+const settings = ref<SystemSetting[]>([]);
+const loading = ref(true);
+const updating = ref<Record<number, boolean>>({});
+
+onMounted(async () => {
+  await fetchSettings();
+});
+
+async function fetchSettings() {
+  loading.value = true;
+  try {
+    settings.value = await adminStore.fetchSystemSettings();
+  } catch (err) {
+    console.error('Failed to load settings:', err);
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function updateSetting(setting: SystemSetting, value: string | number | boolean) {
+  updating.value[setting.id] = true;
+  try {
+    await adminStore.updateSystemSetting(setting.id, { value: String(value) });
+    setting.value = value;
+    setting.typed_value = parseTypedValue(value, setting.type);
+  } catch (err) {
+    console.error('Failed to update setting:', err);
+  } finally {
+    updating.value[setting.id] = false;
+  }
+}
+
+function formatKey(key: string) {
+  return key.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+function parseTypedValue(value: string | number | boolean, type: string) {
+  if (type === 'integer') return Number(value);
+  if (type === 'boolean') return value === 'true' || value === true;
+  return String(value);
+}
+</script>

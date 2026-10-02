@@ -65,8 +65,8 @@ function formatRelativeTime(dateString: string): string {
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
-          <p class="text-gray-600 dark:text-gray-400">System overview and key metrics</p>
+          <h1 class="text-3xl font-bold text-text-primary dark:text-white">Admin Dashboard</h1>
+          <p class="text-text-secondary dark:text-gray-400">System overview and key metrics</p>
         </div>
         <div class="flex gap-3 ml-auto">
           <RouterLink to="/admin/analytics" class="btn-secondary">
@@ -78,8 +78,8 @@ function formatRelativeTime(dateString: string): string {
 
       <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div v-for="i in 8" :key="i" class="glass-card-lg rounded-2xl p-6 animate-pulse">
-          <div class="h-6 bg-gray-200/50 dark:bg-gray-700/50 rounded w-3/4 mb-4"></div>
-          <div class="h-12 bg-gray-200/50 dark:bg-gray-700/50 rounded w-full"></div>
+          <div class="h-6 bg-surface-border/50 dark:bg-surface-border/30 rounded w-3/4 mb-4"></div>
+          <div class="h-12 bg-surface-border/50 dark:bg-surface-border/30 rounded w-full"></div>
         </div>
       </div>
 
@@ -87,8 +87,8 @@ function formatRelativeTime(dateString: string): string {
         <div v-for="stat in statCards" :key="stat.label" class="glass-card-lg rounded-2xl p-6">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ stat.label }}</p>
-              <p class="text-3xl font-bold text-gray-900 dark:text-white mt-1">{{ stat.value }}</p>
+              <p class="text-sm font-medium text-text-secondary dark:text-text-muted">{{ stat.label }}</p>
+              <p class="text-3xl font-bold text-text-primary dark:text-white mt-1">{{ stat.value }}</p>
             </div>
             <div :class="['p-3 rounded-xl', stat.bg]">
               <component :is="stat.icon" :class="['w-6 h-6', stat.color]" aria-hidden="true" />
@@ -100,8 +100,8 @@ function formatRelativeTime(dateString: string): string {
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Quick Navigation -->
         <div class="glass-card-lg rounded-2xl p-6">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-            <ChartBarIcon class="w-5 h-5 text-pink-600 dark:text-pink-400" aria-hidden="true" />
+          <h2 class="text-lg font-semibold text-text-primary dark:text-white mb-6 flex items-center gap-2">
+            <ChartBarIcon class="w-5 h-5 text-primary dark:text-primary-light" aria-hidden="true" />
             Quick Navigation
           </h2>
           <div class="grid grid-cols-2 gap-4">
@@ -110,70 +110,70 @@ function formatRelativeTime(dateString: string): string {
                 <UsersIcon class="w-6 h-6" aria-hidden="true" />
               </div>
               <div class="flex-1 min-w-0">
-                <h3 class="font-medium text-gray-900 dark:text-white">Users</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Manage user accounts</p>
+                <h3 class="font-medium text-text-primary dark:text-white">Users</h3>
+                <p class="text-sm text-text-secondary dark:text-text-muted">Manage user accounts</p>
               </div>
-              <ArrowRightIcon class="w-5 h-5 text-gray-400 group-hover:text-pink-500 transition-colors" aria-hidden="true" />
+              <ArrowRightIcon class="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" aria-hidden="true" />
             </RouterLink>
             <RouterLink to="/admin/resources" class="flex items-center gap-3 p-4 glass-card rounded-xl hover:shadow-glass-lg hover:-translate-y-1 transition-all duration-300 group">
               <div class="p-3 rounded-xl bg-green-100/50 dark:bg-green-900/30 text-green-600 dark:text-green-400">
                 <BookOpenIcon class="w-6 h-6" aria-hidden="true" />
               </div>
               <div class="flex-1 min-w-0">
-                <h3 class="font-medium text-gray-900 dark:text-white">Resources</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Manage learning resources</p>
+                <h3 class="font-medium text-text-primary dark:text-white">Resources</h3>
+                <p class="text-sm text-text-secondary dark:text-text-muted">Manage learning resources</p>
               </div>
-              <ArrowRightIcon class="w-5 h-5 text-gray-400 group-hover:text-pink-500 transition-colors" aria-hidden="true" />
+              <ArrowRightIcon class="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" aria-hidden="true" />
             </RouterLink>
             <RouterLink to="/admin/settings" class="flex items-center gap-3 p-4 glass-card rounded-xl hover:shadow-glass-lg hover:-translate-y-1 transition-all duration-300 group">
               <div class="p-3 rounded-xl bg-purple-100/50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
                 <Cog6ToothIcon class="w-6 h-6" aria-hidden="true" />
               </div>
               <div class="flex-1 min-w-0">
-                <h3 class="font-medium text-gray-900 dark:text-white">Settings</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">System configuration</p>
+                <h3 class="font-medium text-text-primary dark:text-white">Settings</h3>
+                <p class="text-sm text-text-secondary dark:text-text-muted">System configuration</p>
               </div>
-              <ArrowRightIcon class="w-5 h-5 text-gray-400 group-hover:text-pink-500 transition-colors" aria-hidden="true" />
+              <ArrowRightIcon class="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" aria-hidden="true" />
             </RouterLink>
             <RouterLink to="/admin/analytics" class="flex items-center gap-3 p-4 glass-card rounded-xl hover:shadow-glass-lg hover:-translate-y-1 transition-all duration-300 group">
               <div class="p-3 rounded-xl bg-orange-100/50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
                 <ChartBarIcon class="w-6 h-6" aria-hidden="true" />
               </div>
               <div class="flex-1 min-w-0">
-                <h3 class="font-medium text-gray-900 dark:text-white">Analytics</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">System analytics & insights</p>
+                <h3 class="font-medium text-text-primary dark:text-white">Analytics</h3>
+                <p class="text-sm text-text-secondary dark:text-text-muted">System analytics & insights</p>
               </div>
-              <ArrowRightIcon class="w-5 h-5 text-gray-400 group-hover:text-pink-500 transition-colors" aria-hidden="true" />
+              <ArrowRightIcon class="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" aria-hidden="true" />
             </RouterLink>
           </div>
         </div>
 
         <!-- Recent Registrations -->
         <div class="glass-card-lg rounded-2xl overflow-hidden">
-          <div class="px-6 py-4 border-b border-pink-200/50 dark:border-pink-800/50 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              <UsersIcon class="w-5 h-5 text-pink-600 dark:text-pink-400" aria-hidden="true" />
+          <div class="px-6 py-4 border-b border-surface-border/50 dark:border-surface-border/30 flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-text-primary dark:text-white flex items-center gap-2">
+              <UsersIcon class="w-5 h-5 text-primary dark:text-primary-light" aria-hidden="true" />
               Recent Registrations
             </h2>
-            <RouterLink to="/admin/users" class="text-sm text-pink-600 dark:text-pink-400 hover:underline">View all</RouterLink>
+            <RouterLink to="/admin/users" class="text-sm text-primary hover:text-primary-hover underline">View all</RouterLink>
           </div>
-          <div class="divide-y divide-pink-100/50 dark:divide-pink-800/50">
+          <div class="divide-y divide-surface-border/30 dark:divide-surface-border/20">
             <div v-if="recentRegistrations.length === 0" class="px-6 py-12 text-center">
-              <UsersIcon class="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-3" aria-hidden="true" />
-              <p class="text-gray-500 dark:text-gray-400">No recent registrations</p>
+              <UsersIcon class="w-12 h-12 mx-auto text-text-muted mb-3" aria-hidden="true" />
+              <p class="text-text-secondary dark:text-text-muted">No recent registrations</p>
             </div>
             <div v-else>
-              <div v-for="user in recentRegistrations.slice(0, 5)" :key="user.id" class="px-6 py-4 hover:bg-pink-50/30 dark:hover:bg-pink-900/10 transition-colors flex items-center justify-between">
+              <div v-for="user in recentRegistrations.slice(0, 5)" :key="user.id" class="px-6 py-4 hover:bg-surface/50 dark:hover:bg-surface-alt/30 transition-colors flex items-center justify-between">
                 <div class="flex items-center gap-3">
                   <div class="avatar avatar-sm">{{ user.name.charAt(0).toUpperCase() }}</div>
                   <div>
-                    <p class="font-medium text-gray-900 dark:text-white truncate">{{ user.name }}</p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ user.email }}</p>
+                    <p class="font-medium text-text-primary dark:text-white truncate">{{ user.name }}</p>
+                    <p class="text-sm text-text-secondary dark:text-text-muted">{{ user.email }}</p>
                   </div>
                 </div>
                 <div class="flex items-center gap-3 text-sm">
                   <span class="badge" :class="user.role === 'admin' ? 'badge-purple' : 'badge-blue'">{{ user.role }}</span>
-                  <span class="text-gray-500 dark:text-gray-400">{{ formatRelativeTime(user.created_at) }}</span>
+                  <span class="text-text-muted">{{ formatRelativeTime(user.created_at) }}</span>
                 </div>
               </div>
             </div>

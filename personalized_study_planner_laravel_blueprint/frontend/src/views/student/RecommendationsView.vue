@@ -6,8 +6,11 @@ import { useToastStore } from '@/stores/toast'
 import { RouterLink } from 'vue-router'
 import { 
   ArrowLeftIcon, LightBulbIcon, BookOpenIcon, 
-  ArrowRightIcon, DocumentTextIcon
+  ArrowRightIcon, DocumentTextIcon, CheckCircleIcon,
+  VideoCameraIcon, GlobeAltIcon, AcademicCapIcon, CubeIcon
 } from '@heroicons/vue/24/outline'
+import { useSearch, createSuggestionExtractor } from '@/composables/useSearch'
+import SearchInput from '@/components/ui/SearchInput.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -17,6 +20,17 @@ const toastStore = useToastStore()
 const loading = ref(true)
 const recommendations = ref<import('@/types').Resource[]>([])
 const reason = ref<string | null>(null)
+
+const searchComposable = useSearch({
+  data: recommendations,
+  searchFields: ['title', 'description', 'resource_type'],
+  debounceMs: 150,
+  minQueryLength: 1,
+  fuzzyThreshold: 0.35,
+  getSuggestions: createSuggestionExtractor(['title', 'description', 'resource_type'], 8)
+})
+
+const filteredRecommendations = computed(() => searchComposable.results.value)
 
 async function fetchRecommendations() {
   try {
@@ -42,14 +56,26 @@ async function recordView(resourceId: number, topicId?: number) {
 
 function getTypeIcon(type: string) {
   const icons: Record<string, any> = {
-    book: 'BookOpenIcon',
-    video: 'VideoCameraIcon',
-    article: 'DocumentTextIcon',
-    website: 'GlobeAltIcon',
-    course: 'AcademicCapIcon',
-    other: 'CubeIcon',
+    book: BookOpenIcon,
+    video: VideoCameraIcon,
+    article: DocumentTextIcon,
+    website: GlobeAltIcon,
+    course: AcademicCapIcon,
+    other: CubeIcon,
   }
-  return icons[type] || 'BookOpenIcon'
+  return icons[type] || BookOpenIcon
+}
+
+function getTypeColor(type: string): string {
+  const colors: Record<string, string> = {
+    book: 'bg-primary-light/50 dark:bg-primary-dark/30 text-primary dark:text-primary-light',
+    video: 'bg-purple-100/50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
+    article: 'bg-blue-100/50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+    website: 'bg-green-100/50 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+    course: 'bg-amber-100/50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
+    other: 'bg-gray-100/50 dark:bg-gray-800/30 text-gray-600 dark:text-gray-400',
+  }
+  return colors[type] || 'bg-gray-100/50 dark:bg-gray-800/30 text-gray-600 dark:text-gray-400'
 }
 
 function getDifficultyColor(difficulty: number): string {
@@ -57,6 +83,10 @@ function getDifficultyColor(difficulty: number): string {
   if (difficulty === 3) return 'text-yellow-600 dark:text-yellow-400'
   return 'text-red-600 dark:text-red-400'
 }
+
+onMounted(async () => {
+  await fetchRecommendations()
+})
 </script>
 
 <template>
@@ -64,28 +94,28 @@ function getDifficultyColor(difficulty: number): string {
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div class="flex items-center gap-4">
-          <RouterLink to="/dashboard" class="p-2 rounded-xl text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50/50 dark:hover:bg-pink-900/20 transition-colors">
+          <RouterLink to="/dashboard" class="p-2 rounded-xl text-text-muted hover:text-text-primary dark:hover:text-white hover:bg-surface/50 dark:hover:bg-surface-alt/30 transition-colors">
             <ArrowLeftIcon class="w-6 h-6" aria-hidden="true" />
           </RouterLink>
           <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Recommendations</h1>
-            <p class="text-gray-600 dark:text-gray-400">Personalized resources based on your quiz performance</p>
+            <h1 class="text-3xl font-bold text-text-primary dark:text-white">Recommendations</h1>
+            <p class="text-text-secondary dark:text-text-muted">Personalized resources based on your quiz performance</p>
           </div>
         </div>
       </div>
 
       <!-- Reason Message -->
-      <div v-if="reason" class="mb-8 glass-card-lg rounded-2xl p-6" :class="reason === 'no_quiz_data' ? 'border-l-4 border-blue-500 bg-blue-50/50 dark:bg-blue-900/30' : 'border-l-4 border-green-500 bg-green-50/50 dark:bg-green-900/30'">
+      <div v-if="reason" class="mb-8 glass-card-lg rounded-2xl p-6" :class="reason === 'no_quiz_data' ? 'border-l-4 border-primary bg-primary-light/50 dark:bg-primary-dark/30' : 'border-l-4 border-status-success bg-status-success/15 dark:bg-status-success/20'">
         <div class="flex items-start gap-4">
-          <div class="w-10 h-10 rounded-xl flex items-center justify-center" :class="reason === 'no_quiz_data' ? 'bg-blue-100/80 dark:bg-blue-900/30 text-blue-600' : 'bg-green-100/80 dark:bg-green-900/30 text-green-600'">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center" :class="reason === 'no_quiz_data' ? 'bg-primary-light/80 dark:bg-primary-dark/30 text-primary dark:text-primary-light' : 'bg-status-success/15 dark:bg-status-success/20 text-status-success dark:text-status-success-light'">
             <LightBulbIcon v-if="reason === 'no_quiz_data'" class="w-5 h-5" aria-hidden="true" />
             <CheckCircleIcon v-else class="w-5 h-5" aria-hidden="true" />
           </div>
           <div>
-            <p v-if="reason === 'no_quiz_data'" class="text-gray-700 dark:text-gray-300">
+            <p v-if="reason === 'no_quiz_data'" class="text-text-primary dark:text-white">
               Take your first quiz to get personalized resource recommendations!
             </p>
-            <p v-else class="text-gray-700 dark:text-gray-300">
+            <p v-else class="text-text-primary dark:text-white">
               Great job! All your topics are strong. No recommendations needed at this time.
             </p>
             <RouterLink v-if="reason === 'no_quiz_data'" to="/quizzes" class="btn-primary mt-4 inline-block">
@@ -96,26 +126,47 @@ function getDifficultyColor(difficulty: number): string {
         </div>
       </div>
 
+      <!-- Search -->
+      <div v-if="recommendations.length > 0" class="mb-6">
+        <label for="recommendation-search" class="sr-only">Search recommendations</label>
+        <SearchInput
+          id="recommendation-search"
+          v-model="searchComposable.query"
+          :suggestions="searchComposable.suggestions"
+          :loading="searchComposable.isSearching"
+          placeholder="Search recommendations by title, description, type..."
+          aria-label="Search recommendations"
+        />
+        <p v-if="searchComposable.query && !searchComposable.hasResults" class="mt-2 text-sm text-text-muted">
+          No recommendations found matching "{{ searchComposable.query }}"
+        </p>
+      </div>
+
       <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div v-for="i in 6" :key="i" class="glass-card-lg rounded-2xl p-6 animate-pulse">
-          <div class="h-6 bg-gray-200/50 dark:bg-gray-700/50 rounded w-3/4 mb-4"></div>
-          <div class="h-4 bg-gray-200/50 dark:bg-gray-700/50 rounded w-1/2"></div>
+          <div class="h-6 bg-surface-border/50 dark:bg-surface-border/30 rounded w-3/4 mb-4"></div>
+          <div class="h-4 bg-surface-border/50 dark:bg-surface-border/30 rounded w-1/2"></div>
         </div>
       </div>
 
-      <div v-else-if="recommendations.length === 0" class="text-center py-16">
-        <LightBulbIcon class="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" aria-hidden="true" />
-        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No recommendations available</h3>
-        <p class="text-gray-600 dark:text-gray-400 mb-6">Start taking quizzes to unlock personalized recommendations</p>
-        <RouterLink to="/quizzes" class="btn-primary">
+      <div v-else-if="filteredRecommendations.length === 0" class="text-center py-16">
+        <LightBulbIcon class="w-16 h-16 mx-auto text-text-muted mb-4" aria-hidden="true" />
+        <h3 class="text-xl font-semibold text-text-primary dark:text-white mb-2">
+          {{ searchComposable.query ? 'No recommendations found' : 'No recommendations available' }}
+        </h3>
+        <p class="text-text-secondary dark:text-text-muted mb-6">
+          {{ searchComposable.query ? 'Try adjusting your search' : 'Start taking quizzes to unlock personalized recommendations' }}
+        </p>
+        <RouterLink v-if="!searchComposable.query" to="/quizzes" class="btn-primary">
           <CheckCircleIcon class="w-5 h-5 mr-2" aria-hidden="true" />
           Take a Quiz
         </RouterLink>
+        <button v-else @click="searchComposable.clear" class="btn-secondary">Clear Search</button>
       </div>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <RouterLink 
-          v-for="resource in recommendations" 
+          v-for="resource in filteredRecommendations" 
           :key="resource.id" 
           :to="resource.url"
           target="_blank"
@@ -123,18 +174,18 @@ function getDifficultyColor(difficulty: number): string {
           class="glass-card-lg rounded-2xl p-6 hover:shadow-glass-lg hover:-translate-y-1 transition-all duration-300"
         >
           <div class="flex items-center gap-3 mb-3">
-            <div class="w-12 h-12 rounded-xl bg-pink-100/80 dark:bg-pink-900/30 flex items-center justify-center text-pink-600 dark:text-pink-400">
-              <DocumentTextIcon class="w-6 h-6" aria-hidden="true" />
+            <div :class="['w-12 h-12 rounded-xl flex items-center justify-center', getTypeColor(resource.resource_type)]">
+              <component :is="getTypeIcon(resource.resource_type)" class="w-6 h-6" aria-hidden="true" />
             </div>
             <div class="min-w-0">
-              <h3 class="font-medium text-gray-900 dark:text-white truncate">{{ resource.title }}</h3>
-              <span class="text-xs text-gray-500 dark:text-gray-400 capitalize">{{ resource.resource_type }}</span>
+              <h3 class="font-medium text-text-primary dark:text-white truncate">{{ resource.title }}</h3>
+              <span class="text-xs text-text-secondary dark:text-text-muted capitalize">{{ resource.resource_type }}</span>
             </div>
           </div>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">{{ resource.description }}</p>
+          <p class="text-sm text-text-secondary dark:text-text-muted mb-4 line-clamp-2">{{ resource.description }}</p>
           <div class="flex items-center justify-between text-sm">
-            <span class="text-gray-500 dark:text-gray-400">Difficulty: {{ resource.difficulty }}/5</span>
-            <span class="text-pink-600 dark:text-pink-400 hover:underline">View Resource <ArrowRightIcon class="w-4 h-4 ml-1" aria-hidden="true" /></span>
+            <span :class="['font-medium', getDifficultyColor(resource.difficulty)]">Difficulty: {{ resource.difficulty }}/5</span>
+            <span class="text-primary hover:text-primary-hover underline">View Resource <ArrowRightIcon class="w-4 h-4 ml-1" aria-hidden="true" /></span>
           </div>
           <button 
             @click.prevent="recordView(resource.id)"
@@ -144,13 +195,6 @@ function getDifficultyColor(difficulty: number): string {
           </button>
         </RouterLink>
       </div>
-    </DefaultLayout>
-  </template>
-
-  <script>
-  import { onMounted } from 'vue'
-
-  onMounted(async () => {
-    await fetchRecommendations()
-  })
-  </script>
+    </div>
+  </DefaultLayout>
+</template>

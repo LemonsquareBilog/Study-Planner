@@ -8,9 +8,12 @@ import * as zod from 'zod'
 import { RouterLink } from 'vue-router'
 import { 
   BookOpenIcon, ArrowLeftIcon, PlusIcon, PencilIcon, 
-  TrashIcon, CheckCircleIcon, MagnifyingGlassIcon,
-  ArrowRightIcon
+  TrashIcon, CheckCircleIcon, ArrowRightIcon,
+  VideoCameraIcon, DocumentTextIcon, GlobeAltIcon,
+  AcademicCapIcon, CubeIcon
 } from '@heroicons/vue/24/outline'
+import { useSearch, createSuggestionExtractor } from '@/composables/useSearch'
+import SearchInput from '@/components/ui/SearchInput.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -20,7 +23,6 @@ const loading = ref(true)
 const resources = ref<import('@/types').Resource[]>([])
 const showResourceForm = ref(false)
 const editingResource = ref<import('@/types').Resource | null>(null)
-const searchQuery = ref('')
 
 const resourceSchema = zod.object({
   title: zod.string().min(2).max(200),
@@ -56,12 +58,16 @@ const resourceForm = useForm({
   },
 })
 
-const filteredResources = computed(() => 
-  resources.value.filter(r => 
-    r.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-    r.description?.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
-)
+const searchComposable = useSearch({
+  data: resources,
+  searchFields: ['title', 'description', 'resource_type'],
+  debounceMs: 150,
+  minQueryLength: 1,
+  fuzzyThreshold: 0.35,
+  getSuggestions: createSuggestionExtractor(['title', 'description', 'resource_type'], 8)
+})
+
+const filteredResources = computed(() => searchComposable.results.value)
 
 async function fetchResources() {
   try {
@@ -112,6 +118,11 @@ async function deleteResource(resource: import('@/types').Resource) {
   }
 }
 
+function confirmDelete(resource: import('@/types').Resource) {
+  if (!confirm('Are you sure you want to delete this resource? This action cannot be undone.')) return
+  deleteResource(resource)
+}
+
 function editResource(resource: import('@/types').Resource) {
   editingResource.value = resource
   resourceForm.setValues({
@@ -136,14 +147,44 @@ function cancelForm() {
 
 function getTypeIcon(type: string) {
   const icons: Record<string, any> = {
-    book: 'BookOpenIcon',
-    video: 'VideoCameraIcon',
-    article: 'DocumentTextIcon',
-    website: 'GlobeAltIcon',
-    course: 'AcademicCapIcon',
-    other: 'CubeIcon',
+    book: BookOpenIcon,
+    video: VideoCameraIcon,
+    article: DocumentTextIcon,
+    website: GlobeAltIcon,
+    course: AcademicCapIcon,
+    other: CubeIcon,
   }
-  return icons[type] || 'BookOpenIcon'
+  return icons[type] || BookOpenIcon
+}
+
+function getTypeColor(type: string): string {
+  const colors: Record<string, string> = {
+    book: 'bg-primary-light/50 dark:bg-primary-dark/30 text-primary dark:text-primary-light',
+    video: 'bg-purple-100/50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
+    article: 'bg-blue-100/50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+    website: 'bg-green-100/50 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+    course: 'bg-amber-100/50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
+    other: 'bg-gray-100/50 dark:bg-gray-800/30 text-gray-600 dark:text-gray-400',
+  }
+  return colors[type] || 'bg-gray-100/50 dark:bg-gray-800/30 text-gray-600 dark:text-gray-400'
+}
+
+function getTypeBadgeClass(type: string): string {
+  const badges: Record<string, string> = {
+    book: 'badge-primary',
+    video: 'badge-purple',
+    article: 'badge-blue',
+    website: 'badge-success',
+    course: 'badge-warning',
+    other: 'badge-gray',
+  }
+  return badges[type] || 'badge-gray'
+}
+
+function getDifficultyColor(difficulty: number): string {
+  if (difficulty <= 2) return 'text-green-600 dark:text-green-400'
+  if (difficulty === 3) return 'text-yellow-600 dark:text-yellow-400'
+  return 'text-red-600 dark:text-red-400'
 }
 </script>
 
@@ -152,12 +193,12 @@ function getTypeIcon(type: string) {
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div class="flex items-center gap-4">
-          <RouterLink to="/admin" class="p-2 rounded-xl text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50/50 dark:hover:bg-pink-900/20 transition-colors">
+          <RouterLink to="/admin" class="p-2 rounded-xl text-text-muted hover:text-text-primary dark:hover:text-white hover:bg-surface/50 dark:hover:bg-surface-alt/30 transition-colors">
             <ArrowLeftIcon class="w-6 h-6" aria-hidden="true" />
           </RouterLink>
           <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Resources</h1>
-            <p class="text-gray-600 dark:text-gray-400">Manage learning resources</p>
+            <h1 class="text-3xl font-bold text-text-primary dark:text-white">Resources</h1>
+            <p class="text-text-secondary dark:text-text-muted">Manage learning resources</p>
           </div>
         </div>
         
@@ -169,17 +210,19 @@ function getTypeIcon(type: string) {
 
       <!-- Search -->
       <div class="mb-6">
-        <label for="search" class="sr-only">Search resources</label>
-        <div class="relative max-w-md">
-          <MagnifyingGlassIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" aria-hidden="true" />
-          <input
-            id="search"
-            type="search"
-            v-model="searchQuery"
-            placeholder="Search resources..."
-            class="input-field pl-10 pr-4 w-full"
-          />
-        </div>
+        <label for="resource-search" class="sr-only">Search resources</label>
+        <SearchInput
+          id="resource-search"
+          v-model="searchComposable.query"
+          :suggestions="searchComposable.suggestions"
+          :loading="searchComposable.isSearching"
+          placeholder="Search resources by title, description, type..."
+          aria-label="Search resources"
+          @search="searchComposable.clear"
+        />
+        <p v-if="searchComposable.query && !searchComposable.hasResults" class="mt-2 text-sm text-text-muted">
+          No resources found matching "{{ searchComposable.query }}"
+        </p>
       </div>
 
       <!-- Resource Form Modal -->
@@ -187,10 +230,10 @@ function getTypeIcon(type: string) {
         <div v-show="showResourceForm" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div class="glass-card-lg rounded-2xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto animate-scale-in">
             <div class="flex items-center justify-between mb-6">
-              <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+              <h2 class="text-xl font-bold text-text-primary dark:text-white">
                 {{ editingResource ? 'Edit Resource' : 'Add Resource' }}
               </h2>
-              <button @click="cancelForm" class="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors">
+              <button @click="cancelForm" class="p-2 rounded-xl text-text-muted hover:text-text-primary dark:hover:text-white hover:bg-surface/50 dark:hover:bg-surface-alt/30 transition-colors">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
@@ -267,7 +310,7 @@ function getTypeIcon(type: string) {
               <div class="flex items-end">
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" v-model="resourceForm.values.is_active" class="checkbox" />
-                  <span class="text-sm text-gray-600 dark:text-gray-400">Active</span>
+                  <span class="text-sm text-text-secondary dark:text-text-muted">Active</span>
                 </label>
               </div>
 
@@ -288,13 +331,24 @@ function getTypeIcon(type: string) {
         </Transition>
 
         <!-- Resources List -->
-        <div v-if="filteredResources.length === 0" class="text-center py-16">
-          <BookOpenIcon class="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" aria-hidden="true" />
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No resources yet</h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-6">Create your first learning resource</p>
+        <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-for="i in 6" :key="i" class="glass-card-lg rounded-2xl p-6 animate-pulse">
+            <div class="h-6 bg-surface-border/50 dark:bg-surface-border/30 rounded w-3/4 mb-4"></div>
+            <div class="h-4 bg-surface-border/50 dark:bg-surface-border/30 rounded w-1/2"></div>
+          </div>
+        </div>
+
+        <div v-else-if="filteredResources.length === 0" class="text-center py-16">
+          <BookOpenIcon class="w-16 h-16 mx-auto text-text-muted mb-4" aria-hidden="true" />
+          <h3 class="text-xl font-semibold text-text-primary dark:text-white mb-2">
+            {{ searchComposable.query ? 'No resources found' : 'No resources yet' }}
+          </h3>
+          <p class="text-text-secondary dark:text-text-muted mb-6">
+            {{ searchComposable.query ? 'Try adjusting your search' : 'Create your first learning resource' }}
+          </p>
           <button @click="newResource" class="btn-primary">
             <PlusIcon class="w-5 h-5 mr-2" aria-hidden="true" />
-            Create Resource
+            {{ searchComposable.query ? 'Clear Search' : 'Create Resource' }}
           </button>
         </div>
 
@@ -306,31 +360,31 @@ function getTypeIcon(type: string) {
             class="glass-card-lg rounded-2xl p-6 hover:shadow-glass-lg hover:-translate-y-1 transition-all duration-300"
           >
             <div class="flex items-start justify-between mb-4">
-              <div class="w-12 h-12 rounded-xl bg-pink-100/80 dark:bg-pink-900/30 flex items-center justify-center text-pink-600 dark:text-pink-400">
-                <BookOpenIcon class="w-6 h-6" aria-hidden="true" />
+              <div :class="['w-12 h-12 rounded-xl flex items-center justify-center', getTypeColor(resource.resource_type)]">
+                <component :is="getTypeIcon(resource.resource_type)" class="w-6 h-6" aria-hidden="true" />
               </div>
               <div class="flex items-center gap-2">
-                <RouterLink :to="`/admin/resources/${resource.id}/edit`" class="p-2 rounded-lg text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50/50 dark:hover:bg-pink-900/20 transition-colors" @click.stop>
+                <RouterLink :to="`/admin/resources/${resource.id}/edit`" class="p-2 rounded-lg text-text-muted hover:text-text-primary dark:hover:text-white hover:bg-surface/50 dark:hover:bg-surface-alt/30 transition-colors" @click.stop>
                   <PencilIcon class="w-5 h-5" aria-hidden="true" />
                 </RouterLink>
-                <button @click="confirmDelete(resource)" class="p-2 rounded-lg text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-900/20 transition-colors" @click.stop>
+                <button @click="confirmDelete(resource)" class="p-2 rounded-lg text-text-muted hover:text-status-urgent dark:hover:text-status-urgent-light hover:bg-status-urgent/10 dark:hover:bg-status-urgent/20 transition-colors" @click.stop>
                   <TrashIcon class="w-5 h-5" aria-hidden="true" />
                 </button>
               </div>
             </div>
             
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2 truncate">{{ resource.title }}</h3>
-            <p class="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">{{ resource.description }}</p>
+            <h3 class="text-xl font-bold text-text-primary dark:text-white mb-2 truncate">{{ resource.title }}</h3>
+            <p class="text-text-secondary dark:text-text-muted text-sm mb-4 line-clamp-2">{{ resource.description }}</p>
             
             <div class="flex flex-wrap gap-2 mb-4">
-              <span class="badge badge-pink">{{ resource.resource_type }}</span>
+              <span class="badge" :class="getTypeBadgeClass(resource.resource_type)">{{ resource.resource_type }}</span>
               <span class="badge badge-gray">Difficulty: {{ resource.difficulty }}/5</span>
             </div>
             
             <div class="flex items-center justify-between">
-              <span v-if="resource.is_active" class="badge badge-green">Active</span>
+              <span v-if="resource.is_active" class="badge badge-success">Active</span>
               <span v-else class="badge badge-gray">Inactive</span>
-              <ArrowRightIcon class="w-5 h-5 text-gray-400 group-hover:text-pink-500 transition-colors" aria-hidden="true" />
+              <ArrowRightIcon class="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" aria-hidden="true" />
             </div>
           </RouterLink>
         </div>

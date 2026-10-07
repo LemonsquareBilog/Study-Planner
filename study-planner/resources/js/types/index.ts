@@ -6,6 +6,7 @@ export interface User {
   course?: string;
   year_level?: number;
   is_active: boolean;
+  created_at?: string;
   study_preference?: StudyPreference;
 }
 

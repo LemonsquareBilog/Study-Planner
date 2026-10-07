@@ -12,6 +12,7 @@
         "mobile:run": "npx cap run android"
     },
     "devDependencies": {
+        "@playwright/test": "^1.63.0",
         "@tailwindcss/vite": "^4.0.0",
         "@vitejs/plugin-vue": "^6.0.9",
         "autoprefixer": "^10.6.0",

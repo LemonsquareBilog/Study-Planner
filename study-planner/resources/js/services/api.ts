@@ -1,415 +1,673 @@
 import { Capacitor } from '@capacitor/core';
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { localApi } from './localApi';
-import type { ApiResponse, PaginatedResponse } from '@/types';
-import type { User, Subject, Topic, Task, StudySession, Quiz, Question, QuizAttempt, Resource, Notification, SystemSetting, StudyPreference, ProgressSummary, TopicPerformance, SetupStatus, AdminDashboardData } from '@/types';
+import type {
+  ApiResponse,
+  PaginatedResponse,
+  User,
+  Subject,
+  Topic,
+  Task,
+  StudySession,
+  Quiz,
+  Question,
+  QuizAttempt,
+  Resource,
+  Notification,
+  SystemSetting,
+  StudyPreference,
+  ProgressSummary,
+  TopicPerformance,
+  SetupStatus,
+  AdminDashboardData,
+} from '@/types';
 
 const API_BASE_URL = import.meta.env.MODE === 'web'
   ? '/api'
   : import.meta.env.VITE_API_BASE_URL || '/api';
-const IS_MOBILE = Capacitor.isNativePlatform();
+
+export function isLocalPlatform(): boolean {
+  if (Capacitor.isNativePlatform()) return true;
+  if (typeof window !== 'undefined') {
+    if (window.location.protocol === 'file:') return true;
+    if (localStorage.getItem('sp_demo_mode') === 'true') return true;
+    if (window.location.pathname.includes('study-planner-preview')) return true;
+  }
+  return false;
+}
 
 class ApiService {
   private httpClient: AxiosInstance | null = null;
-  private token: string | null = null;
+  public token: string | null = null;
 
   constructor() {
-    if (!IS_MOBILE) {
-      this.httpClient = axios.create({
-        baseURL: API_BASE_URL,
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        timeout: 15000,
-        withCredentials: true,
-      });
+    this.token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-      const apiService = this;
+    this.httpClient = axios.create({
+      baseURL: API_BASE_URL,
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      timeout: 15000,
+      withCredentials: true,
+    });
 
-      this.httpClient.interceptors.request.use(
-        (config: InternalAxiosRequestConfig) => {
-          console.log('[API] Request:', config.method?.toUpperCase(), config.url);
-          if (apiService.token) {
-            config.headers.Authorization = `Bearer ${apiService.token}`;
-          }
-          return config;
-        },
-        (error: AxiosError) => {
-          console.error('[API] Request error:', error);
-          return Promise.reject(error);
+    const apiService = this;
+
+    this.httpClient.interceptors.request.use(
+      (config: InternalAxiosRequestConfig) => {
+        if (apiService.token) {
+          config.headers.Authorization = `Bearer ${apiService.token}`;
         }
-      );
+        return config;
+      },
+      (error: AxiosError) => {
+        return Promise.reject(error);
+      }
+    );
 
-      this.httpClient.interceptors.response.use(
-        (response) => {
-          console.log('[API] Response:', response.config.method?.toUpperCase(), response.config.url, response.status);
-          return response;
-        },
-        (error: AxiosError) => {
-          console.error('[API] Response error:', error.config?.method?.toUpperCase(), error.config?.url, error.response?.status, error.message);
-          if (error.response?.status === 401) {
-            apiService.clearToken();
+    this.httpClient.interceptors.response.use(
+      (response) => response,
+      (error: AxiosError) => {
+        if (error.response?.status === 401 && !isLocalPlatform()) {
+          apiService.clearToken();
+          if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
             window.location.href = '/login';
           }
-          return Promise.reject(error);
         }
-      );
-    }
+        return Promise.reject(error);
+      }
+    );
   }
 
-  private get api() {
-    return IS_MOBILE ? localApi : this.httpClient!;
+  public get isLocal(): boolean {
+    return isLocalPlatform();
   }
 
   setToken(token: string) {
     this.token = token;
     localStorage.setItem('token', token);
-    if (IS_MOBILE) localApi.setToken(token);
+    localApi.setToken(token);
   }
 
   clearToken() {
     this.token = null;
     localStorage.removeItem('token');
-    if (IS_MOBILE) localApi.clearToken();
+    localApi.clearToken();
   }
 
   loadToken() {
     this.token = localStorage.getItem('token');
-    if (IS_MOBILE) localApi.loadToken();
+    localApi.loadToken();
   }
 
   async login(email: string, password: string) {
-    if (IS_MOBILE) {
+    if (this.isLocal) {
       const response = await localApi.login(email, password);
       this.token = response.data.token;
       return response.data;
     }
-    const response = await this.api.post<ApiResponse<{ token: string; user: User }>>('/auth/login', { email, password });
-    this.setToken(response.data.data.token);
-    return response.data.data;
+    try {
+      const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/login', { email, password });
+      this.setToken(response.data.data.token);
+      return response.data.data;
+    } catch (err: any) {
+      // Fallback to localApi if backend is unreachable
+      if (!err.response && typeof window !== 'undefined') {
+        console.warn('[API] Backend unreachable, falling back to local demo mode');
+        localStorage.setItem('sp_demo_mode', 'true');
+        const response = await localApi.login(email, password);
+        this.token = response.data.token;
+        return response.data;
+      }
+      throw err;
+    }
   }
 
   async register(name: string, email: string, password: string, password_confirmation: string) {
-    if (IS_MOBILE) {
+    if (this.isLocal) {
       const response = await localApi.register(name, email, password);
       this.token = response.data.token;
       return response.data;
     }
-    const response = await this.api.post<ApiResponse<{ token: string; user: User }>>('/auth/register', { name, email, password, password_confirmation });
-    this.setToken(response.data.data.token);
-    return response.data.data;
+    try {
+      const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/register', { name, email, password, password_confirmation });
+      this.setToken(response.data.data.token);
+      return response.data.data;
+    } catch (err: any) {
+      if (!err.response && typeof window !== 'undefined') {
+        localStorage.setItem('sp_demo_mode', 'true');
+        const response = await localApi.register(name, email, password);
+        this.token = response.data.token;
+        return response.data;
+      }
+      throw err;
+    }
   }
 
   async logout() {
-    if (IS_MOBILE) {
+    if (this.isLocal) {
       await localApi.logout();
       this.token = null;
       return;
     }
-    await this.api.post('/auth/logout');
-    this.clearToken();
+    try {
+      await this.httpClient!.post('/auth/logout');
+    } finally {
+      this.clearToken();
+    }
   }
 
   async me() {
-    if (IS_MOBILE) {
+    if (this.isLocal) {
       const response = await localApi.me();
       return response.data;
     }
-    const response = await this.api.get<ApiResponse<User>>('/auth/me');
-    return response.data.data;
+    try {
+      const response = await this.httpClient!.get<ApiResponse<User>>('/auth/me');
+      return response.data.data;
+    } catch (err: any) {
+      if (!err.response && this.token?.startsWith('local-token-')) {
+        const response = await localApi.me();
+        return response.data;
+      }
+      throw err;
+    }
   }
 
   async updateProfile(data: { name: string; course?: string; year_level?: number }) {
-    if (IS_MOBILE) {
+    if (this.isLocal) {
       const response = await localApi.updateProfile(data);
       return response.data;
     }
-    const response = await this.api.put<ApiResponse<User>>('/auth/profile', data);
+    const response = await this.httpClient!.put<ApiResponse<User>>('/auth/profile', data);
     return response.data.data;
   }
 
   async updatePassword(data: { current_password: string; password: string; password_confirmation: string }) {
-    if (IS_MOBILE) {
+    if (this.isLocal) {
       await localApi.updatePassword(data);
       return;
     }
-    const response = await this.api.put<ApiResponse<null>>('/auth/password', data);
+    const response = await this.httpClient!.put<ApiResponse<null>>('/auth/password', data);
     return response.data;
   }
 
   async getDashboard() {
-    if (IS_MOBILE) {
-      const subjects = await localApi.getSubjects();
-      const tasks = await localApi.getTasks();
-      const sessions = await localApi.getStudySessions();
-      return {
-        subjects: subjects.data,
-        tasks: tasks.data,
-        study_sessions: sessions.data,
-      };
+    if (this.isLocal) {
+      const response = await localApi.getDashboard();
+      return response.data;
     }
-    const response = await this.api.get<ApiResponse<any>>('/student/dashboard');
+    const response = await this.httpClient!.get<ApiResponse<any>>('/student/dashboard');
     return response.data.data;
   }
 
   async getSubjects() {
-    const response = await this.api.get<ApiResponse<Subject[]>>('/student/subjects');
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getSubjects();
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<Subject[]>>('/student/subjects');
+    return response.data.data;
   }
 
   async getSubject(id: number) {
-    const response = await this.api.get<ApiResponse<Subject>>(`/student/subjects/${id}`);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getSubject(id);
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<Subject>>(`/student/subjects/${id}`);
+    return response.data.data;
   }
 
   async createSubject(data: Partial<Subject>) {
-    const response = await this.api.post<ApiResponse<Subject>>('/student/subjects', data);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.createSubject(data);
+      return response.data;
+    }
+    const response = await this.httpClient!.post<ApiResponse<Subject>>('/student/subjects', data);
+    return response.data.data;
   }
 
   async updateSubject(id: number, data: Partial<Subject>) {
-    const response = await this.api.put<ApiResponse<Subject>>(`/student/subjects/${id}`, data);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.updateSubject(id, data);
+      return response.data;
+    }
+    const response = await this.httpClient!.put<ApiResponse<Subject>>(`/student/subjects/${id}`, data);
+    return response.data.data;
   }
 
   async deleteSubject(id: number) {
-    await this.api.delete(`/student/subjects/${id}`);
+    if (this.isLocal) {
+      await localApi.deleteSubject(id);
+      return;
+    }
+    await this.httpClient!.delete(`/student/subjects/${id}`);
   }
 
   async getTopics(subjectId: number) {
-    const response = await this.api.get<ApiResponse<Topic[]>>(`/student/subjects/${subjectId}/topics`);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getTopics(subjectId);
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<Topic[]>>(`/student/subjects/${subjectId}/topics`);
+    return response.data.data;
   }
 
   async getTopic(subjectId: number, topicId: number) {
-    const response = await this.api.get<ApiResponse<Topic>>(`/student/subjects/${subjectId}/topics/${topicId}`);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getTopic(subjectId, topicId);
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<Topic>>(`/student/subjects/${subjectId}/topics/${topicId}`);
+    return response.data.data;
   }
 
   async createTopic(subjectId: number, data: Partial<Topic>) {
-    const response = await this.api.post<ApiResponse<Topic>>(`/student/subjects/${subjectId}/topics`, data);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.createTopic(subjectId, data);
+      return response.data;
+    }
+    const response = await this.httpClient!.post<ApiResponse<Topic>>(`/student/subjects/${subjectId}/topics`, data);
+    return response.data.data;
   }
 
   async updateTopic(subjectId: number, topicId: number, data: Partial<Topic>) {
-    const response = await this.api.put<ApiResponse<Topic>>(`/student/subjects/${subjectId}/topics/${topicId}`, data);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.updateTopic(subjectId, topicId, data);
+      return response.data;
+    }
+    const response = await this.httpClient!.put<ApiResponse<Topic>>(`/student/subjects/${subjectId}/topics/${topicId}`, data);
+    return response.data.data;
   }
 
   async deleteTopic(subjectId: number, topicId: number) {
-    await this.api.delete(`/student/subjects/${subjectId}/topics/${topicId}`);
+    if (this.isLocal) {
+      await localApi.deleteTopic(subjectId, topicId);
+      return;
+    }
+    await this.httpClient!.delete(`/student/subjects/${subjectId}/topics/${topicId}`);
   }
 
   async getTasks(params?: { status?: string; priority?: string; subject_id?: number; from?: string; to?: string }) {
-    const response = await this.api.get<PaginatedResponse<Task>>('/student/tasks', { params });
-    return IS_MOBILE ? response : response.data;
+    if (this.isLocal) {
+      return await localApi.getTasks(params);
+    }
+    const response = await this.httpClient!.get<PaginatedResponse<Task>>('/student/tasks', { params });
+    return response.data;
   }
 
   async createTask(data: Partial<Task>) {
-    const response = await this.api.post<ApiResponse<Task>>('/student/tasks', data);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.createTask(data);
+      return response.data;
+    }
+    const response = await this.httpClient!.post<ApiResponse<Task>>('/student/tasks', data);
+    return response.data.data;
   }
 
   async updateTask(id: number, data: Partial<Task>) {
-    const response = await this.api.put<ApiResponse<Task>>(`/student/tasks/${id}`, data);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.updateTask(id, data);
+      return response.data;
+    }
+    const response = await this.httpClient!.put<ApiResponse<Task>>(`/student/tasks/${id}`, data);
+    return response.data.data;
   }
 
   async deleteTask(id: number) {
-    await this.api.delete(`/student/tasks/${id}`);
+    if (this.isLocal) {
+      await localApi.deleteTask(id);
+      return;
+    }
+    await this.httpClient!.delete(`/student/tasks/${id}`);
   }
 
   async completeTask(id: number) {
-    const response = await this.api.post<ApiResponse<Task>>(`/student/tasks/${id}/complete`);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.completeTask(id);
+      return response.data;
+    }
+    const response = await this.httpClient!.post<ApiResponse<Task>>(`/student/tasks/${id}/complete`);
+    return response.data.data;
   }
 
   async updateTaskStatus(id: number, status: string) {
-    const response = await this.api.patch<ApiResponse<Task>>(`/student/tasks/${id}/status`, { status });
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.updateTaskStatus(id, status as any);
+      return response.data;
+    }
+    const response = await this.httpClient!.patch<ApiResponse<Task>>(`/student/tasks/${id}/status`, { status });
+    return response.data.data;
   }
 
   async getStudySessions(params?: { from?: string; to?: string; status?: string }) {
-    const response = await this.api.get<ApiResponse<StudySession[]>>('/student/study-plan', { params });
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getStudySessions(params);
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<StudySession[]>>('/student/study-plan', { params });
+    return response.data.data;
   }
 
   async generateStudyPlan(from: string, to: string) {
-    const response = await this.api.post<ApiResponse<{ created_sessions: number }>>('/student/study-plan/generate', { from, to });
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.generateStudyPlan(from, to);
+      return response.data;
+    }
+    const response = await this.httpClient!.post<ApiResponse<{ created_sessions: number }>>('/student/study-plan/generate', { from, to });
+    return response.data.data;
   }
 
   async updateStudySessionStatus(id: number, status: StudySession['status']) {
-    const response = await this.api.patch<ApiResponse<StudySession>>(`/student/study-plan/${id}/status`, { status });
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.updateStudySessionStatus(id, status);
+      return response.data;
+    }
+    const response = await this.httpClient!.patch<ApiResponse<StudySession>>(`/student/study-plan/${id}/status`, { status });
+    return response.data.data;
   }
 
   async getQuizzes() {
-    const response = await this.api.get<ApiResponse<Quiz[]>>('/student/quizzes');
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getQuizzes();
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<Quiz[]>>('/student/quizzes');
+    return response.data.data;
   }
 
   async getQuiz(id: number) {
-    const response = await this.api.get<ApiResponse<Quiz>>(`/student/quizzes/${id}`);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getQuiz(id);
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<Quiz>>(`/student/quizzes/${id}`);
+    return response.data.data;
   }
 
   async submitQuiz(id: number, answers: Record<number, string>, started_at: string) {
-    const response = await this.api.post<ApiResponse<QuizAttempt>>(`/student/quizzes/${id}/submit`, { answers, started_at });
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.submitQuiz(id, answers, started_at);
+      return response.data;
+    }
+    const response = await this.httpClient!.post<ApiResponse<QuizAttempt>>(`/student/quizzes/${id}/submit`, { answers, started_at });
+    return response.data.data;
   }
 
   async getQuizHistory() {
-    const response = await this.api.get<ApiResponse<QuizAttempt[]>>('/student/quiz-attempts');
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getQuizHistory();
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<QuizAttempt[]>>('/student/quiz-attempts');
+    return response.data.data;
   }
 
   async getQuizAttempt(id: number) {
-    const response = await this.api.get<ApiResponse<QuizAttempt>>(`/student/quiz-attempts/${id}`);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getQuizAttempt(id);
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<QuizAttempt>>(`/student/quiz-attempts/${id}`);
+    return response.data.data;
   }
 
   async getRecommendations() {
-    const response = await this.api.get<ApiResponse<Resource[]>>('/student/recommendations');
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getRecommendations();
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<Resource[]>>('/student/recommendations');
+    return response.data.data;
   }
 
   async recordView(resourceId: number, topicId?: number) {
-    const response = await this.api.post<ApiResponse<any>>(`/student/recommendations/${resourceId}/view`, { topic_id: topicId });
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.recordView(resourceId, topicId);
+      return response.data;
+    }
+    const response = await this.httpClient!.post<ApiResponse<any>>(`/student/recommendations/${resourceId}/view`, { topic_id: topicId });
+    return response.data.data;
   }
 
   async getStudyPreference() {
-    const response = await this.api.get<ApiResponse<StudyPreference>>('/student/study-preference');
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getStudyPreference();
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<StudyPreference>>('/student/study-preference');
+    return response.data.data;
   }
 
   async upsertStudyPreference(data: Partial<StudyPreference>) {
-    const response = await this.api.post<ApiResponse<StudyPreference>>('/student/study-preference', data);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.upsertStudyPreference(data);
+      return response.data;
+    }
+    const response = await this.httpClient!.post<ApiResponse<StudyPreference>>('/student/study-preference', data);
+    return response.data.data;
   }
 
   async getProgress() {
-    const response = await this.api.get<ApiResponse<{ summary: ProgressSummary; topic_performance: TopicPerformance[] }>>('/student/progress');
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getProgress();
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<{ summary: ProgressSummary; topic_performance: TopicPerformance[] }>>('/student/progress');
+    return response.data.data;
   }
 
   async getNotifications(params?: { unread?: boolean; page?: number }) {
-    const response = await this.api.get<ApiResponse<PaginatedResponse<Notification>>>('/student/notifications', { params });
-    return IS_MOBILE ? response : response.data.data;
+    if (this.isLocal) {
+      return await localApi.getNotifications(params);
+    }
+    const response = await this.httpClient!.get<ApiResponse<PaginatedResponse<Notification>>>('/student/notifications', { params });
+    return response.data.data;
   }
 
   async getNotificationCount() {
-    const response = await this.api.get<ApiResponse<{ unread: number; total: number }>>('/student/notifications/count');
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getNotificationCount();
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<{ unread: number; total: number }>>('/student/notifications/count');
+    return response.data.data;
   }
 
   async markNotificationRead(id: string) {
-    const response = await this.api.post<ApiResponse<Notification>>(`/student/notifications/${id}/read`);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.markNotificationRead(id);
+      return response.data;
+    }
+    const response = await this.httpClient!.post<ApiResponse<Notification>>(`/student/notifications/${id}/read`);
+    return response.data.data;
   }
 
   async markAllNotificationsRead() {
-    const response = await this.api.post<ApiResponse<{ marked_read: number }>>('/student/notifications/read-all');
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.markAllNotificationsRead();
+      return response.data;
+    }
+    const response = await this.httpClient!.post<ApiResponse<{ marked_read: number }>>('/student/notifications/read-all');
+    return response.data.data;
   }
 
-  async getAdminResources(params?: { resource_type?: string; difficulty?: string; search?: string }) {
-    const response = await this.api.get<PaginatedResponse<Resource>>('/admin/resources', { params });
-    return IS_MOBILE ? response : response.data;
+  async getAdminResources(params?: { resource_type?: string; difficulty?: string; search?: string; page?: number }) {
+    if (this.isLocal) {
+      return await localApi.getAdminResources(params);
+    }
+    const response = await this.httpClient!.get<PaginatedResponse<Resource>>('/admin/resources', { params });
+    return response.data;
   }
 
   async getAdminResourceOptions() {
-    const response = await this.api.get<ApiResponse<{ subjects: Subject[]; topics: (Topic & { subject?: Subject })[] }>>('/admin/resource-options');
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getAdminResourceOptions();
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<{ subjects: Subject[]; topics: (Topic & { subject?: Subject })[] }>>('/admin/resource-options');
+    return response.data.data;
   }
 
   async getAdminSubjects() {
-    const response = await this.api.get<ApiResponse<Subject[]>>('/admin/subjects');
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getAdminSubjects();
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<Subject[]>>('/admin/subjects');
+    return response.data.data;
   }
 
   async getAdminSubjectOptions() {
-    const response = await this.api.get<ApiResponse<User[]>>('/admin/subjects/options');
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getAdminSubjectOptions();
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<User[]>>('/admin/subjects/options');
+    return response.data.data;
   }
 
   async createAdminSubject(data: Partial<Subject> & { user_id: number }) {
-    const response = await this.api.post<ApiResponse<Subject>>('/admin/subjects', data);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.createAdminSubject(data);
+      return response.data;
+    }
+    const response = await this.httpClient!.post<ApiResponse<Subject>>('/admin/subjects', data);
+    return response.data.data;
   }
 
   async updateAdminSubject(id: number, data: Partial<Subject>) {
-    const response = await this.api.put<ApiResponse<Subject>>(`/admin/subjects/${id}`, data);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.updateAdminSubject(id, data);
+      return response.data;
+    }
+    const response = await this.httpClient!.put<ApiResponse<Subject>>(`/admin/subjects/${id}`, data);
+    return response.data.data;
   }
 
   async deleteAdminSubject(id: number) {
-    await this.api.delete(`/admin/subjects/${id}`);
+    if (this.isLocal) {
+      await localApi.deleteAdminSubject(id);
+      return;
+    }
+    await this.httpClient!.delete(`/admin/subjects/${id}`);
   }
 
   async createAdminTopic(subjectId: number, data: Partial<Topic>) {
-    const response = await this.api.post<ApiResponse<Topic>>(`/admin/subjects/${subjectId}/topics`, data);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.createAdminTopic(subjectId, data);
+      return response.data;
+    }
+    const response = await this.httpClient!.post<ApiResponse<Topic>>(`/admin/subjects/${subjectId}/topics`, data);
+    return response.data.data;
   }
 
   async updateAdminTopic(subjectId: number, topicId: number, data: Partial<Topic>) {
-    const response = await this.api.patch<ApiResponse<Topic>>(`/admin/subjects/${subjectId}/topics/${topicId}`, data);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.updateAdminTopic(subjectId, topicId, data);
+      return response.data;
+    }
+    const response = await this.httpClient!.patch<ApiResponse<Topic>>(`/admin/subjects/${subjectId}/topics/${topicId}`, data);
+    return response.data.data;
   }
 
   async deleteAdminTopic(subjectId: number, topicId: number) {
-    await this.api.delete(`/admin/subjects/${subjectId}/topics/${topicId}`);
+    if (this.isLocal) {
+      await localApi.deleteAdminTopic(subjectId, topicId);
+      return;
+    }
+    await this.httpClient!.delete(`/admin/subjects/${subjectId}/topics/${topicId}`);
   }
 
   async createResource(data: Partial<Resource> & { subject_ids?: number[]; topic_ids?: number[] }) {
-    const response = await this.api.post<ApiResponse<Resource>>('/admin/resources', data);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.createResource(data);
+      return response.data;
+    }
+    const response = await this.httpClient!.post<ApiResponse<Resource>>('/admin/resources', data);
+    return response.data.data;
   }
 
   async updateResource(id: number, data: Partial<Resource> & { subject_ids?: number[]; topic_ids?: number[] }) {
-    const response = await this.api.patch<ApiResponse<Resource>>(`/admin/resources/${id}`, data);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.updateResource(id, data);
+      return response.data;
+    }
+    const response = await this.httpClient!.patch<ApiResponse<Resource>>(`/admin/resources/${id}`, data);
+    return response.data.data;
   }
 
   async deleteResource(id: number) {
-    await this.api.delete(`/admin/resources/${id}`);
+    if (this.isLocal) {
+      await localApi.deleteResource(id);
+      return;
+    }
+    await this.httpClient!.delete(`/admin/resources/${id}`);
   }
 
-  async getAdminUsers(params?: { role?: string; is_active?: boolean; search?: string }) {
-    const response = await this.api.get<PaginatedResponse<User>>('/admin/users', { params });
-    return IS_MOBILE ? response : response.data;
+  async getAdminUsers(params?: { role?: string; is_active?: boolean; search?: string; page?: number }) {
+    if (this.isLocal) {
+      return await localApi.getAdminUsers(params);
+    }
+    const response = await this.httpClient!.get<PaginatedResponse<User>>('/admin/users', { params });
+    return response.data;
   }
 
   async updateAdminUser(id: number, data: Partial<User>) {
-    const response = await this.api.patch<ApiResponse<User>>(`/admin/users/${id}`, data);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.updateAdminUser(id, data);
+      return response.data;
+    }
+    const response = await this.httpClient!.patch<ApiResponse<User>>(`/admin/users/${id}`, data);
+    return response.data.data;
   }
 
   async getSystemSettings() {
-    const response = await this.api.get<ApiResponse<SystemSetting[]>>('/admin/system-settings');
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getSystemSettings();
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<SystemSetting[]>>('/admin/system-settings');
+    return response.data.data;
   }
 
   async updateSystemSetting(id: number, data: Partial<SystemSetting>) {
-    const response = await this.api.patch<ApiResponse<SystemSetting>>(`/admin/system-settings/${id}`, data);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.updateSystemSetting(id, data);
+      return response.data;
+    }
+    const response = await this.httpClient!.patch<ApiResponse<SystemSetting>>(`/admin/system-settings/${id}`, data);
+    return response.data.data;
   }
 
   async getAdminDashboard() {
-    const response = await this.api.get<ApiResponse<any>>('/admin/dashboard');
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getAdminDashboard();
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<any>>('/admin/dashboard');
+    return response.data.data;
   }
 
   async getAdminUser(id: number) {
-    const response = await this.api.get<ApiResponse<User>>(`/admin/users/${id}`);
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getAdminUser(id);
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<User>>(`/admin/users/${id}`);
+    return response.data.data;
   }
 
   async getSetupStatus() {
-    const response = await this.api.get<ApiResponse<SetupStatus>>('/student/setup-status');
-    return IS_MOBILE ? response.data : response.data.data;
+    if (this.isLocal) {
+      const response = await localApi.getSetupStatus();
+      return response.data;
+    }
+    const response = await this.httpClient!.get<ApiResponse<SetupStatus>>('/student/setup-status');
+    return response.data.data;
   }
 }
 

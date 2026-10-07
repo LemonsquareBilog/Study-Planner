@@ -259,40 +259,23 @@ const form = ref({
 const debounceTimer = ref<ReturnType<typeof setTimeout> | null>(null);
 
 onMounted(async () => {
-  const timeout = (ms: number) => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), ms));
-  
   try {
-    const token = localStorage.getItem('token');
-    if (!token) throw new Error('No token');
-    
-    const headers = {
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${token}`
-    };
-    
-    const [optionsRes, resourcesRes] = await Promise.all([
-      Promise.race([
-        fetch('/api/admin/resource-options', { headers }).then(r => r.json()),
-        timeout(10000)
-      ]),
-      Promise.race([
-        fetch('/api/admin/resources', { headers }).then(r => r.json()),
-        timeout(10000)
-      ]),
+    const [optionsData, resourcesRes] = await Promise.all([
+      adminStore.fetchResourceOptions(),
+      adminStore.fetchResources(filters.value),
     ]);
-    
-    const optionsData = optionsRes.data;
-    allSubjects.value = optionsData.subjects || [];
-    allTopics.value = (optionsData.topics || []).map(topic => ({ ...topic, subject_name: topic.subject?.name }));
-    
-    const resourcesData = resourcesRes.data?.data || resourcesRes.data || [];
-    resources.value = { 
-      data: resourcesData, 
-      current_page: resourcesRes.current_page || 1, 
-      last_page: resourcesRes.last_page || 1, 
-      from: resourcesRes.from || 0, 
-      to: resourcesRes.to || 0, 
-      total: resourcesRes.total || 0 
+
+    allSubjects.value = optionsData?.subjects || [];
+    allTopics.value = (optionsData?.topics || []).map((topic: any) => ({ ...topic, subject_name: topic.subject?.name }));
+
+    const resourcesData = resourcesRes?.data || [];
+    resources.value = {
+      data: resourcesData,
+      current_page: resourcesRes?.current_page || 1,
+      last_page: resourcesRes?.last_page || 1,
+      from: resourcesRes?.from || (resourcesData.length > 0 ? 1 : 0),
+      to: resourcesRes?.to || resourcesData.length,
+      total: resourcesRes?.total || resourcesData.length,
     };
   } catch (err) {
     console.error('Failed to load resource management data:', err);

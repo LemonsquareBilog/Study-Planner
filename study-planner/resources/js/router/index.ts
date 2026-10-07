@@ -68,8 +68,8 @@ router.beforeEach(async (to, from) => {
     return '/login';
   }
 
-  if (to.meta.role && authStore.userRole !== to.meta.role) {
-    return authStore.isAdmin ? '/admin' : '/dashboard';
+  if (to.meta.role === 'admin' && !authStore.isAdmin) {
+    return '/dashboard';
   }
 
   return true;

@@ -215,6 +215,19 @@ export const useStudentStore = defineStore('student', () => {
     }
   }
 
+  async function deleteTask(id: number) {
+    loading.value = true;
+    try {
+      await api.deleteTask(id);
+      tasks.value = tasks.value.filter(task => task.id !== id);
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to delete task';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
   async function completeTask(id: number) {
     loading.value = true;
     try {
@@ -300,12 +313,35 @@ export const useStudentStore = defineStore('student', () => {
     loading.value = true;
     try {
       const attempt = await api.submitQuiz(id, answers, started_at);
+      quizAttempts.value.unshift(attempt);
       return attempt;
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to submit quiz';
       throw err;
     } finally {
       loading.value = false;
+    }
+  }
+
+  async function fetchQuizHistory() {
+    loading.value = true;
+    try {
+      quizAttempts.value = await api.getQuizHistory();
+      return quizAttempts.value;
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to load quiz history';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function fetchQuizAttempt(id: number) {
+    try {
+      return await api.getQuizAttempt(id);
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to load quiz attempt';
+      throw err;
     }
   }
 
@@ -436,6 +472,7 @@ export const useStudentStore = defineStore('student', () => {
     fetchTasks,
     createTask,
     updateTask,
+    deleteTask,
     completeTask,
     fetchStudySessions,
     generateStudyPlan,
@@ -443,6 +480,8 @@ export const useStudentStore = defineStore('student', () => {
     fetchQuizzes,
     fetchQuiz,
     submitQuiz,
+    fetchQuizHistory,
+    fetchQuizAttempt,
     fetchRecommendations,
     fetchProgress,
     fetchNotifications,

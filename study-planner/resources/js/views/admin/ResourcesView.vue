@@ -13,7 +13,7 @@
       </button>
     </div>
 
-    <div class="bg-brand-navbar-cards-alt border border-brand-borders rounded-xl p-4 mb-6">
+    <div class="glass-card p-4 mb-6">
       <div class="flex flex-wrap gap-4">
         <input type="text" v-model="filters.search" @input="debouncedFetch" placeholder="Search resources..." class="input-field-glass flex-1 min-w-[200px]" aria-label="Search resources" />
         <select v-model="filters.resource_type" @change="fetchResources" class="input-field-glass w-auto" aria-label="Filter by type">
@@ -34,16 +34,16 @@
     </div>
 
     <div v-if="loading" class="flex justify-center py-12" role="status" aria-label="Loading resources">
-      <svg class="animate-spin h-8 w-8 text-status-info" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+      <svg class="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" aria-hidden="true">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
       </svg>
     </div>
 
-    <div v-else class="bg-brand-navbar-cards-alt border border-brand-borders rounded-xl overflow-hidden">
+    <div v-else class="glass-card overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-brand-borders" role="table">
-          <thead class="bg-brand-navbar-cards">
+        <table class="min-w-full divide-y divide-brand-borders/50" role="table">
+          <thead class="bg-white/50">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Resource</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Type</th>
@@ -54,8 +54,8 @@
               <th class="px-6 py-3 text-right text-xs font-medium text-text-secondary uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-brand-borders" role="rowgroup">
-            <tr v-for="resource in resources.data" :key="resource.id" class="hover:bg-brand-navbar-cards" role="row">
+          <tbody class="divide-y divide-brand-borders/50" role="rowgroup">
+            <tr v-for="resource in resources.data" :key="resource.id" class="hover:bg-white/30 transition-colors" role="row">
               <td class="px-6 py-4">
                 <div class="text-sm font-medium text-text-primary">{{ resource.title }}</div>
                 <div class="text-sm text-text-secondary line-clamp-1">{{ resource.description }}</div>
@@ -69,7 +69,7 @@
               </td>
               <td class="px-6 py-4">
                 <div class="flex flex-wrap gap-1">
-                  <span v-for="subject in resource.subjects" :key="subject.id" class="px-2 py-1 text-xs bg-brand-borders text-text-secondary rounded">{{ subject.name }}</span>
+                  <span v-for="subject in resource.subjects" :key="subject.id" class="px-2 py-1 text-xs bg-brand-borders/50 text-text-secondary rounded">{{ subject.name }}</span>
                   <span v-if="resource.subjects.length === 0" class="text-xs text-text-secondary">None</span>
                 </div>
               </td>
@@ -94,7 +94,7 @@
         </table>
       </div>
 
-      <div v-if="resources.last_page > 1" class="px-6 py-4 border-t border-brand-borders">
+      <div v-if="resources.last_page > 1" class="px-6 py-4 border-t border-brand-borders/50">
         <nav class="flex items-center justify-between" aria-label="Pagination">
           <p class="text-sm text-text-secondary">Showing {{ resources.from }} to {{ resources.to }} of {{ resources.total }} resources</p>
           <div class="flex space-x-2">
@@ -111,7 +111,7 @@
     <div v-if="showCreateModal" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div class="flex min-h-full items-center justify-center p-4">
         <div class="fixed inset-0 bg-black/50" @click="closeModal" aria-hidden="true"></div>
-        <div class="relative bg-brand-navbar-cards-alt border border-brand-borders rounded-xl shadow-xl max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto">
+        <div class="relative glass-card shadow-xl max-w-3xl w-full p-6 max-h-[90vh] overflow-y-auto">
           <div class="flex items-center justify-between mb-4">
             <h2 id="modal-title" class="text-lg font-semibold text-text-primary">{{ editingResource ? 'Edit Resource' : 'Create Resource' }}</h2>
             <button @click="closeModal" class="text-text-secondary hover:text-text-primary transition-colors" aria-label="Close modal">
@@ -162,7 +162,7 @@
             <div class="grid grid-cols-2 gap-6">
               <div>
                 <label class="input-label">Subjects</label>
-                <div class="space-y-2 max-h-40 overflow-y-auto border border-brand-borders rounded p-3">
+                <div class="space-y-2 max-h-40 overflow-y-auto glass-card p-3">
                   <label v-for="subject in allSubjects" :key="subject.id" class="flex items-center space-x-2">
                     <input type="checkbox" :value="subject.id" v-model="form.subject_ids" class="h-4 w-4 text-primary border-brand-borders rounded focus:ring-primary/50" />
                     <span class="text-sm text-text-secondary">{{ subject.name }}</span>
@@ -172,7 +172,7 @@
               </div>
               <div>
                 <label class="input-label">Topics</label>
-                <div class="space-y-2 max-h-40 overflow-y-auto border border-brand-borders rounded p-3">
+                <div class="space-y-2 max-h-40 overflow-y-auto glass-card p-3">
                   <label v-for="topic in allTopics" :key="topic.id" class="flex items-center space-x-2">
                     <input type="checkbox" :value="topic.id" v-model="form.topic_ids" class="h-4 w-4 text-primary border-brand-borders rounded focus:ring-primary/50" />
                     <span class="text-sm text-text-secondary">{{ topic.name }} ({{ topic.subject_name }})</span>
@@ -210,7 +210,7 @@
     <div v-if="deletingResource" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
       <div class="flex min-h-full items-center justify-center p-4">
         <div class="fixed inset-0 bg-black/50" @click="cancelDelete" aria-hidden="true"></div>
-        <div class="relative bg-brand-navbar-cards-alt border border-brand-borders rounded-xl shadow-xl max-w-md w-full p-6">
+        <div class="relative glass-card shadow-xl max-w-md w-full p-6">
           <h3 id="delete-modal-title" class="text-lg font-semibold text-text-primary mb-2">Delete Resource</h3>
           <p class="text-text-secondary mb-6">Are you sure you want to delete "{{ deletingResource.title }}"?</p>
           <div class="flex justify-end space-x-3">

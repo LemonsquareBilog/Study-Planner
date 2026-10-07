@@ -9,16 +9,16 @@
     </div>
 
     <div v-if="loading" class="flex justify-center py-12" role="status" aria-label="Loading subjects">
-      <svg class="animate-spin h-8 w-8 text-status-info" fill="none" viewBox="0 0 24 24" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12 4z" /></svg>
+      <svg class="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12 4z" /></svg>
     </div>
 
-    <div v-else-if="subjects.length === 0" class="bg-brand-navbar-cards-alt border border-brand-borders rounded-xl p-10 text-center">
+    <div v-else-if="subjects.length === 0" class="glass-card p-10 text-center">
       <h2 class="font-semibold text-text-primary">No subjects yet</h2>
       <p class="mt-1 text-sm text-text-secondary">Create a subject and assign it to a student to begin.</p>
     </div>
 
     <div v-else class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-      <article v-for="subject in subjects" :key="subject.id" class="bg-brand-navbar-cards-alt border border-brand-borders rounded-xl p-6">
+      <article v-for="subject in subjects" :key="subject.id" class="glass-card p-6">
         <div class="flex items-start justify-between gap-4">
           <div class="min-w-0">
             <h2 class="text-lg font-bold text-text-primary truncate">{{ subject.name }}</h2>
@@ -28,7 +28,7 @@
           <span class="inline-flex shrink-0 items-center whitespace-nowrap px-2 py-1 rounded-full text-xs font-semibold" :class="difficultyClass(subject.difficulty)">Level {{ subject.difficulty }}</span>
         </div>
 
-        <div class="mt-5 flex items-center justify-between border-t border-brand-borders pt-4">
+        <div class="mt-5 flex items-center justify-between border-t border-brand-borders/50 pt-4">
           <h3 class="text-sm font-semibold text-text-primary">Topics <span class="text-text-secondary">({{ subject.topics?.length || 0 }})</span></h3>
           <div class="flex gap-3 text-sm">
             <button class="text-secondary hover:text-secondary-hover font-medium transition-colors" @click="openSubjectModal(subject)">Edit subject</button>
@@ -36,9 +36,9 @@
           </div>
         </div>
 
-        <div v-if="!subject.topics?.length" class="mt-3 rounded-lg bg-brand-navbar-cards p-4 text-sm text-text-secondary">No topics linked to this subject.</div>
+        <div v-if="!subject.topics?.length" class="mt-3 rounded-lg glass-card p-4 text-sm text-text-secondary">No topics linked to this subject.</div>
         <div v-else class="mt-3 space-y-2">
-          <div v-for="topic in subject.topics" :key="topic.id" class="flex items-center justify-between gap-3 rounded-lg bg-brand-navbar-cards px-3 py-3">
+          <div v-for="topic in subject.topics" :key="topic.id" class="flex items-center justify-between gap-3 rounded-lg glass-card px-3 py-3">
             <div class="min-w-0">
               <p class="font-semibold text-text-primary truncate">{{ topic.name }}</p>
               <p class="text-xs text-text-secondary truncate">{{ subject.name }} · Level {{ topic.difficulty }}<span v-if="topic.description"> · {{ topic.description }}</span></p>
@@ -57,7 +57,7 @@
       <div v-if="subjectModalOpen" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="subject-modal-title">
         <div class="flex min-h-full items-center justify-center p-4">
           <div class="fixed inset-0 bg-black/50" @click="closeModals" aria-hidden="true"></div>
-          <form class="relative w-full max-w-lg space-y-4 rounded-xl bg-brand-navbar-cards-alt border border-brand-borders p-6 shadow-xl" @submit.prevent="saveSubject">
+          <form class="relative w-full max-w-lg space-y-4 rounded-xl glass-card p-6 shadow-xl" @submit.prevent="saveSubject">
             <h2 id="subject-modal-title" class="text-lg font-bold text-text-primary">{{ editingSubject ? 'Edit Subject' : 'Add Subject' }}</h2>
             <div v-if="!editingSubject">
               <label class="input-label" for="subject-student">Student</label>
@@ -86,7 +86,7 @@
       <div v-if="topicModalOpen" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="topic-modal-title">
         <div class="flex min-h-full items-center justify-center p-4">
           <div class="fixed inset-0 bg-black/50" @click="closeModals" aria-hidden="true"></div>
-          <form class="relative w-full max-w-lg space-y-4 rounded-xl bg-brand-navbar-cards-alt border border-brand-borders p-6 shadow-xl" @submit.prevent="saveTopic">
+          <form class="relative w-full max-w-lg space-y-4 rounded-xl glass-card p-6 shadow-xl" @submit.prevent="saveTopic">
             <h2 id="topic-modal-title" class="text-lg font-bold text-text-primary">{{ editingTopic ? 'Edit Topic' : 'Add Topic' }}</h2>
             <p class="text-sm text-text-secondary">Subject: <strong class="font-bold text-text-primary">{{ selectedSubject?.name }}</strong></p>
             <div><label class="input-label" for="admin-topic-name">Topic name</label><input id="admin-topic-name" v-model="topicForm.name" class="input-field-glass" required /></div>

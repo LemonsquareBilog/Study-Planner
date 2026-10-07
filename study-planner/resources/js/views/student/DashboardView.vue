@@ -157,9 +157,9 @@ function priorityClass(priority: string) {
   return classes[priority] || 'bg-brand-borders text-text-secondary';
 }
 
-async function recordView(resourceId: number) {
+async function recordView(resourceId: number, topicId?: number) {
   try {
-    await studentStore.recordView(resourceId);
+    await studentStore.recordView(resourceId, topicId);
   } catch (err) {
     console.error('Failed to record view:', err);
   }

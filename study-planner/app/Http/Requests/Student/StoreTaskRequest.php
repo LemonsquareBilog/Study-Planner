@@ -10,6 +10,7 @@ class StoreTaskRequest extends FormRequest {
   'description'=>['nullable','string'],
   'task_type'=>['required','in:assignment,project,exam,quiz,reading,review,other'],
   'priority'=>['required','in:low,medium,high,urgent'],
+    'start_date'=>['nullable','date','after_or_equal:today','before_or_equal:deadline'],
   'deadline'=>['required','date','after_or_equal:today'],
   'estimated_minutes'=>['required','integer','min:1','max:1440'],
  ];}

@@ -4,7 +4,9 @@ import { localApi } from './localApi';
 import type { ApiResponse, PaginatedResponse } from '@/types';
 import type { User, Subject, Topic, Task, StudySession, Quiz, Question, QuizAttempt, Resource, Notification, SystemSetting, StudyPreference, ProgressSummary, TopicPerformance, SetupStatus, AdminDashboardData } from '@/types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+const API_BASE_URL = import.meta.env.MODE === 'web'
+  ? '/api'
+  : import.meta.env.VITE_API_BASE_URL || '/api';
 const IS_MOBILE = Capacitor.isNativePlatform();
 
 class ApiService {
@@ -199,7 +201,7 @@ class ApiService {
     await this.api.delete(`/student/subjects/${subjectId}/topics/${topicId}`);
   }
 
-  async getTasks(params?: { status?: string; priority?: string; subject_id?: number }) {
+  async getTasks(params?: { status?: string; priority?: string; subject_id?: number; from?: string; to?: string }) {
     const response = await this.api.get<PaginatedResponse<Task>>('/student/tasks', { params });
     return IS_MOBILE ? response : response.data;
   }
@@ -255,6 +257,16 @@ class ApiService {
 
   async submitQuiz(id: number, answers: Record<number, string>, started_at: string) {
     const response = await this.api.post<ApiResponse<QuizAttempt>>(`/student/quizzes/${id}/submit`, { answers, started_at });
+    return IS_MOBILE ? response.data : response.data.data;
+  }
+
+  async getQuizHistory() {
+    const response = await this.api.get<ApiResponse<QuizAttempt[]>>('/student/quiz-attempts');
+    return IS_MOBILE ? response.data : response.data.data;
+  }
+
+  async getQuizAttempt(id: number) {
+    const response = await this.api.get<ApiResponse<QuizAttempt>>(`/student/quiz-attempts/${id}`);
     return IS_MOBILE ? response.data : response.data.data;
   }
 

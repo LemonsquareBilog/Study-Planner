@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Resource;
 use App\Models\SystemSetting;
+use App\Models\Topic;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -29,6 +30,10 @@ class RecommendationService
             ->groupBy('quizzes.topic_id')
             ->get();
 
+        if ($topicPerformance->isEmpty()) {
+            return collect();
+        }
+
         $weakTopics = $topicPerformance
             ->filter(fn ($row) => $row->avg_percentage < $weakThreshold)
             ->pluck('topic_id');
@@ -38,37 +43,34 @@ class RecommendationService
             ->pluck('topic_id');
 
         $targetTopics = $weakTopics->merge($reviewTopics);
-        $subjectIds = $user->subjects()->pluck('id');
-
-        if ($targetTopics->isEmpty()) {
-            $targetTopics = $user->subjects()
-                ->with('topics:id,subject_id')
-                ->get()
-                ->pluck('topics')
-                ->flatten()
-                ->pluck('id');
-        }
-
         if ($targetTopics->isEmpty()) {
             return collect();
         }
 
+        $targetSubjectIds = Topic::whereIn('id', $targetTopics)->pluck('subject_id');
+
         $resources = Resource::query()
             ->where('is_active', true)
-            ->where(function ($query) use ($targetTopics, $subjectIds) {
+            ->where(function ($query) use ($targetTopics, $targetSubjectIds) {
                 $query->whereHas('topics', fn ($q) => $q->whereIn('topics.id', $targetTopics))
-                    ->orWhereHas('subjects', fn ($q) => $q->whereIn('subjects.id', $subjectIds));
+                    ->orWhereHas('subjects', fn ($q) => $q->whereIn('subjects.id', $targetSubjectIds));
             })
-            ->with(['topics:id,name', 'subjects:id,name'])
+            ->with(['topics:id,name,subject_id', 'subjects:id,name'])
             ->orderBy('title')
             ->get();
 
         // Annotate each resource with the classification of topics it addresses
-        return $resources->map(function ($resource) use ($weakTopics, $reviewTopics) {
-            $resourceTopicIds = $resource->topics->pluck('id');
+        $weakSubjectIds = Topic::whereIn('id', $weakTopics)->pluck('subject_id');
+        $reviewSubjectIds = Topic::whereIn('id', $reviewTopics)->pluck('subject_id');
 
-            $addressesWeak = $resourceTopicIds->intersect($weakTopics)->isNotEmpty();
-            $addressesReview = $resourceTopicIds->intersect($reviewTopics)->isNotEmpty();
+        return $resources->map(function ($resource) use ($weakTopics, $reviewTopics, $weakSubjectIds, $reviewSubjectIds) {
+            $resourceTopicIds = $resource->topics->pluck('id');
+            $resourceSubjectIds = $resource->subjects->pluck('id');
+
+            $addressesWeak = $resourceTopicIds->intersect($weakTopics)->isNotEmpty()
+                || $resourceSubjectIds->intersect($weakSubjectIds)->isNotEmpty();
+            $addressesReview = $resourceTopicIds->intersect($reviewTopics)->isNotEmpty()
+                || $resourceSubjectIds->intersect($reviewSubjectIds)->isNotEmpty();
 
             $resource->recommendation_reason = $addressesWeak ? 'weak' : ($addressesReview ? 'needs_review' : 'related');
 

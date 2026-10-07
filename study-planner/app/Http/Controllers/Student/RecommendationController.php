@@ -30,8 +30,12 @@ class RecommendationController extends Controller
                 $reason = 'no_quiz_attempts';
                 $message = 'Take your first quiz to identify areas for improvement and unlock personalized study resources.';
             } else {
-                $reason = 'all_topics_strong';
-                $message = 'Great work! Your quiz scores across all topics are currently strong. Keep reviewing your coursework.';
+                $hasAreasForReview = $this->service->topicPerformance($user)
+                    ->contains(fn ($topic) => $topic->classification !== 'strong');
+                $reason = $hasAreasForReview ? 'no_resources_for_weak_areas' : 'all_topics_strong';
+                $message = $hasAreasForReview
+                    ? 'Your quiz results show areas to strengthen, but no matching active resources are available yet.'
+                    : 'Great work! Your quiz scores across all topics are currently strong. Keep reviewing your coursework.';
             }
         }
 

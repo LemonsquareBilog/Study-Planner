@@ -55,9 +55,11 @@ export interface Task {
   description?: string;
   task_type: string;
   priority: 'urgent' | 'high' | 'medium' | 'low';
+  start_date?: string;
   deadline: string;
   estimated_minutes: number;
   status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  created_at?: string;
   completed_at?: string;
   subject?: Subject;
   topic?: Topic;
@@ -206,6 +208,7 @@ export interface ProgressSummary {
 export interface TopicPerformance {
   topic_id: number;
   topic_name: string;
+  subject_name?: string;
   avg_percentage: number;
   attempt_count: number;
   best_score: number;

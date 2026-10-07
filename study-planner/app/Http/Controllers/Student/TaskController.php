@@ -41,11 +41,27 @@ class TaskController extends Controller
             $query->where('subject_id', $request->input('subject_id'));
         }
 
+        if ($request->filled('from')) {
+            $from = $request->input('from');
+            $query->where(function ($q) use ($from) {
+                $q->where('start_date', '>=', $from)
+                  ->orWhere('deadline', '>=', $from);
+            });
+        }
+
+        if ($request->filled('to')) {
+            $to = $request->input('to');
+            $query->where(function ($q) use ($to) {
+                $q->where('start_date', '<=', $to)
+                  ->orWhere('deadline', '<=', $to);
+            });
+        }
+
         // Default sort: soonest deadline first (UX-014)
         $sort = $request->input('sort', 'deadline_asc');
         match ($sort) {
             'deadline_desc' => $query->orderBy('deadline', 'desc'),
-            'priority' => $query->orderByRaw("FIELD(priority, 'urgent','high','medium','low')")->orderBy('deadline', 'asc'),
+            'priority' => $query->orderByRaw("CASE priority WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 ELSE 4 END")->orderBy('deadline', 'asc'),
             'created' => $query->latest('created_at'),
             default => $query->orderBy('deadline', 'asc'),
         };

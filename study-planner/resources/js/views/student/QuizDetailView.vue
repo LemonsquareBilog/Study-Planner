@@ -50,7 +50,17 @@
     </div>
 
     <div v-else-if="quizStarted && !quizSubmitted">
-      <form @submit.prevent="submitQuiz" class="space-y-6">
+      <form
+        @submit.prevent="submitQuiz()"
+        @contextmenu.prevent
+        @auxclick.prevent
+        @mousedown.middle.prevent
+        @copy.prevent
+        @cut.prevent
+        @paste.prevent
+        @dragstart.prevent
+        class="space-y-6 quiz-taking-form"
+      >
         <div class="bg-brand-navbar-cards-alt border border-brand-borders rounded-xl p-6">
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-xl font-semibold text-text-primary">{{ quiz.title }}</h2>
@@ -61,8 +71,8 @@
           </div>
 
           <div v-for="(question, index) in quiz.questions" :key="question.id" v-show="index === currentQuestionIndex" class="space-y-4">
-            <p class="text-lg font-medium text-text-primary">{{ question.question }}</p>
-            <div class="space-y-3" role="radiogroup" :aria-label="`Question ${index + 1} options`">
+            <p class="quiz-question-content text-lg font-medium text-text-primary">{{ question.question }}</p>
+            <div class="quiz-question-content space-y-3" role="radiogroup" :aria-label="`Question ${index + 1} options`">
               <label v-for="option in ['A', 'B', 'C', 'D']" :key="option" class="flex items-center space-x-3 p-4 border-2 rounded-lg cursor-pointer hover:bg-brand-navbar-cards transition-colors" :class="{ 'border-primary bg-primary-light': answers[question.id] === option }">
                 <input type="radio" :value="option" v-model="answers[question.id]" :name="`question-${question.id}`" class="h-4 w-4 text-primary border-brand-borders focus:ring-primary/50" :aria-label="`Option ${option}`" />
                 <span class="font-medium text-text-primary">{{ option }}.</span>
@@ -75,8 +85,11 @@
             <button type="button" @click="prevQuestion" :disabled="currentQuestionIndex === 0" class="btn-secondary" aria-label="Previous question">Previous</button>
             <div class="flex items-center space-x-2">
               <button type="button" @click="nextQuestion" v-if="currentQuestionIndex < (quiz.questions?.length || 1) - 1" class="btn-primary" aria-label="Next question">Next</button>
-              <button type="submit" v-else class="btn-primary bg-status-success hover:bg-status-success-hover" aria-label="Submit quiz">Submit Quiz</button>
+              <button type="submit" v-else :disabled="isSubmitting" class="btn-primary bg-status-success hover:bg-status-success-hover" aria-label="Submit quiz">
+                {{ isSubmitting ? 'Submitting...' : 'Submit Quiz' }}
+              </button>
             </div>
+            <p v-if="submissionError" class="input-error-message" role="alert">{{ submissionError }}</p>
           </div>
         </div>
       </form>
@@ -102,10 +115,10 @@
               <span class="font-medium text-text-primary">Question {{ index + 1 }}</span>
               <span class="px-2 py-1 text-xs font-medium rounded-full" :class="answer.is_correct ? 'bg-status-success-light text-status-success' : 'bg-status-urgent-light text-status-urgent'">{{ answer.is_correct ? 'Correct' : 'Incorrect' }}</span>
             </div>
-            <p class="text-sm text-text-secondary mb-2">{{ quiz.questions?.find(q => q.id === answer.question_id)?.question }}</p>
+            <p class="text-sm text-text-secondary mb-2">{{ answer.question?.question || quiz.questions?.find(q => q.id === answer.question_id)?.question }}</p>
             <div class="text-sm">
-              <p v-if="answer.selected_answer"><span class="font-medium text-text-primary">Your answer:</span> {{ answer.selected_answer }}</p>
-              <p v-else><span class="font-medium text-text-primary">Your answer:</span> <span class="text-text-secondary">Not answered</span></p>
+              <p><span class="font-medium text-text-primary">Your Answer:</span> {{ formatAnswer(answer, answer.selected_answer) }}</p>
+              <p><span class="font-medium text-text-primary">Correct Answer:</span> {{ formatAnswer(answer, answer.question?.correct_answer || null) }}</p>
               <p v-if="!answer.is_correct" class="text-text-secondary">Review this question and try the quiz again to reinforce the concept.</p>
             </div>
           </div>
@@ -118,13 +131,31 @@
       </div>
     </div>
   </div>
+
+  <Teleport to="body">
+    <div v-if="warningOpen" class="fixed inset-0 z-[120] flex items-center justify-center bg-black/70 p-4" role="presentation">
+      <section class="w-full max-w-xl rounded-3xl border-2 border-status-warning/80 bg-brand-navbar-cards-alt p-6 shadow-2xl ring-4 ring-status-warning/20 sm:p-8" role="alertdialog" aria-modal="true" aria-labelledby="quiz-warning-title" aria-describedby="quiz-warning-message">
+        <div class="flex flex-col items-center text-center">
+          <div class="mb-4 flex h-18 w-18 items-center justify-center rounded-full bg-status-warning-light text-3xl">⚠️</div>
+          <h2 id="quiz-warning-title" class="text-2xl font-extrabold text-text-primary">Warning</h2>
+          <p id="quiz-warning-message" class="mt-4 text-base leading-7 text-text-primary">
+            You have left the quiz page. Please remain on this page while taking the quiz.
+          </p>
+          <p class="mt-3 text-base leading-7 text-text-secondary">
+            If you leave again, your quiz will be submitted automatically, and your current answers will be saved.
+          </p>
+          <button @click="acknowledgeWarning" class="mt-7 w-full rounded-xl bg-primary px-5 py-3 text-base font-semibold text-white shadow-lg transition hover:bg-primary/90">I Understand</button>
+        </div>
+      </section>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useStudentStore } from '@/stores/student';
-import type { Quiz, Question, QuizAttempt } from '@/types';
+import type { Quiz, QuizAnswer, QuizAttempt } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
@@ -138,9 +169,23 @@ const currentQuestionIndex = ref(0);
 const answers = ref<Record<number, string>>({});
 const attempt = ref<QuizAttempt | null>(null);
 const startedAt = ref(new Date().toISOString());
+const isSubmitting = ref(false);
+const submissionError = ref('');
+const warningOpen = ref(false);
+const awayIncidentCount = ref(0);
+const wasAway = ref(false);
 
 onMounted(async () => {
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.addEventListener('blur', handleFocusLoss);
+  window.addEventListener('focus', handleFocusReturn);
   await loadQuiz();
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
+  window.removeEventListener('blur', handleFocusLoss);
+  window.removeEventListener('focus', handleFocusReturn);
 });
 
 async function loadQuiz() {
@@ -159,6 +204,11 @@ function startQuiz() {
   startedAt.value = new Date().toISOString();
   answers.value = {};
   currentQuestionIndex.value = 0;
+  isSubmitting.value = false;
+  submissionError.value = '';
+  warningOpen.value = false;
+  awayIncidentCount.value = 0;
+  wasAway.value = false;
 }
 
 function nextQuestion() {
@@ -174,14 +224,53 @@ function prevQuestion() {
 }
 
 async function submitQuiz() {
-  if (Object.keys(answers.value).length === 0) return;
+  if (isSubmitting.value || quizSubmitted.value || !quiz.value) return;
 
+  isSubmitting.value = true;
+  submissionError.value = '';
   try {
     attempt.value = await studentStore.submitQuiz(quiz.value!.id, answers.value, startedAt.value);
     quizSubmitted.value = true;
+    warningOpen.value = false;
   } catch (err) {
     console.error('Failed to submit quiz:', err);
+    submissionError.value = 'Your quiz could not be submitted. Check your connection and try again.';
+  } finally {
+    isSubmitting.value = false;
   }
+}
+
+function handleFocusLoss() {
+  if (!quizStarted.value || quizSubmitted.value || isSubmitting.value || wasAway.value) return;
+
+  wasAway.value = true;
+  awayIncidentCount.value++;
+  if (awayIncidentCount.value === 1) {
+    warningOpen.value = true;
+    return;
+  }
+
+  void submitQuiz();
+}
+
+function handleVisibilityChange() {
+  if (document.hidden) handleFocusLoss();
+  else handleFocusReturn();
+}
+
+function handleFocusReturn() {
+  wasAway.value = false;
+}
+
+function acknowledgeWarning() {
+  warningOpen.value = false;
+}
+
+function formatAnswer(answer: QuizAnswer, letter: string | null) {
+  if (!letter) return 'Not answered';
+  const question = answer.question;
+  const optionKey = `option_${letter.toLowerCase()}` as 'option_a' | 'option_b' | 'option_c' | 'option_d';
+  return `${letter}. ${question?.[optionKey] || ''}`.trim();
 }
 
 function retakeQuiz() {
@@ -192,3 +281,12 @@ function retakeQuiz() {
   attempt.value = null;
 }
 </script>
+
+<style scoped>
+.quiz-question-content,
+.quiz-question-content * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+</style>

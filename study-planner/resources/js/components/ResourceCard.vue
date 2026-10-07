@@ -12,13 +12,16 @@
       <span v-if="resource.recommendation_reason" class="px-2 py-1 text-xs font-medium rounded-full" :class="reasonClass">
         {{ reasonLabel }}
       </span>
-      <button
-        @click="$emit('view', resource.id)"
+      <a
+        :href="resource.url"
+        target="_blank"
+        rel="noopener noreferrer"
+        @click="$emit('view', resource.id, resource.topics?.[0]?.id)"
         class="btn-primary text-xs py-1 px-3"
         :aria-label="`View ${resource.title}`"
       >
         View
-      </button>
+      </a>
     </div>
   </article>
 </template>
@@ -32,7 +35,7 @@ interface Props {
 }
 
 interface Emits {
-  view: [resourceId: number];
+  view: [resourceId: number, topicId?: number];
 }
 
 const props = defineProps<Props>();

@@ -39,7 +39,7 @@ const router = createRouter({
       component: () => import('@/layouts/AdminLayout.vue'),
       meta: { requiresAuth: true, role: 'admin' },
       children: [
-        { path: '', redirect: '/admin/resources' },
+        { path: '', name: 'admin-dashboard', component: () => import('@/views/admin/DashboardView.vue') },
         { path: 'resources', name: 'admin-resources', component: () => import('@/views/admin/ResourcesView.vue') },
         { path: 'subjects', name: 'admin-subjects', component: () => import('@/views/admin/SubjectsView.vue') },
         { path: 'users', name: 'admin-users', component: () => import('@/views/admin/UsersView.vue') },

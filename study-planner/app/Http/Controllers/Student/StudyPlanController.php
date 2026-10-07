@@ -22,7 +22,7 @@ class StudyPlanController extends Controller
     {
         $query = $request->user()
             ->studySessions()
-            ->with(['subject:id,name,color', 'topic:id,name', 'task:id,title']);
+            ->with(['subject:id,name,color', 'topic:id,name', 'task:id,title,description,task_type,priority,start_date,deadline,estimated_minutes,status,created_at']);
 
         if ($request->filled('from')) {
             $query->where('scheduled_date', '>=', $request->input('from'));
@@ -85,7 +85,7 @@ class StudyPlanController extends Controller
         ])->save();
 
         return response()->json([
-            'data' => $studySession->fresh()->load(['subject:id,name,color', 'topic:id,name', 'task:id,title']),
+            'data' => $studySession->fresh()->load(['subject:id,name,color', 'topic:id,name', 'task:id,title,description,task_type,priority,start_date,deadline,estimated_minutes,status,created_at']),
             'message' => 'Study session status updated successfully.',
         ]);
     }

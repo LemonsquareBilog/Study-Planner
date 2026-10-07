@@ -3,9 +3,11 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
-        "dev": "vite",
-        "mobile:build": "vite build --mode production && npx cap sync android",
+        "build": "npm run build:mobile && npm run build:web",
+        "build:mobile": "vite build",
+        "build:web": "vite build --mode web",
+        "dev": "vite --mode web",
+        "mobile:build": "npm run build:mobile && npx cap sync android",
         "mobile:open": "npx cap open android",
         "mobile:run": "npx cap run android"
     },

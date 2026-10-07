@@ -7,7 +7,7 @@
       </div>
     </div>
 
-    <div class="bg-brand-navbar-cards-alt border border-brand-borders rounded-xl p-4 mb-6">
+    <div class="glass-card p-4 mb-6">
       <div class="flex flex-wrap gap-4">
         <input type="text" v-model="filters.search" @input="debouncedFetch" placeholder="Search users..." class="input-field-glass flex-1 min-w-[200px]" aria-label="Search users" />
         <select v-model="filters.role" @change="fetchUsers" class="input-field-glass w-auto" aria-label="Filter by role">
@@ -25,16 +25,16 @@
     </div>
 
     <div v-if="loading" class="flex justify-center py-12" role="status" aria-label="Loading users">
-      <svg class="animate-spin h-8 w-8 text-status-info" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+      <svg class="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" aria-hidden="true">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
       </svg>
     </div>
 
-    <div v-else class="bg-brand-navbar-cards-alt border border-brand-borders rounded-xl overflow-hidden">
+    <div v-else class="glass-card overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-brand-borders" role="table">
-          <thead class="bg-brand-navbar-cards">
+        <table class="min-w-full divide-y divide-brand-borders/50" role="table">
+          <thead class="bg-white/50">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">User</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Role</th>
@@ -45,8 +45,8 @@
               <th class="px-6 py-3 text-right text-xs font-medium text-text-secondary uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-brand-borders" role="rowgroup">
-            <tr v-for="user in users.data" :key="user.id" class="hover:bg-brand-navbar-cards" role="row">
+          <tbody class="divide-y divide-brand-borders/50" role="rowgroup">
+            <tr v-for="user in users.data" :key="user.id" class="hover:bg-white/30 transition-colors" role="row">
               <td class="px-6 py-4">
                 <div class="text-sm font-bold text-text-primary">{{ user.name }}</div>
                 <div class="text-sm text-text-secondary">{{ user.email }}</div>
@@ -73,7 +73,7 @@
         </table>
       </div>
 
-      <div v-if="users.last_page > 1" class="px-6 py-4 border-t border-brand-borders">
+      <div v-if="users.last_page > 1" class="px-6 py-4 border-t border-brand-borders/50">
         <nav class="flex items-center justify-between" aria-label="Pagination">
           <p class="text-sm text-text-secondary">Showing {{ users.from }} to {{ users.to }} of {{ users.total }} users</p>
           <div class="flex space-x-2">
@@ -90,7 +90,7 @@
     <div v-if="showEditModal" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
       <div class="flex min-h-full items-center justify-center p-4">
         <div class="fixed inset-0 bg-black/50" @click="closeEditModal" aria-hidden="true"></div>
-        <div class="relative bg-brand-navbar-cards-alt border border-brand-borders rounded-xl shadow-xl max-w-md w-full p-6">
+        <div class="relative glass-card shadow-xl max-w-md w-full p-6">
           <div class="flex items-center justify-between mb-4">
             <h2 id="edit-modal-title" class="text-lg font-semibold text-text-primary">Edit User</h2>
             <button @click="closeEditModal" class="text-text-secondary hover:text-text-primary transition-colors" aria-label="Close modal">

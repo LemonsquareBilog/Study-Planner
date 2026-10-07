@@ -85,12 +85,39 @@
   @apply text-primary bg-primary-light;
 }
 
-.nav-link-admin {
-  @apply px-3 py-2 rounded-md text-sm font-medium text-text-secondary hover:text-secondary hover:bg-secondary-light transition-colors focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:ring-offset-2;
+.nav-links-container {
+  @apply gap-2;
 }
 
-.nav-link-admin.router-link-exact-active {
-  @apply text-secondary bg-secondary-light;
+.panel-desktop-nav {
+  display: none;
+}
+
+.panel-menu-toggle {
+  display: inline-flex;
+}
+
+.panel-mobile-nav {
+  display: block;
+}
+
+.panel-desktop-action {
+  display: none;
+}
+
+@media (min-width: 1280px) {
+  .panel-desktop-nav {
+    display: flex;
+  }
+
+  .panel-menu-toggle,
+  .panel-mobile-nav {
+    display: none;
+  }
+
+  .panel-desktop-action {
+    display: inline-flex;
+  }
 }
 
 .progress-bar {

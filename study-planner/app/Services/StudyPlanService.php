@@ -40,7 +40,7 @@ class StudyPlanService
         $tasks = $user->tasks()
             ->whereIn('status', ['pending', 'in_progress'])
             ->whereBetween('deadline', [$from->copy()->startOfDay(), $to->copy()->endOfDay()])
-            ->orderByRaw("FIELD(priority, 'urgent','high','medium','low')")
+            ->orderByRaw("CASE priority WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 ELSE 4 END")
             ->orderBy('deadline')
             ->get();
 
@@ -66,17 +66,24 @@ class StudyPlanService
                 }
 
                 $date = $from->copy()->startOfDay();
+                $availableFrom = max(
+                    $date->timestamp,
+                    Carbon::today()->timestamp,
+                    $task->start_date?->copy()->startOfDay()->timestamp ?? 0,
+                    $task->created_at->copy()->startOfDay()->timestamp,
+                );
+                $date = Carbon::createFromTimestamp($availableFrom, $date->timezone)->startOfDay();
                 while ($remaining > 0 && $date->lte($to) && $date->lt($task->deadline)) {
                     $daily = $preferences->max_daily_minutes;
                     $alreadyScheduled = $user->studySessions()
                         ->whereDate('scheduled_date', $date)
-                        ->whereIn('status', ['scheduled', 'in_progress'])
+                        ->whereIn('status', ['scheduled', 'in_progress', 'completed'])
                         ->sum('duration_minutes');
 
                     $available = max(0, $daily - $alreadyScheduled);
                     if ($available > 0) {
                         $duration = min($remaining, $available, $preferences->session_duration_minutes);
-                        $start = $this->findNextSlot($user, $date, $preferences);
+                        $start = $this->findNextSlot($user, $date, $preferences, $duration);
                         if ($start) {
                             $end = $start->copy()->addMinutes($duration);
                             $session = $user->studySessions()->create([
@@ -112,7 +119,7 @@ class StudyPlanService
         ];
     }
 
-    private function findNextSlot(User $user, Carbon $date, StudyPreference $preferences): ?Carbon
+    private function findNextSlot(User $user, Carbon $date, StudyPreference $preferences, int $duration): ?Carbon
     {
         $start = $date->copy()->setTimeFromTimeString($preferences->preferred_start_time ?: '18:00');
         $endLimit = $date->copy()->setTimeFromTimeString($preferences->preferred_end_time ?: '22:00');
@@ -124,7 +131,7 @@ class StudyPlanService
 
         $sessions = $user->studySessions()
             ->whereDate('scheduled_date', $date)
-            ->whereIn('status', ['scheduled', 'in_progress'])
+            ->whereIn('status', ['scheduled', 'in_progress', 'completed'])
             ->orderBy('start_time')
             ->get();
 
@@ -132,7 +139,7 @@ class StudyPlanService
         foreach ($sessions as $session) {
             $sessionStart = $date->copy()->setTimeFromTimeString($session->start_time);
             $sessionEnd = $date->copy()->setTimeFromTimeString($session->end_time);
-            if ($cursor->lt($sessionStart) && $cursor->copy()->addMinutes($preferences->session_duration_minutes)->lte($sessionStart)) {
+            if ($cursor->lt($sessionStart) && $cursor->copy()->addMinutes($duration)->lte($sessionStart)) {
                 return $cursor;
             }
             if ($cursor->lt($sessionEnd)) {
@@ -140,6 +147,6 @@ class StudyPlanService
             }
         }
 
-        return $cursor->copy()->addMinutes($preferences->session_duration_minutes)->lte($endLimit) ? $cursor : null;
+        return $cursor->copy()->addMinutes($duration)->lte($endLimit) ? $cursor : null;
     }
 }

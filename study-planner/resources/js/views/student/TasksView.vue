@@ -5,7 +5,7 @@
         <h1 class="text-2xl font-bold text-text-primary">Tasks</h1>
         <p class="mt-1 text-sm text-text-secondary">Manage your assignments, exams, and projects.</p>
       </div>
-      <button @click="showCreateModal = true" class="btn-primary" aria-label="Create new task">
+      <button @click="openCreateModal" class="btn-primary" aria-label="Create new task">
         <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
@@ -81,7 +81,7 @@
               </td>
             </tr>
             <tr v-if="tasks.data.length === 0">
-              <td colspan="6" class="px-6 py-12 text-center text-text-secondary">No tasks found. <button @click="showCreateModal = true" class="text-secondary hover:underline transition-colors">Create one</button>.</td>
+              <td colspan="6" class="px-6 py-12 text-center text-text-secondary">No tasks found. <button @click="openCreateModal" class="text-secondary hover:underline transition-colors">Create one</button>.</td>
             </tr>
           </tbody>
         </table>
@@ -164,15 +164,20 @@
             </div>
             <div class="grid grid-cols-2 gap-4">
               <div>
+                <label for="start_date" class="input-label">Start Date</label>
+                <input id="start_date" v-model="form.start_date" type="date" class="input-field-glass" />
+                <p v-if="errors.start_date" class="input-error-message">{{ errors.start_date }}</p>
+              </div>
+              <div>
                 <label for="deadline" class="input-label">Deadline <span class="text-status-urgent">*</span></label>
                 <input id="deadline" v-model="form.deadline" type="datetime-local" required class="input-field-glass" />
                 <p v-if="errors.deadline" class="input-error-message">{{ errors.deadline }}</p>
               </div>
-              <div>
-                <label for="estimated_minutes" class="input-label">Estimated Minutes <span class="text-status-urgent">*</span></label>
-                <input id="estimated_minutes" v-model.number="form.estimated_minutes" type="number" min="1" required class="input-field-glass" />
-                <p v-if="errors.estimated_minutes" class="input-error-message">{{ errors.estimated_minutes }}</p>
-              </div>
+            </div>
+            <div>
+              <label for="estimated_minutes" class="input-label">Estimated Minutes <span class="text-status-urgent">*</span></label>
+              <input id="estimated_minutes" v-model.number="form.estimated_minutes" type="number" min="1" required class="input-field-glass" />
+              <p v-if="errors.estimated_minutes" class="input-error-message">{{ errors.estimated_minutes }}</p>
             </div>
 
             <div class="flex justify-end space-x-3 pt-4">
@@ -230,16 +235,21 @@ const errors = ref<Record<string, string>>({});
 const filters = ref({ status: '', priority: '', subject_id: '' });
 const currentTopics = ref([]);
 
-const form = ref({
-  title: '',
-  description: '',
-  subject_id: '',
-  topic_id: '',
-  task_type: 'assignment',
-  priority: 'medium',
-  deadline: '',
-  estimated_minutes: 60,
-});
+function createEmptyTaskForm() {
+  return {
+    title: '',
+    description: '',
+    subject_id: '',
+    topic_id: '',
+    start_date: '',
+    task_type: 'assignment',
+    priority: 'medium',
+    deadline: new Date(Date.now() + 86400000).toISOString().slice(0, 16),
+    estimated_minutes: 60,
+  };
+}
+
+const form = ref(createEmptyTaskForm());
 
 onMounted(async () => {
   await studentStore.fetchSubjects();
@@ -320,7 +330,7 @@ function formatDate(dateString: string) {
 
 function openCreateModal() {
   editingTask.value = null;
-  form.value = { title: '', description: '', subject_id: '', topic_id: '', task_type: 'assignment', priority: 'medium', deadline: new Date(Date.now() + 86400000).toISOString().slice(0, 16), estimated_minutes: 60 };
+  form.value = createEmptyTaskForm();
   errors.value = {};
   currentTopics.value = [];
   showCreateModal.value = true;
@@ -328,7 +338,7 @@ function openCreateModal() {
 
 function editTask(task: Task) {
   editingTask.value = task;
-  form.value = { title: task.title, description: task.description || '', subject_id: task.subject_id.toString(), topic_id: task.topic_id?.toString() || '', task_type: task.task_type, priority: task.priority, deadline: new Date(task.deadline).toISOString().slice(0, 16), estimated_minutes: task.estimated_minutes };
+  form.value = { title: task.title, description: task.description || '', subject_id: task.subject_id.toString(), topic_id: task.topic_id?.toString() || '', start_date: task.start_date ? new Date(task.start_date).toISOString().slice(0, 10) : '', task_type: task.task_type, priority: task.priority, deadline: new Date(task.deadline).toISOString().slice(0, 16), estimated_minutes: task.estimated_minutes };
   errors.value = {};
   if (task.subject_id) {
     studentStore.fetchTopics(task.subject_id).then(topics => {
@@ -341,6 +351,8 @@ function editTask(task: Task) {
 function closeModal() {
   showCreateModal.value = false;
   editingTask.value = null;
+  form.value = createEmptyTaskForm();
+  currentTopics.value = [];
   errors.value = {};
 }
 

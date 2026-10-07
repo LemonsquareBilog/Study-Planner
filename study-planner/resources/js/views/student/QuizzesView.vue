@@ -7,11 +7,68 @@
       </div>
     </div>
 
+    <div class="flex gap-2 border-b border-brand-borders" role="tablist" aria-label="Quiz views">
+      <button role="tab" :aria-selected="activeTab === 'available'" @click="selectTab('available')" :class="tabClass('available')">Available Quizzes</button>
+      <button role="tab" :aria-selected="activeTab === 'history'" @click="selectTab('history')" :class="tabClass('history')">Completed Quizzes <span class="ml-1 text-xs">({{ quizAttempts.length }})</span></button>
+    </div>
+
     <div v-if="loading" class="flex justify-center py-12" role="status" aria-label="Loading quizzes">
       <svg class="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" aria-hidden="true">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
       </svg>
+    </div>
+
+    <div v-else-if="activeTab === 'history' && selectedAttempt" class="space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-semibold text-text-primary">{{ selectedAttempt.quiz?.title }}</h2>
+          <p class="text-sm text-text-secondary">{{ selectedAttempt.quiz?.topic?.subject?.name }} · {{ selectedAttempt.quiz?.topic?.name }} · {{ formatDate(selectedAttempt.completed_at) }}</p>
+        </div>
+        <button @click="selectedAttempt = null" class="btn-secondary">Back to history</button>
+      </div>
+
+      <section class="glass-card p-5" aria-label="Score breakdown">
+        <p class="text-2xl font-bold text-text-primary">{{ selectedAttempt.score }} / {{ selectedAttempt.total_questions }} correct</p>
+        <p class="mt-1 text-sm text-text-secondary">{{ selectedAttempt.percentage }}% · {{ selectedAttempt.percentage >= (selectedAttempt.quiz?.passing_score || 70) ? 'Passed' : 'Needs review' }}</p>
+      </section>
+
+      <section v-if="Number(selectedAttempt.percentage) < (selectedAttempt.quiz?.passing_score || 70)" class="bg-primary-light border border-primary/30 rounded-lg p-4">
+        <h3 class="font-semibold text-text-primary">Area to review</h3>
+        <p class="mt-1 text-sm text-text-secondary">{{ selectedAttempt.quiz?.topic?.name }} · {{ selectedAttempt.quiz?.topic?.subject?.name }}</p>
+        <router-link to="/recommendations" class="mt-2 inline-block text-sm font-medium text-secondary hover:text-secondary-hover">View recommended resources</router-link>
+      </section>
+
+      <section class="space-y-4" aria-label="Question review">
+        <article v-for="(answer, index) in selectedAttempt.answers" :key="answer.id" class="rounded-lg border p-4" :class="answer.is_correct ? 'border-status-success/30 bg-status-success-light/30' : 'border-status-urgent/30 bg-status-urgent-light/20'">
+          <div class="flex items-center justify-between gap-3">
+            <h3 class="font-medium text-text-primary">Question {{ index + 1 }}</h3>
+            <span class="text-xs font-semibold" :class="answer.is_correct ? 'text-status-success' : 'text-status-urgent'">{{ answer.is_correct ? 'Correct' : 'Incorrect' }}</span>
+          </div>
+          <p class="mt-2 text-sm text-text-primary">{{ answer.question?.question }}</p>
+          <p class="mt-2 text-sm text-text-secondary"><span class="font-semibold text-text-primary">User's Answer:</span> {{ formatAnswer(answer, answer.selected_answer) }}</p>
+          <p class="text-sm text-text-secondary"><span class="font-semibold text-text-primary">Correct Answer:</span> {{ formatAnswer(answer, answer.question?.correct_answer || null) }}</p>
+        </article>
+      </section>
+    </div>
+
+    <div v-else-if="activeTab === 'history' && quizAttempts.length === 0" class="text-center py-12 bg-brand-navbar-cards-alt border border-brand-borders rounded-xl">
+      <h3 class="text-sm font-medium text-text-primary">No completed quizzes yet</h3>
+      <p class="mt-1 text-sm text-text-secondary">Your submitted quiz results will appear here.</p>
+    </div>
+
+    <div v-else-if="activeTab === 'history'" class="space-y-3">
+      <article v-for="attempt in quizAttempts" :key="attempt.id" class="flex flex-col gap-4 rounded-lg border border-brand-borders bg-brand-navbar-cards-alt p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 class="font-semibold text-text-primary">{{ attempt.quiz?.title }}</h2>
+          <p class="text-sm text-text-secondary">{{ attempt.quiz?.topic?.subject?.name }} · {{ attempt.quiz?.topic?.name }}</p>
+          <p class="text-xs text-text-secondary">Completed {{ formatDate(attempt.completed_at) }}</p>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm font-medium text-text-primary">{{ attempt.score }}/{{ attempt.total_questions }} · {{ attempt.percentage }}%</span>
+          <button @click="reviewAttempt(attempt.id)" :disabled="loadingAttempt" class="btn-secondary text-sm">{{ loadingAttempt ? 'Loading...' : 'Review' }}</button>
+        </div>
+      </article>
     </div>
 
     <div v-else-if="quizzes.length === 0" class="text-center py-12 bg-brand-navbar-cards-alt border border-brand-borders rounded-xl">
@@ -57,22 +114,61 @@
 import { onMounted, ref } from 'vue';
 import { useStudentStore } from '@/stores/student';
 import type { Quiz } from '@/types';
+import type { QuizAnswer, QuizAttempt } from '@/types';
 
 const studentStore = useStudentStore();
 
 const quizzes = ref<Quiz[]>([]);
 const loading = ref(true);
+const loadingAttempt = ref(false);
+const activeTab = ref<'available' | 'history'>('available');
+const selectedAttempt = ref<QuizAttempt | null>(null);
+const quizAttempts = ref<QuizAttempt[]>([]);
 
 onMounted(async () => {
   try {
-    await studentStore.fetchQuizzes();
+    await Promise.all([studentStore.fetchQuizzes(), studentStore.fetchQuizHistory()]);
     quizzes.value = studentStore.quizzes;
+    quizAttempts.value = studentStore.quizAttempts;
   } catch (err) {
     console.error('Failed to load quizzes:', err);
   } finally {
     loading.value = false;
   }
 });
+
+function selectTab(tab: 'available' | 'history') {
+  activeTab.value = tab;
+  selectedAttempt.value = null;
+}
+
+function tabClass(tab: 'available' | 'history') {
+  return [
+    'border-b-2 px-3 py-3 text-sm font-medium transition-colors',
+    activeTab.value === tab ? 'border-primary text-primary' : 'border-transparent text-text-secondary hover:text-text-primary',
+  ];
+}
+
+async function reviewAttempt(id: number) {
+  loadingAttempt.value = true;
+  try {
+    selectedAttempt.value = await studentStore.fetchQuizAttempt(id);
+  } catch (err) {
+    console.error('Failed to load quiz review:', err);
+  } finally {
+    loadingAttempt.value = false;
+  }
+}
+
+function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function formatAnswer(answer: QuizAnswer, letter: string | null) {
+  if (!letter) return 'Not answered';
+  const optionKey = `option_${letter.toLowerCase()}` as 'option_a' | 'option_b' | 'option_c' | 'option_d';
+  return `${letter}. ${answer.question?.[optionKey] || ''}`.trim();
+}
 
 function difficultyClass(difficulty: number | undefined) {
   const classes = ['', 'bg-status-success-light text-status-success', 'bg-status-success-light text-status-success', 'bg-status-warning-light text-status-warning', 'bg-status-warning-light text-status-warning', 'bg-status-urgent-light text-status-urgent'];

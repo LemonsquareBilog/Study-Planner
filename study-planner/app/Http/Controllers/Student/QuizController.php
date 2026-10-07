@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\SubmitQuizRequest;
 use App\Models\Quiz;
+use App\Models\QuizAttempt;
 use App\Services\QuizService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -37,16 +38,15 @@ class QuizController extends Controller
             $request->user(),
             $quiz,
             $request->input('answers'),
-            $request->string('started_at'),
+            $request->input('started_at'),
         );
 
         // Include question options and revealed correct answers post-grading (UX-011)
         $attempt->load([
             'quiz.topic.subject',
-            'answers.question' => function ($q) {
-                $q->makeVisible('correct_answer');
-            },
+            'answers.question',
         ]);
+        $this->revealCorrectAnswers($attempt);
 
         return response()->json([
             'data' => $attempt,
@@ -101,6 +101,41 @@ class QuizController extends Controller
             'data' => $quizzes,
             'message' => 'Available quizzes retrieved successfully.',
         ]);
+    }
+
+    public function history(Request $request): JsonResponse
+    {
+        $attempts = $request->user()->quizAttempts()
+            ->with(['quiz.topic.subject', 'answers.question'])
+            ->latest('completed_at')
+            ->get();
+
+        $attempts->each(fn (QuizAttempt $attempt) => $this->revealCorrectAnswers($attempt));
+
+        return response()->json([
+            'data' => $attempts,
+            'message' => 'Quiz history retrieved successfully.',
+        ]);
+    }
+
+    public function attempt(Request $request, QuizAttempt $attempt): JsonResponse
+    {
+        $ownedAttempt = $request->user()->quizAttempts()
+            ->whereKey($attempt->id)
+            ->with(['quiz.topic.subject', 'answers.question'])
+            ->firstOrFail();
+
+        $this->revealCorrectAnswers($ownedAttempt);
+
+        return response()->json([
+            'data' => $ownedAttempt,
+            'message' => 'Quiz attempt retrieved successfully.',
+        ]);
+    }
+
+    private function revealCorrectAnswers(QuizAttempt $attempt): void
+    {
+        $attempt->answers->each(fn ($answer) => $answer->question?->makeVisible('correct_answer'));
     }
 
     private function ensureStudentOwnsQuiz(Request $request, Quiz $quiz): void

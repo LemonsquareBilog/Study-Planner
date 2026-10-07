@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { api } from '@/services/api';
-import type { Resource, User, Subject, Topic, SystemSetting, PaginatedResponse } from '@/types';
+import type { Resource, User, Subject, Topic, SystemSetting, PaginatedResponse, AdminDashboardData } from '@/types';
 
 export const useAdminStore = defineStore('admin', () => {
   const resources = ref<Resource[]>([]);
@@ -182,6 +182,18 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
 
+  async function getAdminDashboard() {
+    loading.value = true;
+    try {
+      return await api.getAdminDashboard();
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Failed to load admin dashboard';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
   return {
     resources,
     subjects,
@@ -206,5 +218,6 @@ export const useAdminStore = defineStore('admin', () => {
     updateUser,
     fetchSystemSettings,
     updateSystemSetting,
+    getAdminDashboard,
   };
 });

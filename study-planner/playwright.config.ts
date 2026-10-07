@@ -6,11 +6,17 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: 'http://localhost:5174/build',
+    baseURL: 'http://localhost:5174',
     trace: 'on-first-retry',
     actionTimeout: 15000,
+  },
+  webServer: {
+    command: 'npx vite preview --outDir www --port 5174',
+    url: 'http://localhost:5174',
+    reuseExistingServer: true,
+    timeout: 30000,
   },
   projects: [
     {

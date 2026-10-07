@@ -70,7 +70,7 @@
     ]
   },
   "resources/js/app.ts": {
-    "file": "assets/app-BEkAMHF-.js",
+    "file": "assets/app-DiiWmMlx.js",
     "name": "app",
     "src": "resources/js/app.ts",
     "isEntry": true,
@@ -303,7 +303,7 @@
     ]
   },
   "resources/js/views/student/StudyPlanView.vue": {
-    "file": "assets/StudyPlanView-CIx25JEP.js",
+    "file": "assets/StudyPlanView-Bz8tNc2R.js",
     "name": "StudyPlanView",
     "src": "resources/js/views/student/StudyPlanView.vue",
     "isDynamicEntry": true,

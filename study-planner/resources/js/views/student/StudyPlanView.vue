@@ -465,7 +465,7 @@ const selectedTaskTimer = computed(() => getActiveSelectedTaskTimer());
 const activeTaskCountdownMs = computed(() => {
   const state = selectedTaskTimer.value;
   if (!state) return 0;
-  return getTimerRemainingMs(state);
+  return getTimerRemainingMs(state, timerTick.value);
 });
 
 const timerModeLabel = computed(() => {
@@ -483,10 +483,10 @@ const timerStatusMessage = computed(() => {
   return state.mode === 'break' ? 'Break ready' : 'Study session ready';
 });
 
-function getTimerRemainingMs(state: TimerState): number {
+function getTimerRemainingMs(state: TimerState, now = Date.now()): number {
   if (!state) return 0;
   if (state.status === 'running' && state.startedAt) {
-    return Math.max(0, state.totalMs - (Date.now() - state.startedAt));
+    return Math.max(0, state.totalMs - (now - state.startedAt));
   }
   if (state.status === 'completed') {
     return 0;

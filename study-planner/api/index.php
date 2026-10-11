@@ -31,4 +31,9 @@ require __DIR__.'/../vendor/autoload.php';
 $app = require __DIR__.'/../bootstrap/app.php';
 $app->useStoragePath($runtimeStorage);
 $app->addAbsoluteCachePathPrefix($runtimeStorage);
+
+// The function lives in /api; Laravel routes still use the full request path.
+$_SERVER['SCRIPT_NAME'] = '/index.php';
+$_SERVER['PHP_SELF'] = '/index.php';
+
 $app->handleRequest(Request::capture());

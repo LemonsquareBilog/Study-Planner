@@ -1,15 +1,27 @@
 <template>
-  <article class="bg-brand-navbar-cards-alt border border-brand-borders rounded-xl p-4 hover:shadow-md transition-shadow" role="region" :aria-label="`${resource.title} - ${resource.resource_type}`">
-    <div class="flex items-start justify-between mb-2">
-      <span class="px-2 py-1 text-xs font-medium rounded-full" :class="typeClass">{{ resource.resource_type }}</span>
-      <span class="px-2 py-1 text-xs font-medium rounded-full" :class="difficultyClass">{{ resource.difficulty }}</span>
+  <article 
+    class="resource-card"
+    role="region" 
+    :aria-label="`${resource.title} - ${resource.resource_type}`"
+  >
+    <div class="resource-header">
+      <span class="badge" :class="typeClass">{{ resource.resource_type }}</span>
+      <span class="badge" :class="difficultyClass">{{ resource.difficulty }}</span>
     </div>
-    <h3 class="font-semibold text-text-primary mb-1 line-clamp-2">{{ resource.title }}</h3>
-    <p v-if="resource.topics?.length" class="text-xs font-medium text-primary mb-1">{{ resource.topics[0].subject?.name || resource.subjects?.[0]?.name || 'Subject' }} · {{ resource.topics[0].name }}</p>
-    <p v-else-if="resource.subjects?.length" class="text-xs font-medium text-primary mb-1">{{ resource.subjects[0].name }}</p>
-    <p class="text-sm text-text-secondary mb-3 line-clamp-2">{{ resource.description || 'No description available' }}</p>
-    <div class="flex items-center justify-between">
-      <span v-if="resource.recommendation_reason" class="px-2 py-1 text-xs font-medium rounded-full" :class="reasonClass">
+    
+    <h3 class="resource-title">{{ resource.title }}</h3>
+    
+    <p v-if="resource.topics?.length" class="resource-meta">
+      {{ resource.topics[0].subject?.name || resource.subjects?.[0]?.name || 'Subject' }} · {{ resource.topics[0].name }}
+    </p>
+    <p v-else-if="resource.subjects?.length" class="resource-meta">
+      {{ resource.subjects[0].name }}
+    </p>
+    
+    <p class="resource-description">{{ resource.description || 'No description available' }}</p>
+    
+    <div class="resource-footer">
+      <span v-if="resource.recommendation_reason" class="badge" :class="reasonClass">
         {{ reasonLabel }}
       </span>
       <a
@@ -17,7 +29,7 @@
         target="_blank"
         rel="noopener noreferrer"
         @click="$emit('view', resource.id, resource.topics?.[0]?.id)"
-        class="btn-primary text-xs py-1 px-3"
+        class="btn-primary"
         :aria-label="`View ${resource.title}`"
       >
         View
@@ -79,3 +91,106 @@ const reasonLabel = computed(() => {
   return labels[props.resource.recommendation_reason || 'related'] || 'Related';
 });
 </script>
+
+<style scoped>
+.resource-card {
+  background: rgba(255, 249, 250, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid #f3d2da;
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.resource-card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.resource-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.resource-title {
+  font-weight: 600;
+  color: #33222a;
+  margin-bottom: 0.25rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.resource-meta {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #b33f62;
+  margin-bottom: 0.25rem;
+}
+
+.resource-description {
+  font-size: 0.875rem;
+  color: #7a5c66;
+  margin-bottom: 0.75rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+}
+
+.resource-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(243, 210, 218, 0.5);
+}
+
+.badge {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  color: white;
+  background-color: #b33f62;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #96334f;
+}
+
+/* Mobile card layout adjustments */
+@media (max-width: 768px) {
+  .resource-card {
+    padding: 1rem;
+  }
+  
+  .resource-title {
+    font-size: 1rem;
+  }
+  
+  .resource-description {
+    -webkit-line-clamp: 3;
+  }
+}
+</style>

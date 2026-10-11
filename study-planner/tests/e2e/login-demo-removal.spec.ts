@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Login Page - Demo Access Removal Audit', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/login', { waitUntil: 'networkidle', timeout: 30000 });
+    page.on('console', msg => console.log(`Console ${msg.type()}: ${msg.text()}`));
+    page.on('pageerror', error => console.log(`Page error: ${error.message}`));
+    await page.goto('/login', { waitUntil: 'domcontentloaded', timeout: 30000 });
   });
 
   test('should NOT show the Interactive Demo Access section', async ({ page }) => {

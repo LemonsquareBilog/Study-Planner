@@ -1,8 +1,9 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { Capacitor } from '@capacitor/core';
+import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: Capacitor.isNativePlatform() ? createWebHashHistory() : createWebHistory(),
   routes: [
     {
       path: '/login',

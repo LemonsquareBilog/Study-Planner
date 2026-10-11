@@ -1,0 +1,361 @@
+{
+  "_ResourceCard-DTHwsMvU.js": {
+    "file": "assets/ResourceCard-DTHwsMvU.js",
+    "name": "ResourceCard",
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "resources/js/app.ts"
+    ],
+    "css": [
+      "assets/ResourceCard-Dv07cgCL.css"
+    ]
+  },
+  "_ResourceCard-Dv07cgCL.css": {
+    "file": "assets/ResourceCard-Dv07cgCL.css",
+    "src": "_ResourceCard-Dv07cgCL.css"
+  },
+  "_StatCard-BzuDhRqh.js": {
+    "file": "assets/StatCard-BzuDhRqh.js",
+    "name": "StatCard",
+    "imports": [
+      "_api-Cqh-ttir.js"
+    ]
+  },
+  "_admin-DhfhF4FQ.js": {
+    "file": "assets/admin-DhfhF4FQ.js",
+    "name": "admin",
+    "imports": [
+      "_api-Cqh-ttir.js"
+    ]
+  },
+  "_api-Cqh-ttir.js": {
+    "file": "assets/api-Cqh-ttir.js",
+    "name": "api",
+    "imports": [
+      "_dist-Btb5Jv1E.js",
+      "_preload-helper-uBIymjUX.js"
+    ],
+    "dynamicImports": [
+      "resources/js/app.ts"
+    ]
+  },
+  "_dist-Btb5Jv1E.js": {
+    "file": "assets/dist-Btb5Jv1E.js",
+    "name": "dist"
+  },
+  "_preload-helper-uBIymjUX.js": {
+    "file": "assets/preload-helper-uBIymjUX.js",
+    "name": "preload-helper"
+  },
+  "_student-duyHmR28.js": {
+    "file": "assets/student-duyHmR28.js",
+    "name": "student",
+    "imports": [
+      "_api-Cqh-ttir.js"
+    ]
+  },
+  "node_modules/@capacitor/app/dist/esm/web.js": {
+    "file": "assets/web-BP-1yMvb.js",
+    "name": "web",
+    "src": "node_modules/@capacitor/app/dist/esm/web.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_dist-Btb5Jv1E.js"
+    ]
+  },
+  "node_modules/@capacitor/local-notifications/dist/esm/index.js": {
+    "file": "assets/esm-BMhARMMh.js",
+    "name": "esm",
+    "src": "node_modules/@capacitor/local-notifications/dist/esm/index.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/views/student/StudyPlanView.vue"
+    ]
+  },
+  "node_modules/@capacitor/local-notifications/dist/esm/web.js": {
+    "file": "assets/web-rDPZiXB4.js",
+    "name": "web",
+    "src": "node_modules/@capacitor/local-notifications/dist/esm/web.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_dist-Btb5Jv1E.js"
+    ]
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-DV30HqnM.css",
+    "name": "app",
+    "names": [
+      "app.css"
+    ],
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/app.ts": {
+    "file": "assets/app-D_2fux1v.js",
+    "name": "app",
+    "src": "resources/js/app.ts",
+    "isEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "_dist-Btb5Jv1E.js",
+      "_preload-helper-uBIymjUX.js"
+    ],
+    "dynamicImports": [
+      "resources/js/views/auth/LoginView.vue",
+      "resources/js/views/auth/RegisterView.vue",
+      "resources/js/layouts/StudentLayout.vue",
+      "resources/js/views/student/DashboardView.vue",
+      "resources/js/views/student/SubjectsView.vue",
+      "resources/js/views/student/SubjectDetailView.vue",
+      "resources/js/views/student/TasksView.vue",
+      "resources/js/views/student/StudyPlanView.vue",
+      "resources/js/views/student/QuizzesView.vue",
+      "resources/js/views/student/QuizDetailView.vue",
+      "resources/js/views/student/RecommendationsView.vue",
+      "resources/js/views/student/ProgressView.vue",
+      "resources/js/views/student/NotificationsView.vue",
+      "resources/js/layouts/AdminLayout.vue",
+      "resources/js/views/admin/DashboardView.vue",
+      "resources/js/views/admin/ResourcesView.vue",
+      "resources/js/views/admin/SubjectsView.vue",
+      "resources/js/views/admin/UsersView.vue",
+      "resources/js/views/admin/SettingsView.vue"
+    ],
+    "css": [
+      "assets/app-vSZ8ofsn.css",
+      "assets/app-DV30HqnM.css"
+    ]
+  },
+  "resources/js/layouts/AdminLayout.vue": {
+    "file": "assets/AdminLayout-fRYV4mo2.js",
+    "name": "AdminLayout",
+    "src": "resources/js/layouts/AdminLayout.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "resources/js/app.ts"
+    ]
+  },
+  "resources/js/layouts/StudentLayout.vue": {
+    "file": "assets/StudentLayout-D8ioLuIh.js",
+    "name": "StudentLayout",
+    "src": "resources/js/layouts/StudentLayout.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "resources/js/app.ts",
+      "_student-duyHmR28.js"
+    ],
+    "css": [
+      "assets/StudentLayout-CVfkwbCm.css"
+    ]
+  },
+  "resources/js/views/admin/DashboardView.vue": {
+    "file": "assets/DashboardView-MN_x2HJK.js",
+    "name": "DashboardView",
+    "src": "resources/js/views/admin/DashboardView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "resources/js/app.ts",
+      "_admin-DhfhF4FQ.js"
+    ],
+    "css": [
+      "assets/DashboardView-BGlosDdP.css"
+    ]
+  },
+  "resources/js/views/admin/ResourcesView.vue": {
+    "file": "assets/ResourcesView-BQOKgTQp.js",
+    "name": "ResourcesView",
+    "src": "resources/js/views/admin/ResourcesView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "resources/js/app.ts",
+      "_admin-DhfhF4FQ.js",
+      "_ResourceCard-DTHwsMvU.js"
+    ]
+  },
+  "resources/js/views/admin/SettingsView.vue": {
+    "file": "assets/SettingsView-BVmbC2i5.js",
+    "name": "SettingsView",
+    "src": "resources/js/views/admin/SettingsView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "_admin-DhfhF4FQ.js"
+    ]
+  },
+  "resources/js/views/admin/SubjectsView.vue": {
+    "file": "assets/SubjectsView-CPMb7P95.js",
+    "name": "SubjectsView",
+    "src": "resources/js/views/admin/SubjectsView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "resources/js/app.ts",
+      "_admin-DhfhF4FQ.js"
+    ]
+  },
+  "resources/js/views/admin/UsersView.vue": {
+    "file": "assets/UsersView-CEQV6PvR.js",
+    "name": "UsersView",
+    "src": "resources/js/views/admin/UsersView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "resources/js/app.ts",
+      "_admin-DhfhF4FQ.js"
+    ],
+    "css": [
+      "assets/UsersView-CXY5QtuS.css"
+    ]
+  },
+  "resources/js/views/auth/LoginView.vue": {
+    "file": "assets/LoginView-CEBdRUze.js",
+    "name": "LoginView",
+    "src": "resources/js/views/auth/LoginView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "resources/js/app.ts"
+    ],
+    "css": [
+      "assets/LoginView-x1XGuNl0.css"
+    ]
+  },
+  "resources/js/views/auth/RegisterView.vue": {
+    "file": "assets/RegisterView--OzFdpgG.js",
+    "name": "RegisterView",
+    "src": "resources/js/views/auth/RegisterView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "resources/js/app.ts"
+    ],
+    "css": [
+      "assets/RegisterView-DmWVwQ2K.css"
+    ]
+  },
+  "resources/js/views/student/DashboardView.vue": {
+    "file": "assets/DashboardView-BBSiMyyb.js",
+    "name": "DashboardView",
+    "src": "resources/js/views/student/DashboardView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "resources/js/app.ts",
+      "_student-duyHmR28.js",
+      "_ResourceCard-DTHwsMvU.js",
+      "_StatCard-BzuDhRqh.js"
+    ]
+  },
+  "resources/js/views/student/NotificationsView.vue": {
+    "file": "assets/NotificationsView-N9SVHu4u.js",
+    "name": "NotificationsView",
+    "src": "resources/js/views/student/NotificationsView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "resources/js/app.ts",
+      "_student-duyHmR28.js"
+    ]
+  },
+  "resources/js/views/student/ProgressView.vue": {
+    "file": "assets/ProgressView-hplWzkGU.js",
+    "name": "ProgressView",
+    "src": "resources/js/views/student/ProgressView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "_student-duyHmR28.js",
+      "_StatCard-BzuDhRqh.js"
+    ]
+  },
+  "resources/js/views/student/QuizDetailView.vue": {
+    "file": "assets/QuizDetailView-C3hmvJYe.js",
+    "name": "QuizDetailView",
+    "src": "resources/js/views/student/QuizDetailView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "resources/js/app.ts",
+      "_student-duyHmR28.js"
+    ],
+    "css": [
+      "assets/QuizDetailView-DVjrm2S1.css"
+    ]
+  },
+  "resources/js/views/student/QuizzesView.vue": {
+    "file": "assets/QuizzesView-Dlc0dwX1.js",
+    "name": "QuizzesView",
+    "src": "resources/js/views/student/QuizzesView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "_student-duyHmR28.js"
+    ]
+  },
+  "resources/js/views/student/RecommendationsView.vue": {
+    "file": "assets/RecommendationsView-CitBNFx7.js",
+    "name": "RecommendationsView",
+    "src": "resources/js/views/student/RecommendationsView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "_student-duyHmR28.js",
+      "_ResourceCard-DTHwsMvU.js"
+    ]
+  },
+  "resources/js/views/student/StudyPlanView.vue": {
+    "file": "assets/StudyPlanView-BV_GdBA8.js",
+    "name": "StudyPlanView",
+    "src": "resources/js/views/student/StudyPlanView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "_dist-Btb5Jv1E.js",
+      "_preload-helper-uBIymjUX.js",
+      "resources/js/app.ts",
+      "_student-duyHmR28.js"
+    ],
+    "dynamicImports": [
+      "node_modules/@capacitor/local-notifications/dist/esm/web.js",
+      "node_modules/@capacitor/app/dist/esm/web.js",
+      "node_modules/@capacitor/local-notifications/dist/esm/index.js"
+    ]
+  },
+  "resources/js/views/student/SubjectDetailView.vue": {
+    "file": "assets/SubjectDetailView-DjWjYa85.js",
+    "name": "SubjectDetailView",
+    "src": "resources/js/views/student/SubjectDetailView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "resources/js/app.ts",
+      "_student-duyHmR28.js"
+    ]
+  },
+  "resources/js/views/student/SubjectsView.vue": {
+    "file": "assets/SubjectsView-BCMQ9U2h.js",
+    "name": "SubjectsView",
+    "src": "resources/js/views/student/SubjectsView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "resources/js/app.ts",
+      "_student-duyHmR28.js"
+    ]
+  },
+  "resources/js/views/student/TasksView.vue": {
+    "file": "assets/TasksView-j_vnf3e1.js",
+    "name": "TasksView",
+    "src": "resources/js/views/student/TasksView.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "_api-Cqh-ttir.js",
+      "resources/js/app.ts",
+      "_student-duyHmR28.js"
+    ]
+  }
+}

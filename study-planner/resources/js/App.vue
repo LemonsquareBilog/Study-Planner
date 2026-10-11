@@ -1,7 +1,10 @@
 <template>
   <router-view v-slot="{ Component }">
     <transition name="fade" mode="out-in">
-      <component :is="Component" />
+      <component v-if="Component" :is="Component" />
+      <div v-else class="min-h-screen flex items-center justify-center bg-brand-background text-text-primary" role="status">
+        Loading Study Planner…
+      </div>
     </transition>
   </router-view>
 </template>

@@ -4,7 +4,15 @@
     <div class="absolute -top-20 -right-20 w-72 h-72 bg-white/30 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
     <div class="absolute -bottom-20 -left-20 w-96 h-96 bg-brand-borders/40 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
     
-    <header class="glass-header sticky top-0 z-40 relative">
+    <!-- Mobile navigation drawer overlay -->
+    <div
+      v-if="mobileMenuOpen"
+      class="fixed inset-0 z-40 bg-black/50 lg:hidden"
+      @click="mobileMenuOpen = false"
+      aria-hidden="true"
+    ></div>
+    
+    <header class="glass-header sticky top-0 z-50 relative">
       <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
         <div class="flex justify-between h-16">
           <div class="flex items-center">
@@ -33,27 +41,79 @@
 
             <div class="flex items-center space-x-3">
               <span class="hidden sm:block text-sm font-medium text-text-secondary">{{ authStore.user?.name }}</span>
-              <router-link v-if="authStore.isAdmin" to="/admin" class="btn-secondary text-sm text-secondary" aria-label="Return to admin panel">
+              <router-link v-if="authStore.isAdmin" to="/admin" class="btn-secondary text-sm text-secondary hidden sm:inline-flex" aria-label="Return to admin panel">
                 Admin Panel
               </router-link>
-              <button @click="mobileMenuOpen = !mobileMenuOpen" class="panel-menu-toggle btn-secondary px-3" :aria-expanded="mobileMenuOpen" aria-label="Toggle navigation menu">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+              <button
+                @click="mobileMenuOpen = !mobileMenuOpen"
+                class="lg:hidden btn-secondary p-2 rounded-lg"
+                :aria-expanded="mobileMenuOpen"
+                aria-label="Toggle navigation menu"
+                aria-controls="mobile-menu"
+              >
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path v-if="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                  <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
-              <button @click="logout" class="btn-secondary text-sm" aria-label="Log out">
+              <button @click="logout" class="btn-secondary text-sm hidden sm:inline-flex" aria-label="Log out">
                 Log Out
               </button>
             </div>
           </div>
         </div>
-        <nav v-if="mobileMenuOpen" class="panel-mobile-nav border-t border-brand-borders py-3 space-y-1" aria-label="Mobile student navigation">
-          <router-link v-if="authStore.isAdmin" to="/admin" class="nav-link block font-semibold text-secondary" @click="mobileMenuOpen = false">Admin Panel</router-link>
-          <router-link v-for="item in studentNav" :key="item.to" :to="item.to" class="nav-link block" @click="mobileMenuOpen = false">{{ item.label }}</router-link>
-        </nav>
       </nav>
     </header>
+        
+        <!-- Mobile Navigation Drawer -->
+        <nav
+          id="mobile-menu"
+          v-if="mobileMenuOpen"
+          class="lg:hidden fixed inset-y-0 right-0 z-50 w-64 glass-header shadow-xl transform transition-transform duration-300 ease-in-out"
+          aria-label="Mobile navigation"
+        >
+          <div class="flex flex-col h-full">
+            <div class="p-4 border-b border-brand-borders/50">
+              <h3 class="text-lg font-semibold text-text-primary">Navigation</h3>
+            </div>
+            <nav class="flex-1 py-4 space-y-1 px-3 overflow-y-auto" aria-label="Mobile student navigation">
+              <router-link
+                v-if="authStore.isAdmin"
+                to="/admin"
+                class="nav-link block font-semibold text-secondary px-3 py-3"
+                @click="mobileMenuOpen = false"
+              >
+                Admin Panel
+              </router-link>
+              <router-link
+                v-for="item in studentNav"
+                :key="item.to"
+                :to="item.to"
+                class="nav-link block px-3 py-3"
+                @click="mobileMenuOpen = false"
+              >
+                {{ item.label }}
+              </router-link>
+            </nav>
+            <div class="p-4 border-t border-brand-borders/50 space-y-2">
+              <router-link v-if="authStore.isAdmin" to="/admin" class="btn-secondary w-full justify-center" @click="mobileMenuOpen = false">
+                Admin Panel
+              </router-link>
+              <button @click="mobileMenuOpen = false; logout()" class="btn-secondary w-full justify-center text-status-urgent">
+                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Log Out
+              </button>
+            </div>
+</div>
+        </nav>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative" role="main">
-      <div class="glass-card p-6">
+    <!-- Mobile Bottom Navigation -->
+    <MobileBottomNav />
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative pb-24 lg:pb-8" role="main">
+      <div class="glass-card p-4 sm:p-6">
         <router-view />
       </div>
     </main>
@@ -65,10 +125,12 @@ import { computed, ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useStudentStore } from '@/stores/student';
 import { useRouter } from 'vue-router';
+import MobileBottomNav from '@/components/MobileBottomNav.vue';
 
 const authStore = useAuthStore();
 const studentStore = useStudentStore();
 const router = useRouter();
+
 const mobileMenuOpen = ref(false);
 const studentNav = [
   { to: '/dashboard', label: 'Dashboard' },

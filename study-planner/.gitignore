@@ -3,6 +3,11 @@
 .env
 .env.backup
 .env.production
+.env.mobile
+.env.docker
+.env.vercel
+/.vercel/
+/storage/framework/testing/
 .phpactor.json
 .phpunit.result.cache
 /.codex

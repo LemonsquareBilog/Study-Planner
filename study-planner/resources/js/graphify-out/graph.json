@@ -1,0 +1,4229 @@
+{
+  "nodes": [
+    {
+      "id": "app_js",
+      "label": "app.js",
+      "file_type": "code",
+      "source_file": "app.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "app_ts",
+      "label": "app.ts",
+      "file_type": "code",
+      "source_file": "app.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "js_app_app",
+      "label": "app",
+      "file_type": "code",
+      "source_file": "app.ts",
+      "source_location": "L7"
+    },
+    {
+      "id": "js_app_authstore",
+      "label": "authStore",
+      "file_type": "code",
+      "source_file": "app.ts",
+      "source_location": "L11"
+    },
+    {
+      "id": "app_vue",
+      "label": "App.vue",
+      "file_type": "code",
+      "source_file": "App.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "components_mobilebottomnav_vue",
+      "label": "MobileBottomNav.vue",
+      "file_type": "code",
+      "source_file": "components\\MobileBottomNav.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "components_resourcecard_vue",
+      "label": "ResourceCard.vue",
+      "file_type": "code",
+      "source_file": "components\\ResourceCard.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "components_resourcecard_typeclass",
+      "label": "typeClass",
+      "file_type": "code",
+      "source_file": "components\\ResourceCard.vue",
+      "source_location": "L56"
+    },
+    {
+      "id": "components_resourcecard_difficultyclass",
+      "label": "difficultyClass",
+      "file_type": "code",
+      "source_file": "components\\ResourceCard.vue",
+      "source_location": "L67"
+    },
+    {
+      "id": "components_resourcecard_reasonclass",
+      "label": "reasonClass",
+      "file_type": "code",
+      "source_file": "components\\ResourceCard.vue",
+      "source_location": "L76"
+    },
+    {
+      "id": "components_resourcecard_reasonlabel",
+      "label": "reasonLabel",
+      "file_type": "code",
+      "source_file": "components\\ResourceCard.vue",
+      "source_location": "L85"
+    },
+    {
+      "id": "components_settinginput_vue",
+      "label": "SettingInput.vue",
+      "file_type": "code",
+      "source_file": "components\\SettingInput.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "components_statcard_vue",
+      "label": "StatCard.vue",
+      "file_type": "code",
+      "source_file": "components\\StatCard.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "components_usercard_vue",
+      "label": "UserCard.vue",
+      "file_type": "code",
+      "source_file": "components\\UserCard.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "components_ui_metriccard_vue",
+      "label": "MetricCard.vue",
+      "file_type": "code",
+      "source_file": "components\\ui\\MetricCard.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "components_ui_selectinput_vue",
+      "label": "SelectInput.vue",
+      "file_type": "code",
+      "source_file": "components\\ui\\SelectInput.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "ui_selectinput_errorid",
+      "label": "errorId",
+      "file_type": "code",
+      "source_file": "components\\ui\\SelectInput.vue",
+      "source_location": "L62"
+    },
+    {
+      "id": "ui_selectinput_hintid",
+      "label": "hintId",
+      "file_type": "code",
+      "source_file": "components\\ui\\SelectInput.vue",
+      "source_location": "L63"
+    },
+    {
+      "id": "ui_selectinput_onchange",
+      "label": "onChange()",
+      "file_type": "code",
+      "source_file": "components\\ui\\SelectInput.vue",
+      "source_location": "L65"
+    },
+    {
+      "id": "layouts_adminlayout_vue",
+      "label": "AdminLayout.vue",
+      "file_type": "code",
+      "source_file": "layouts\\AdminLayout.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "layouts_studentlayout_vue",
+      "label": "StudentLayout.vue",
+      "file_type": "code",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "layouts_studentlayout_authstore",
+      "label": "authStore",
+      "file_type": "code",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L130"
+    },
+    {
+      "id": "layouts_studentlayout_studentstore",
+      "label": "studentStore",
+      "file_type": "code",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L131"
+    },
+    {
+      "id": "layouts_studentlayout_router",
+      "label": "router",
+      "file_type": "code",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L132"
+    },
+    {
+      "id": "layouts_studentlayout_mobilemenuopen",
+      "label": "mobileMenuOpen",
+      "file_type": "code",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L134"
+    },
+    {
+      "id": "layouts_studentlayout_studentnav",
+      "label": "studentNav",
+      "file_type": "code",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L135"
+    },
+    {
+      "id": "layouts_studentlayout_unreadcount",
+      "label": "unreadCount",
+      "file_type": "code",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L146"
+    },
+    {
+      "id": "layouts_studentlayout_logout",
+      "label": "logout()",
+      "file_type": "code",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L148"
+    },
+    {
+      "id": "router_index_ts",
+      "label": "index.ts",
+      "file_type": "code",
+      "source_file": "router\\index.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "router_index_router",
+      "label": "router",
+      "file_type": "code",
+      "source_file": "router\\index.ts",
+      "source_location": "L4"
+    },
+    {
+      "id": "router_index_authstore",
+      "label": "authStore",
+      "file_type": "code",
+      "source_file": "router\\index.ts",
+      "source_location": "L57"
+    },
+    {
+      "id": "services_api_ts",
+      "label": "api.ts",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "services_api_islocalplatform",
+      "label": "isLocalPlatform()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L29"
+    },
+    {
+      "id": "services_api_apiservice",
+      "label": "ApiService",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L39"
+    },
+    {
+      "id": "services_api_apiservice_constructor",
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L43"
+    },
+    {
+      "id": "services_api_apiservice_islocal",
+      "label": ".isLocal()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L84"
+    },
+    {
+      "id": "services_api_apiservice_settoken",
+      "label": ".setToken()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L88"
+    },
+    {
+      "id": "services_api_apiservice_cleartoken",
+      "label": ".clearToken()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L94"
+    },
+    {
+      "id": "services_api_apiservice_loadtoken",
+      "label": ".loadToken()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L100"
+    },
+    {
+      "id": "services_api_apiservice_login",
+      "label": ".login()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L105"
+    },
+    {
+      "id": "services_api_apiservice_register",
+      "label": ".register()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L128"
+    },
+    {
+      "id": "services_api_apiservice_logout",
+      "label": ".logout()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L149"
+    },
+    {
+      "id": "services_api_apiservice_me",
+      "label": ".me()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L162"
+    },
+    {
+      "id": "services_api_apiservice_updateprofile",
+      "label": ".updateProfile()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L179"
+    },
+    {
+      "id": "services_api_apiservice_updatepassword",
+      "label": ".updatePassword()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L188"
+    },
+    {
+      "id": "services_api_apiservice_getdashboard",
+      "label": ".getDashboard()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L197"
+    },
+    {
+      "id": "services_api_apiservice_getsubjects",
+      "label": ".getSubjects()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L206"
+    },
+    {
+      "id": "services_api_apiservice_getsubject",
+      "label": ".getSubject()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L215"
+    },
+    {
+      "id": "services_api_apiservice_createsubject",
+      "label": ".createSubject()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L224"
+    },
+    {
+      "id": "services_api_apiservice_updatesubject",
+      "label": ".updateSubject()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L233"
+    },
+    {
+      "id": "services_api_apiservice_deletesubject",
+      "label": ".deleteSubject()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L242"
+    },
+    {
+      "id": "services_api_apiservice_gettopics",
+      "label": ".getTopics()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L250"
+    },
+    {
+      "id": "services_api_apiservice_gettopic",
+      "label": ".getTopic()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L259"
+    },
+    {
+      "id": "services_api_apiservice_createtopic",
+      "label": ".createTopic()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L268"
+    },
+    {
+      "id": "services_api_apiservice_updatetopic",
+      "label": ".updateTopic()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L277"
+    },
+    {
+      "id": "services_api_apiservice_deletetopic",
+      "label": ".deleteTopic()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L286"
+    },
+    {
+      "id": "services_api_apiservice_gettasks",
+      "label": ".getTasks()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L294"
+    },
+    {
+      "id": "services_api_apiservice_createtask",
+      "label": ".createTask()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L302"
+    },
+    {
+      "id": "services_api_apiservice_updatetask",
+      "label": ".updateTask()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L311"
+    },
+    {
+      "id": "services_api_apiservice_deletetask",
+      "label": ".deleteTask()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L320"
+    },
+    {
+      "id": "services_api_apiservice_completetask",
+      "label": ".completeTask()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L328"
+    },
+    {
+      "id": "services_api_apiservice_updatetaskstatus",
+      "label": ".updateTaskStatus()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L337"
+    },
+    {
+      "id": "services_api_apiservice_getstudysessions",
+      "label": ".getStudySessions()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L346"
+    },
+    {
+      "id": "services_api_apiservice_generatestudyplan",
+      "label": ".generateStudyPlan()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L355"
+    },
+    {
+      "id": "services_api_apiservice_updatestudysessionstatus",
+      "label": ".updateStudySessionStatus()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L364"
+    },
+    {
+      "id": "services_api_apiservice_getquizzes",
+      "label": ".getQuizzes()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L373"
+    },
+    {
+      "id": "services_api_apiservice_getquiz",
+      "label": ".getQuiz()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L382"
+    },
+    {
+      "id": "services_api_apiservice_submitquiz",
+      "label": ".submitQuiz()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L391"
+    },
+    {
+      "id": "services_api_apiservice_getquizhistory",
+      "label": ".getQuizHistory()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L400"
+    },
+    {
+      "id": "services_api_apiservice_getquizattempt",
+      "label": ".getQuizAttempt()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L409"
+    },
+    {
+      "id": "services_api_apiservice_getrecommendations",
+      "label": ".getRecommendations()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L418"
+    },
+    {
+      "id": "services_api_apiservice_recordview",
+      "label": ".recordView()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L427"
+    },
+    {
+      "id": "services_api_apiservice_getstudypreference",
+      "label": ".getStudyPreference()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L436"
+    },
+    {
+      "id": "services_api_apiservice_upsertstudypreference",
+      "label": ".upsertStudyPreference()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L445"
+    },
+    {
+      "id": "services_api_apiservice_getprogress",
+      "label": ".getProgress()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L454"
+    },
+    {
+      "id": "services_api_apiservice_getnotifications",
+      "label": ".getNotifications()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L463"
+    },
+    {
+      "id": "services_api_apiservice_getnotificationcount",
+      "label": ".getNotificationCount()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L471"
+    },
+    {
+      "id": "services_api_apiservice_marknotificationread",
+      "label": ".markNotificationRead()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L480"
+    },
+    {
+      "id": "services_api_apiservice_markallnotificationsread",
+      "label": ".markAllNotificationsRead()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L489"
+    },
+    {
+      "id": "services_api_apiservice_getadminresources",
+      "label": ".getAdminResources()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L498"
+    },
+    {
+      "id": "services_api_apiservice_getadminresourceoptions",
+      "label": ".getAdminResourceOptions()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L506"
+    },
+    {
+      "id": "services_api_apiservice_getadminsubjects",
+      "label": ".getAdminSubjects()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L515"
+    },
+    {
+      "id": "services_api_apiservice_getadminsubjectoptions",
+      "label": ".getAdminSubjectOptions()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L524"
+    },
+    {
+      "id": "services_api_apiservice_createadminsubject",
+      "label": ".createAdminSubject()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L533"
+    },
+    {
+      "id": "services_api_apiservice_updateadminsubject",
+      "label": ".updateAdminSubject()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L542"
+    },
+    {
+      "id": "services_api_apiservice_deleteadminsubject",
+      "label": ".deleteAdminSubject()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L551"
+    },
+    {
+      "id": "services_api_apiservice_createadmintopic",
+      "label": ".createAdminTopic()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L559"
+    },
+    {
+      "id": "services_api_apiservice_updateadmintopic",
+      "label": ".updateAdminTopic()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L568"
+    },
+    {
+      "id": "services_api_apiservice_deleteadmintopic",
+      "label": ".deleteAdminTopic()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L577"
+    },
+    {
+      "id": "services_api_apiservice_createresource",
+      "label": ".createResource()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L585"
+    },
+    {
+      "id": "services_api_apiservice_updateresource",
+      "label": ".updateResource()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L594"
+    },
+    {
+      "id": "services_api_apiservice_deleteresource",
+      "label": ".deleteResource()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L603"
+    },
+    {
+      "id": "services_api_apiservice_getadminusers",
+      "label": ".getAdminUsers()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L611"
+    },
+    {
+      "id": "services_api_apiservice_updateadminuser",
+      "label": ".updateAdminUser()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L619"
+    },
+    {
+      "id": "services_api_apiservice_getsystemsettings",
+      "label": ".getSystemSettings()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L628"
+    },
+    {
+      "id": "services_api_apiservice_updatesystemsetting",
+      "label": ".updateSystemSetting()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L637"
+    },
+    {
+      "id": "services_api_apiservice_getadmindashboard",
+      "label": ".getAdminDashboard()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L646"
+    },
+    {
+      "id": "services_api_apiservice_getadminuser",
+      "label": ".getAdminUser()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L655"
+    },
+    {
+      "id": "services_api_apiservice_getsetupstatus",
+      "label": ".getSetupStatus()",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L664"
+    },
+    {
+      "id": "services_api_api",
+      "label": "api",
+      "file_type": "code",
+      "source_file": "services\\api.ts",
+      "source_location": "L674"
+    },
+    {
+      "id": "services_localapi_ts",
+      "label": "localApi.ts",
+      "file_type": "code",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "services_localapi_storage_keys",
+      "label": "STORAGE_KEYS",
+      "file_type": "code",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L7"
+    },
+    {
+      "id": "services_localapi_demo_accounts",
+      "label": "DEMO_ACCOUNTS",
+      "file_type": "code",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L29"
+    },
+    {
+      "id": "services_localapi_getnextid",
+      "label": "getNextId()",
+      "file_type": "code",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L112"
+    },
+    {
+      "id": "services_localapi_getstored",
+      "label": "getStored()",
+      "file_type": "code",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L118"
+    },
+    {
+      "id": "services_localapi_setstored",
+      "label": "setStored()",
+      "file_type": "code",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L127"
+    },
+    {
+      "id": "services_localapi_delay",
+      "label": "delay()",
+      "file_type": "code",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L135"
+    },
+    {
+      "id": "services_localapi_dateonly",
+      "label": "dateOnly()",
+      "file_type": "code",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L139"
+    },
+    {
+      "id": "services_localapi_datekey",
+      "label": "dateKey()",
+      "file_type": "code",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L144"
+    },
+    {
+      "id": "services_localapi_timetominutes",
+      "label": "timeToMinutes()",
+      "file_type": "code",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L148"
+    },
+    {
+      "id": "services_localapi_minutestotime",
+      "label": "minutesToTime()",
+      "file_type": "code",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L153"
+    },
+    {
+      "id": "services_localapi_findlocalstudyslot",
+      "label": "findLocalStudySlot()",
+      "file_type": "code",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L159"
+    },
+    {
+      "id": "services_localapi_getlocaltopicperformance",
+      "label": "getLocalTopicPerformance()",
+      "file_type": "code",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L175"
+    },
+    {
+      "id": "services_localapi_successresponse",
+      "label": "successResponse()",
+      "file_type": "code",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L210"
+    },
+    {
+      "id": "services_localapi_paginatedresponse",
+      "label": "paginatedResponse()",
+      "file_type": "code",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L214"
+    },
+    {
+      "id": "services_localapi_ensuredemodataseeded",
+      "label": "ensureDemoDataSeeded()",
+      "file_type": "code",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L232"
+    },
+    {
+      "id": "services_localapi_localapi",
+      "label": "localApi",
+      "file_type": "code",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L827"
+    },
+    {
+      "id": "services_notificationservice_ts",
+      "label": "notificationService.ts",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "services_notificationservice_notificationoptions",
+      "label": "NotificationOptions",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "services_notificationservice_notificationservice",
+      "label": "NotificationService",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L17"
+    },
+    {
+      "id": "services_notificationservice_notificationservice_initialize",
+      "label": ".initialize()",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L22"
+    },
+    {
+      "id": "services_notificationservice_notificationservice_handlenotificationaction",
+      "label": ".handleNotificationAction()",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L94"
+    },
+    {
+      "id": "services_notificationservice_notificationservice_scheduletaskreminder",
+      "label": ".scheduleTaskReminder()",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L121"
+    },
+    {
+      "id": "services_notificationservice_notificationservice_canceltaskreminders",
+      "label": ".cancelTaskReminders()",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L150"
+    },
+    {
+      "id": "services_notificationservice_notificationservice_schedulestudysessionreminder",
+      "label": ".scheduleStudySessionReminder()",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L160"
+    },
+    {
+      "id": "services_notificationservice_notificationservice_scheduletimercompletionnotification",
+      "label": ".scheduleTimerCompletionNotification()",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L181"
+    },
+    {
+      "id": "services_notificationservice_notificationservice_scheduleongoingtimernotification",
+      "label": ".scheduleOngoingTimerNotification()",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L202"
+    },
+    {
+      "id": "services_notificationservice_notificationservice_cancelongoingtimernotification",
+      "label": ".cancelOngoingTimerNotification()",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L220"
+    },
+    {
+      "id": "services_notificationservice_notificationservice_showtaskcompletionnotification",
+      "label": ".showTaskCompletionNotification()",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L226"
+    },
+    {
+      "id": "services_notificationservice_notificationservice_showstudystreaknotification",
+      "label": ".showStudyStreakNotification()",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L238"
+    },
+    {
+      "id": "services_notificationservice_notificationservice_schedulenotification",
+      "label": ".scheduleNotification()",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L249"
+    },
+    {
+      "id": "services_notificationservice_notificationservice_snoozetaskreminder",
+      "label": ".snoozeTaskReminder()",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L273"
+    },
+    {
+      "id": "services_notificationservice_notificationservice_cancelallnotifications",
+      "label": ".cancelAllNotifications()",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L289"
+    },
+    {
+      "id": "services_notificationservice_notificationservice_getpendingnotifications",
+      "label": ".getPendingNotifications()",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L294"
+    },
+    {
+      "id": "services_notificationservice_notificationservice_gettaskbyid",
+      "label": ".getTaskById()",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L300"
+    },
+    {
+      "id": "services_notificationservice_notificationservice_requestpermissions",
+      "label": ".requestPermissions()",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L305"
+    },
+    {
+      "id": "services_notificationservice_notificationservice_ispermissiongranted",
+      "label": ".isPermissionGranted()",
+      "file_type": "code",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L315"
+    },
+    {
+      "id": "services_studytimerservice_ts",
+      "label": "studyTimerService.ts",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "services_studytimerservice_timermode",
+      "label": "TimerMode",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L7"
+    },
+    {
+      "id": "services_studytimerservice_timerstatus",
+      "label": "TimerStatus",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L8"
+    },
+    {
+      "id": "services_studytimerservice_timerstate",
+      "label": "TimerState",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L11"
+    },
+    {
+      "id": "services_studytimerservice_timertickevent",
+      "label": "TimerTickEvent",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L26"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice",
+      "label": "StudyTimerService",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L35"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_states",
+      "label": ".states()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L43"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_getstate",
+      "label": ".getState()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L48"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_getstatefortask",
+      "label": ".getStateForTask()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L53"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_activetimers",
+      "label": ".activeTimers()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L59"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_initialize",
+      "label": ".initialize()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L66"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_getorcreatetimerstate",
+      "label": ".getOrCreateTimerState()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L87"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_starttimer",
+      "label": ".startTimer()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L124"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_pausetimer",
+      "label": ".pauseTimer()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L140"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_resumetimer",
+      "label": ".resumeTimer()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L154"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_completetimer",
+      "label": ".completeTimer()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L170"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_startbreak",
+      "label": ".startBreak()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L184"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_switchmode",
+      "label": ".switchMode()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L200"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_getremainingms",
+      "label": ".getRemainingMs()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L220"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_formatcountdown",
+      "label": ".formatCountdown()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L232"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_subscribe",
+      "label": ".subscribe()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L240"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_notifylisteners",
+      "label": ".notifyListeners()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L246"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_persiststate",
+      "label": ".persistState()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L266"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_loadpersistedstate",
+      "label": ".loadPersistedState()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L275"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_starttimerinterval",
+      "label": ".startTimerInterval()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L296"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_dispatchtimercompleteevent",
+      "label": ".dispatchTimerCompleteEvent()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L317"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_handlevisibilitychange",
+      "label": ".handleVisibilityChange()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L333"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_registerappstatelisteners",
+      "label": ".registerAppStateListeners()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L357"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_schedulecompletionnotification",
+      "label": ".scheduleCompletionNotification()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L392"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_removetimer",
+      "label": ".removeTimer()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L420"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_clearall",
+      "label": ".clearAll()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L426"
+    },
+    {
+      "id": "services_studytimerservice_studytimerservice_destroy",
+      "label": ".destroy()",
+      "file_type": "code",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L432"
+    },
+    {
+      "id": "stores_admin_ts",
+      "label": "admin.ts",
+      "file_type": "code",
+      "source_file": "stores\\admin.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "stores_admin_useadminstore",
+      "label": "useAdminStore",
+      "file_type": "code",
+      "source_file": "stores\\admin.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "stores_auth_ts",
+      "label": "auth.ts",
+      "file_type": "code",
+      "source_file": "stores\\auth.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "stores_auth_useauthstore",
+      "label": "useAuthStore",
+      "file_type": "code",
+      "source_file": "stores\\auth.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "stores_student_ts",
+      "label": "student.ts",
+      "file_type": "code",
+      "source_file": "stores\\student.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "stores_student_usestudentstore",
+      "label": "useStudentStore",
+      "file_type": "code",
+      "source_file": "stores\\student.ts",
+      "source_location": "L6"
+    },
+    {
+      "id": "types_index_ts",
+      "label": "index.ts",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "types_index_user",
+      "label": "User",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "types_index_studypreference",
+      "label": "StudyPreference",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L13"
+    },
+    {
+      "id": "types_index_subject",
+      "label": "Subject",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L23"
+    },
+    {
+      "id": "types_index_topic",
+      "label": "Topic",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L37"
+    },
+    {
+      "id": "types_index_task",
+      "label": "Task",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L50"
+    },
+    {
+      "id": "types_index_studysession",
+      "label": "StudySession",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L69"
+    },
+    {
+      "id": "types_index_quiz",
+      "label": "Quiz",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L87"
+    },
+    {
+      "id": "types_index_question",
+      "label": "Question",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L99"
+    },
+    {
+      "id": "types_index_quizattempt",
+      "label": "QuizAttempt",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L111"
+    },
+    {
+      "id": "types_index_quizanswer",
+      "label": "QuizAnswer",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L124"
+    },
+    {
+      "id": "types_index_setupstatus",
+      "label": "SetupStatus",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L133"
+    },
+    {
+      "id": "types_index_admindashboarddata",
+      "label": "AdminDashboardData",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L142"
+    },
+    {
+      "id": "types_index_resource",
+      "label": "Resource",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L156"
+    },
+    {
+      "id": "types_index_notification",
+      "label": "Notification",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L169"
+    },
+    {
+      "id": "types_index_systemsetting",
+      "label": "SystemSetting",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L182"
+    },
+    {
+      "id": "types_index_progresssummary",
+      "label": "ProgressSummary",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L191"
+    },
+    {
+      "id": "types_index_topicperformance",
+      "label": "TopicPerformance",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L209"
+    },
+    {
+      "id": "types_index_apiresponse",
+      "label": "ApiResponse",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L220"
+    },
+    {
+      "id": "types_index_paginatedresponse",
+      "label": "PaginatedResponse",
+      "file_type": "code",
+      "source_file": "types\\index.ts",
+      "source_location": "L225"
+    },
+    {
+      "id": "views_admin_dashboardview_vue",
+      "label": "DashboardView.vue",
+      "file_type": "code",
+      "source_file": "views\\admin\\DashboardView.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "views_admin_resourcesview_vue",
+      "label": "ResourcesView.vue",
+      "file_type": "code",
+      "source_file": "views\\admin\\ResourcesView.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "views_admin_settingsview_vue",
+      "label": "SettingsView.vue",
+      "file_type": "code",
+      "source_file": "views\\admin\\SettingsView.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "admin_settingsview_adminstore",
+      "label": "adminStore",
+      "file_type": "code",
+      "source_file": "views\\admin\\SettingsView.vue",
+      "source_location": "L39"
+    },
+    {
+      "id": "admin_settingsview_loading",
+      "label": "loading",
+      "file_type": "code",
+      "source_file": "views\\admin\\SettingsView.vue",
+      "source_location": "L42"
+    },
+    {
+      "id": "admin_settingsview_fetchsettings",
+      "label": "fetchSettings()",
+      "file_type": "code",
+      "source_file": "views\\admin\\SettingsView.vue",
+      "source_location": "L49"
+    },
+    {
+      "id": "admin_settingsview_updatesetting",
+      "label": "updateSetting()",
+      "file_type": "code",
+      "source_file": "views\\admin\\SettingsView.vue",
+      "source_location": "L60"
+    },
+    {
+      "id": "admin_settingsview_formatkey",
+      "label": "formatKey()",
+      "file_type": "code",
+      "source_file": "views\\admin\\SettingsView.vue",
+      "source_location": "L73"
+    },
+    {
+      "id": "views_admin_subjectsview_vue",
+      "label": "SubjectsView.vue",
+      "file_type": "code",
+      "source_file": "views\\admin\\SubjectsView.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "views_admin_usersview_vue",
+      "label": "UsersView.vue",
+      "file_type": "code",
+      "source_file": "views\\admin\\UsersView.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "views_auth_loginview_vue",
+      "label": "LoginView.vue",
+      "file_type": "code",
+      "source_file": "views\\auth\\LoginView.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "auth_loginview_if",
+      "label": "if()",
+      "file_type": "code",
+      "source_file": "views\\auth\\LoginView.vue",
+      "source_location": "L134"
+    },
+    {
+      "id": "views_auth_registerview_vue",
+      "label": "RegisterView.vue",
+      "file_type": "code",
+      "source_file": "views\\auth\\RegisterView.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "auth_registerview_authstore",
+      "label": "authStore",
+      "file_type": "code",
+      "source_file": "views\\auth\\RegisterView.vue",
+      "source_location": "L113"
+    },
+    {
+      "id": "auth_registerview_router",
+      "label": "router",
+      "file_type": "code",
+      "source_file": "views\\auth\\RegisterView.vue",
+      "source_location": "L114"
+    },
+    {
+      "id": "auth_registerview_form",
+      "label": "form",
+      "file_type": "code",
+      "source_file": "views\\auth\\RegisterView.vue",
+      "source_location": "L116"
+    },
+    {
+      "id": "auth_registerview_loading",
+      "label": "loading",
+      "file_type": "code",
+      "source_file": "views\\auth\\RegisterView.vue",
+      "source_location": "L119"
+    },
+    {
+      "id": "auth_registerview_handlesubmit",
+      "label": "handleSubmit()",
+      "file_type": "code",
+      "source_file": "views\\auth\\RegisterView.vue",
+      "source_location": "L121"
+    },
+    {
+      "id": "views_student_dashboardview_vue",
+      "label": "DashboardView.vue",
+      "file_type": "code",
+      "source_file": "views\\student\\DashboardView.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "views_student_notificationsview_vue",
+      "label": "NotificationsView.vue",
+      "file_type": "code",
+      "source_file": "views\\student\\NotificationsView.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "views_student_progressview_vue",
+      "label": "ProgressView.vue",
+      "file_type": "code",
+      "source_file": "views\\student\\ProgressView.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "views_student_quizdetailview_vue",
+      "label": "QuizDetailView.vue",
+      "file_type": "code",
+      "source_file": "views\\student\\QuizDetailView.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "views_student_quizzesview_vue",
+      "label": "QuizzesView.vue",
+      "file_type": "code",
+      "source_file": "views\\student\\QuizzesView.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "student_quizzesview_classes",
+      "label": "classes",
+      "file_type": "code",
+      "source_file": "views\\student\\QuizzesView.vue",
+      "source_location": "L174"
+    },
+    {
+      "id": "views_student_recommendationsview_vue",
+      "label": "RecommendationsView.vue",
+      "file_type": "code",
+      "source_file": "views\\student\\RecommendationsView.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "student_recommendationsview_norecommendationheading",
+      "label": "noRecommendationHeading",
+      "file_type": "code",
+      "source_file": "views\\student\\RecommendationsView.vue",
+      "source_location": "L86"
+    },
+    {
+      "id": "student_recommendationsview_norecommendationmessage",
+      "label": "noRecommendationMessage",
+      "file_type": "code",
+      "source_file": "views\\student\\RecommendationsView.vue",
+      "source_location": "L91"
+    },
+    {
+      "id": "student_recommendationsview_fetchrecommendations",
+      "label": "fetchRecommendations()",
+      "file_type": "code",
+      "source_file": "views\\student\\RecommendationsView.vue",
+      "source_location": "L104"
+    },
+    {
+      "id": "student_recommendationsview_recordview",
+      "label": "recordView()",
+      "file_type": "code",
+      "source_file": "views\\student\\RecommendationsView.vue",
+      "source_location": "L116"
+    },
+    {
+      "id": "views_student_studyplanview_vue",
+      "label": "StudyPlanView.vue",
+      "file_type": "code",
+      "source_file": "views\\student\\StudyPlanView.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "student_studyplanview_index",
+      "label": "index",
+      "file_type": "code",
+      "source_file": "views\\student\\StudyPlanView.vue",
+      "source_location": "L472"
+    },
+    {
+      "id": "views_student_subjectdetailview_vue",
+      "label": "SubjectDetailView.vue",
+      "file_type": "code",
+      "source_file": "views\\student\\SubjectDetailView.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "student_subjectdetailview_formatdate",
+      "label": "formatDate()",
+      "file_type": "code",
+      "source_file": "views\\student\\SubjectDetailView.vue",
+      "source_location": "L96"
+    },
+    {
+      "id": "views_student_subjectsview_vue",
+      "label": "SubjectsView.vue",
+      "file_type": "code",
+      "source_file": "views\\student\\SubjectsView.vue",
+      "source_location": "L1"
+    },
+    {
+      "id": "student_subjectsview_if",
+      "label": "if()",
+      "file_type": "code",
+      "source_file": "views\\student\\SubjectsView.vue",
+      "source_location": "L251"
+    },
+    {
+      "id": "views_student_tasksview_vue",
+      "label": "TasksView.vue",
+      "file_type": "code",
+      "source_file": "views\\student\\TasksView.vue",
+      "source_location": "L1"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "links": [
+    {
+      "source": "app_ts",
+      "target": "vue",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "app_ts",
+      "target": "pinia",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "app_ts",
+      "target": "router",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "app_ts",
+      "target": "app_vue",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "app_ts",
+      "target": "c_users_acer_onedrive_documents_project_study_planner_resources_css_app_css",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "app.ts",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "app_ts",
+      "target": "js_app_app",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app.ts",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "app_ts",
+      "target": "js_app_authstore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "app.ts",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "components_resourcecard_vue",
+      "target": "types",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "components\\ResourceCard.vue",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "components_resourcecard_vue",
+      "target": "components_resourcecard_typeclass",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "components\\ResourceCard.vue",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "components_resourcecard_vue",
+      "target": "components_resourcecard_difficultyclass",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "components\\ResourceCard.vue",
+      "source_location": "L67",
+      "weight": 1.0
+    },
+    {
+      "source": "components_resourcecard_vue",
+      "target": "components_resourcecard_reasonclass",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "components\\ResourceCard.vue",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "components_resourcecard_vue",
+      "target": "components_resourcecard_reasonlabel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "components\\ResourceCard.vue",
+      "source_location": "L85",
+      "weight": 1.0
+    },
+    {
+      "source": "components_ui_selectinput_vue",
+      "target": "ui_selectinput_errorid",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "components\\ui\\SelectInput.vue",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "components_ui_selectinput_vue",
+      "target": "ui_selectinput_hintid",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "components\\ui\\SelectInput.vue",
+      "source_location": "L63",
+      "weight": 1.0
+    },
+    {
+      "source": "components_ui_selectinput_vue",
+      "target": "ui_selectinput_onchange",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "components\\ui\\SelectInput.vue",
+      "source_location": "L65",
+      "weight": 1.0
+    },
+    {
+      "source": "layouts_studentlayout_vue",
+      "target": "auth",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L125",
+      "weight": 1.0
+    },
+    {
+      "source": "layouts_studentlayout_vue",
+      "target": "student",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L126",
+      "weight": 1.0
+    },
+    {
+      "source": "layouts_studentlayout_vue",
+      "target": "vue_router",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L127",
+      "weight": 1.0
+    },
+    {
+      "source": "layouts_studentlayout_vue",
+      "target": "mobilebottomnav_vue",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L128",
+      "weight": 1.0
+    },
+    {
+      "source": "layouts_studentlayout_vue",
+      "target": "layouts_studentlayout_authstore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L130",
+      "weight": 1.0
+    },
+    {
+      "source": "layouts_studentlayout_vue",
+      "target": "layouts_studentlayout_studentstore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L131",
+      "weight": 1.0
+    },
+    {
+      "source": "layouts_studentlayout_vue",
+      "target": "layouts_studentlayout_router",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L132",
+      "weight": 1.0
+    },
+    {
+      "source": "layouts_studentlayout_vue",
+      "target": "layouts_studentlayout_mobilemenuopen",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L134",
+      "weight": 1.0
+    },
+    {
+      "source": "layouts_studentlayout_vue",
+      "target": "layouts_studentlayout_studentnav",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L135",
+      "weight": 1.0
+    },
+    {
+      "source": "layouts_studentlayout_vue",
+      "target": "layouts_studentlayout_unreadcount",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L146",
+      "weight": 1.0
+    },
+    {
+      "source": "layouts_studentlayout_vue",
+      "target": "layouts_studentlayout_logout",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "layouts\\StudentLayout.vue",
+      "source_location": "L148",
+      "weight": 1.0
+    },
+    {
+      "source": "router_index_ts",
+      "target": "vue_router",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "router\\index.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "router_index_ts",
+      "target": "auth",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "router\\index.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "router_index_ts",
+      "target": "router_index_router",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "router\\index.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "router_index_ts",
+      "target": "router_index_authstore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "router\\index.ts",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_ts",
+      "target": "core",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_ts",
+      "target": "axios",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_ts",
+      "target": "services_localapi_ts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_ts",
+      "target": "services_localapi_localapi",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_ts",
+      "target": "types",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_ts",
+      "target": "services_api_islocalplatform",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_ts",
+      "target": "services_api_apiservice",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_constructor",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_islocal",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L84",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_settoken",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L88",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_cleartoken",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L94",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_loadtoken",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L100",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_login",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L105",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_register",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L128",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_logout",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L149",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_me",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L162",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_updateprofile",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L179",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_updatepassword",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L188",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getdashboard",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L197",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getsubjects",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L206",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getsubject",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L215",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_createsubject",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L224",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_updatesubject",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L233",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_deletesubject",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L242",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_gettopics",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L250",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_gettopic",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L259",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_createtopic",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L268",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_updatetopic",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L277",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_deletetopic",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L286",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_gettasks",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L294",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_createtask",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L302",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_updatetask",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L311",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_deletetask",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L320",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_completetask",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L328",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_updatetaskstatus",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L337",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getstudysessions",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L346",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_generatestudyplan",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L355",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_updatestudysessionstatus",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L364",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getquizzes",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L373",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getquiz",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L382",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_submitquiz",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L391",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getquizhistory",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L400",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getquizattempt",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L409",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getrecommendations",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L418",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_recordview",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L427",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getstudypreference",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L436",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_upsertstudypreference",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L445",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getprogress",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L454",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getnotifications",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L463",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getnotificationcount",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L471",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_marknotificationread",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L480",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_markallnotificationsread",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L489",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getadminresources",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L498",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getadminresourceoptions",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L506",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getadminsubjects",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L515",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getadminsubjectoptions",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L524",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_createadminsubject",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L533",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_updateadminsubject",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L542",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_deleteadminsubject",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L551",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_createadmintopic",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L559",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_updateadmintopic",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L568",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_deleteadmintopic",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L577",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_createresource",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L585",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_updateresource",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L594",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_deleteresource",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L603",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getadminusers",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L611",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_updateadminuser",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L619",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getsystemsettings",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L628",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_updatesystemsetting",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L637",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getadmindashboard",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L646",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getadminuser",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L655",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice",
+      "target": "services_api_apiservice_getsetupstatus",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L664",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_ts",
+      "target": "services_api_api",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L674",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice_islocal",
+      "target": "services_api_islocalplatform",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L85",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice_login",
+      "target": "services_api_apiservice_settoken",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L113",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice_register",
+      "target": "services_api_apiservice_settoken",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L136",
+      "weight": 1.0
+    },
+    {
+      "source": "services_api_apiservice_logout",
+      "target": "services_api_apiservice_cleartoken",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\api.ts",
+      "source_location": "L158",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ts",
+      "target": "types",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ts",
+      "target": "services_localapi_storage_keys",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ts",
+      "target": "services_localapi_demo_accounts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ts",
+      "target": "services_localapi_getnextid",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L112",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ts",
+      "target": "services_localapi_getstored",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L118",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ts",
+      "target": "services_localapi_setstored",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L127",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ts",
+      "target": "services_localapi_delay",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L135",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ts",
+      "target": "services_localapi_dateonly",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L139",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ts",
+      "target": "services_localapi_datekey",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L144",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ts",
+      "target": "services_localapi_timetominutes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L148",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ts",
+      "target": "services_localapi_minutestotime",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L153",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ts",
+      "target": "services_localapi_findlocalstudyslot",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L159",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ts",
+      "target": "services_localapi_getlocaltopicperformance",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L175",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ts",
+      "target": "services_localapi_successresponse",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L210",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ts",
+      "target": "services_localapi_paginatedresponse",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L214",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ts",
+      "target": "services_localapi_ensuredemodataseeded",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L232",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ts",
+      "target": "services_localapi_localapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L827",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_findlocalstudyslot",
+      "target": "services_localapi_timetominutes",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L160",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_getlocaltopicperformance",
+      "target": "services_localapi_getstored",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L176",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ensuredemodataseeded",
+      "target": "services_localapi_setstored",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L244",
+      "weight": 1.0
+    },
+    {
+      "source": "services_localapi_ensuredemodataseeded",
+      "target": "services_localapi_getnextid",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\localApi.ts",
+      "source_location": "L734",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_ts",
+      "target": "local_notifications",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_ts",
+      "target": "local_notifications",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_ts",
+      "target": "core",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_ts",
+      "target": "types",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_ts",
+      "target": "services_notificationservice_notificationoptions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_ts",
+      "target": "services_notificationservice_notificationservice",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice",
+      "target": "services_notificationservice_notificationservice_initialize",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice",
+      "target": "services_notificationservice_notificationservice_handlenotificationaction",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L94",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice",
+      "target": "services_notificationservice_notificationservice_scheduletaskreminder",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L121",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice",
+      "target": "services_notificationservice_notificationservice_canceltaskreminders",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L150",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice",
+      "target": "services_notificationservice_notificationservice_schedulestudysessionreminder",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L160",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice",
+      "target": "services_notificationservice_notificationservice_scheduletimercompletionnotification",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L181",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice",
+      "target": "services_notificationservice_notificationservice_scheduleongoingtimernotification",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L202",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice",
+      "target": "services_notificationservice_notificationservice_cancelongoingtimernotification",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L220",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice",
+      "target": "services_notificationservice_notificationservice_showtaskcompletionnotification",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L226",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice",
+      "target": "services_notificationservice_notificationservice_showstudystreaknotification",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L238",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice",
+      "target": "services_notificationservice_notificationservice_schedulenotification",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L249",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice",
+      "target": "services_notificationservice_notificationservice_snoozetaskreminder",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L273",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice",
+      "target": "services_notificationservice_notificationservice_cancelallnotifications",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L289",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice",
+      "target": "services_notificationservice_notificationservice_getpendingnotifications",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L294",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice",
+      "target": "services_notificationservice_notificationservice_gettaskbyid",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L300",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice",
+      "target": "services_notificationservice_notificationservice_requestpermissions",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L305",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice",
+      "target": "services_notificationservice_notificationservice_ispermissiongranted",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L315",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_ts",
+      "target": "services_notificationservice_notificationservice",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L320",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice_initialize",
+      "target": "services_notificationservice_notificationservice_requestpermissions",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice_handlenotificationaction",
+      "target": "services_notificationservice_notificationservice_snoozetaskreminder",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L107",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice_scheduletaskreminder",
+      "target": "services_notificationservice_notificationservice_schedulenotification",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L138",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice_schedulestudysessionreminder",
+      "target": "services_notificationservice_notificationservice_schedulenotification",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L170",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice_scheduletimercompletionnotification",
+      "target": "services_notificationservice_notificationservice_schedulenotification",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L191",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice_scheduleongoingtimernotification",
+      "target": "services_notificationservice_notificationservice_schedulenotification",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L210",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice_showtaskcompletionnotification",
+      "target": "services_notificationservice_notificationservice_schedulenotification",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L229",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice_showstudystreaknotification",
+      "target": "services_notificationservice_notificationservice_schedulenotification",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L241",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice_snoozetaskreminder",
+      "target": "services_notificationservice_notificationservice_gettaskbyid",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L274",
+      "weight": 1.0
+    },
+    {
+      "source": "services_notificationservice_notificationservice_snoozetaskreminder",
+      "target": "services_notificationservice_notificationservice_schedulenotification",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\notificationService.ts",
+      "source_location": "L279",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_ts",
+      "target": "vue",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_ts",
+      "target": "core",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_ts",
+      "target": "app",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_ts",
+      "target": "types",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_ts",
+      "target": "services_studytimerservice_timermode",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_ts",
+      "target": "services_studytimerservice_timerstatus",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_ts",
+      "target": "services_studytimerservice_timerstate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_ts",
+      "target": "services_studytimerservice_timertickevent",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_ts",
+      "target": "services_studytimerservice_studytimerservice",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L35",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_states",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_getstate",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_getstatefortask",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L53",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_activetimers",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L59",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_initialize",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L66",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_getorcreatetimerstate",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_starttimer",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L124",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_pausetimer",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L140",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_resumetimer",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L154",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_completetimer",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L170",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_startbreak",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L184",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_switchmode",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L200",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_getremainingms",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L220",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_formatcountdown",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L232",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_subscribe",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L240",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_notifylisteners",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L246",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_persiststate",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L266",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_loadpersistedstate",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L275",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_starttimerinterval",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L296",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_dispatchtimercompleteevent",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L317",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_handlevisibilitychange",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L333",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_registerappstatelisteners",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L357",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_schedulecompletionnotification",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L392",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_removetimer",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L420",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_clearall",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L426",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice",
+      "target": "services_studytimerservice_studytimerservice_destroy",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L432",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_ts",
+      "target": "services_studytimerservice_studytimerservice",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L443",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_initialize",
+      "target": "services_studytimerservice_studytimerservice_loadpersistedstate",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L70",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_initialize",
+      "target": "services_studytimerservice_studytimerservice_starttimerinterval",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_initialize",
+      "target": "services_studytimerservice_studytimerservice_registerappstatelisteners",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L77",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_starttimer",
+      "target": "services_studytimerservice_studytimerservice_getremainingms",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L128",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_starttimer",
+      "target": "services_studytimerservice_studytimerservice_persiststate",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L135",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_starttimer",
+      "target": "services_studytimerservice_studytimerservice_notifylisteners",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L136",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_pausetimer",
+      "target": "services_studytimerservice_studytimerservice_getremainingms",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L144",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_pausetimer",
+      "target": "services_studytimerservice_studytimerservice_persiststate",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L149",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_pausetimer",
+      "target": "services_studytimerservice_studytimerservice_notifylisteners",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L150",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_resumetimer",
+      "target": "services_studytimerservice_studytimerservice_getremainingms",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L158",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_resumetimer",
+      "target": "services_studytimerservice_studytimerservice_persiststate",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L165",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_resumetimer",
+      "target": "services_studytimerservice_studytimerservice_notifylisteners",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L166",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_completetimer",
+      "target": "services_studytimerservice_studytimerservice_persiststate",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L179",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_completetimer",
+      "target": "services_studytimerservice_studytimerservice_notifylisteners",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L180",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_startbreak",
+      "target": "services_studytimerservice_studytimerservice_persiststate",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L195",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_startbreak",
+      "target": "services_studytimerservice_studytimerservice_notifylisteners",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L196",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_switchmode",
+      "target": "services_studytimerservice_studytimerservice_getremainingms",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L204",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_switchmode",
+      "target": "services_studytimerservice_studytimerservice_persiststate",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L215",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_switchmode",
+      "target": "services_studytimerservice_studytimerservice_notifylisteners",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L216",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_notifylisteners",
+      "target": "services_studytimerservice_studytimerservice_getremainingms",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L252",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_handlevisibilitychange",
+      "target": "services_studytimerservice_studytimerservice_persiststate",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L344",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_schedulecompletionnotification",
+      "target": "local_notifications",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L394",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_removetimer",
+      "target": "services_studytimerservice_studytimerservice_persiststate",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L422",
+      "weight": 1.0
+    },
+    {
+      "source": "services_studytimerservice_studytimerservice_clearall",
+      "target": "services_studytimerservice_studytimerservice_persiststate",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "services\\studyTimerService.ts",
+      "source_location": "L428",
+      "weight": 1.0
+    },
+    {
+      "source": "stores_admin_ts",
+      "target": "pinia",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "stores\\admin.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "stores_admin_ts",
+      "target": "vue",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "stores\\admin.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "stores_admin_ts",
+      "target": "api",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "stores\\admin.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "stores_admin_ts",
+      "target": "types",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "stores\\admin.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "stores_admin_ts",
+      "target": "stores_admin_useadminstore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "stores\\admin.ts",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "stores_auth_ts",
+      "target": "pinia",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "stores\\auth.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "stores_auth_ts",
+      "target": "vue",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "stores\\auth.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "stores_auth_ts",
+      "target": "api",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "stores\\auth.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "stores_auth_ts",
+      "target": "types",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "stores\\auth.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "stores_auth_ts",
+      "target": "stores_auth_useauthstore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "stores\\auth.ts",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "stores_student_ts",
+      "target": "pinia",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "stores\\student.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "stores_student_ts",
+      "target": "vue",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "stores\\student.ts",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "stores_student_ts",
+      "target": "api",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "stores\\student.ts",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "stores_student_ts",
+      "target": "types",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "stores\\student.ts",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "stores_student_ts",
+      "target": "stores_student_usestudentstore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "stores\\student.ts",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_user",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_studypreference",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_subject",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_topic",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L37",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_task",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L50",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_studysession",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_quiz",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L87",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_question",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L99",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_quizattempt",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L111",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_quizanswer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L124",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_setupstatus",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L133",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_admindashboarddata",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L142",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_resource",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L156",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_notification",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L169",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_systemsetting",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L182",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_progresssummary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L191",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_topicperformance",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L209",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_apiresponse",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L220",
+      "weight": 1.0
+    },
+    {
+      "source": "types_index_ts",
+      "target": "types_index_paginatedresponse",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "types\\index.ts",
+      "source_location": "L225",
+      "weight": 1.0
+    },
+    {
+      "source": "views_admin_settingsview_vue",
+      "target": "admin",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\admin\\SettingsView.vue",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "views_admin_settingsview_vue",
+      "target": "types",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\admin\\SettingsView.vue",
+      "source_location": "L37",
+      "weight": 1.0
+    },
+    {
+      "source": "views_admin_settingsview_vue",
+      "target": "admin_settingsview_adminstore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\admin\\SettingsView.vue",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "views_admin_settingsview_vue",
+      "target": "admin_settingsview_loading",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\admin\\SettingsView.vue",
+      "source_location": "L42",
+      "weight": 1.0
+    },
+    {
+      "source": "views_admin_settingsview_vue",
+      "target": "admin_settingsview_fetchsettings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\admin\\SettingsView.vue",
+      "source_location": "L49",
+      "weight": 1.0
+    },
+    {
+      "source": "views_admin_settingsview_vue",
+      "target": "admin_settingsview_updatesetting",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\admin\\SettingsView.vue",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "views_admin_settingsview_vue",
+      "target": "admin_settingsview_formatkey",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\admin\\SettingsView.vue",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "views_auth_loginview_vue",
+      "target": "auth_loginview_if",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\auth\\LoginView.vue",
+      "source_location": "L134",
+      "weight": 1.0
+    },
+    {
+      "source": "views_auth_registerview_vue",
+      "target": "vue_router",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\auth\\RegisterView.vue",
+      "source_location": "L110",
+      "weight": 1.0
+    },
+    {
+      "source": "views_auth_registerview_vue",
+      "target": "auth",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\auth\\RegisterView.vue",
+      "source_location": "L111",
+      "weight": 1.0
+    },
+    {
+      "source": "views_auth_registerview_vue",
+      "target": "auth_registerview_authstore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\auth\\RegisterView.vue",
+      "source_location": "L113",
+      "weight": 1.0
+    },
+    {
+      "source": "views_auth_registerview_vue",
+      "target": "auth_registerview_router",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\auth\\RegisterView.vue",
+      "source_location": "L114",
+      "weight": 1.0
+    },
+    {
+      "source": "views_auth_registerview_vue",
+      "target": "auth_registerview_form",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\auth\\RegisterView.vue",
+      "source_location": "L116",
+      "weight": 1.0
+    },
+    {
+      "source": "views_auth_registerview_vue",
+      "target": "auth_registerview_loading",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\auth\\RegisterView.vue",
+      "source_location": "L119",
+      "weight": 1.0
+    },
+    {
+      "source": "views_auth_registerview_vue",
+      "target": "auth_registerview_handlesubmit",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\auth\\RegisterView.vue",
+      "source_location": "L121",
+      "weight": 1.0
+    },
+    {
+      "source": "views_student_quizzesview_vue",
+      "target": "student_quizzesview_classes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\student\\QuizzesView.vue",
+      "source_location": "L174",
+      "weight": 1.0
+    },
+    {
+      "source": "views_student_recommendationsview_vue",
+      "target": "student_recommendationsview_norecommendationheading",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\student\\RecommendationsView.vue",
+      "source_location": "L86",
+      "weight": 1.0
+    },
+    {
+      "source": "views_student_recommendationsview_vue",
+      "target": "student_recommendationsview_norecommendationmessage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\student\\RecommendationsView.vue",
+      "source_location": "L91",
+      "weight": 1.0
+    },
+    {
+      "source": "views_student_recommendationsview_vue",
+      "target": "student_recommendationsview_fetchrecommendations",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\student\\RecommendationsView.vue",
+      "source_location": "L104",
+      "weight": 1.0
+    },
+    {
+      "source": "views_student_recommendationsview_vue",
+      "target": "student_recommendationsview_recordview",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\student\\RecommendationsView.vue",
+      "source_location": "L116",
+      "weight": 1.0
+    },
+    {
+      "source": "views_student_studyplanview_vue",
+      "target": "student_studyplanview_index",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\student\\StudyPlanView.vue",
+      "source_location": "L472",
+      "weight": 1.0
+    },
+    {
+      "source": "views_student_subjectdetailview_vue",
+      "target": "student_subjectdetailview_formatdate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\student\\SubjectDetailView.vue",
+      "source_location": "L96",
+      "weight": 1.0
+    },
+    {
+      "source": "views_student_subjectdetailview_vue",
+      "target": "student_subjectdetailview_formatdate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\student\\SubjectDetailView.vue",
+      "source_location": "L133",
+      "weight": 1.0
+    },
+    {
+      "source": "views_student_subjectsview_vue",
+      "target": "student_subjectsview_if",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "views\\student\\SubjectsView.vue",
+      "source_location": "L251",
+      "weight": 1.0
+    }
+  ]
+}

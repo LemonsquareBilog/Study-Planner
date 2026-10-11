@@ -134,7 +134,11 @@ async function handleSubmit() {
     if (err.response?.data?.errors) {
       errors.value = err.response.data.errors;
     } else {
-      error.value = err.response?.data?.message || 'Login failed. Please try again.';
+      error.value = err.response?.data?.message || (
+        !err.response
+          ? 'Unable to reach the server. Check your connection and try again.'
+          : 'Login failed. Please try again.'
+      );
     }
   } finally {
     loading.value = false;

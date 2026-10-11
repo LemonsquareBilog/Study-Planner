@@ -1,6 +1,6 @@
 <template>
   <div class="space-y-8">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-text-primary">Resources</h1>
         <p class="mt-1 text-sm text-text-secondary">Manage the learning resource library.</p>
@@ -40,68 +40,97 @@
       </svg>
     </div>
 
-    <div v-else class="glass-card overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-brand-borders/50" role="table">
-          <thead class="bg-white/50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Resource</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Type</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Difficulty</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Subjects</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Topics</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Status</th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-text-secondary uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-brand-borders/50" role="rowgroup">
-            <tr v-for="resource in resources.data" :key="resource.id" class="hover:bg-white/30 transition-colors" role="row">
-              <td class="px-6 py-4">
-                <div class="text-sm font-medium text-text-primary">{{ resource.title }}</div>
-                <div class="text-sm text-text-secondary line-clamp-1">{{ resource.description }}</div>
-                <a :href="resource.url" target="_blank" rel="noopener noreferrer" class="text-xs text-secondary hover:underline transition-colors">{{ resource.url }}</a>
-              </td>
-              <td class="px-6 py-4">
-                <span class="px-2 py-1 text-xs font-medium rounded-full" :class="typeClass(resource.resource_type)">{{ resource.resource_type }}</span>
-              </td>
-              <td class="px-6 py-4">
-                <span class="px-2 py-1 text-xs font-medium rounded-full" :class="difficultyClass(resource.difficulty)">{{ resource.difficulty }}</span>
-              </td>
-              <td class="px-6 py-4">
-                <div class="flex flex-wrap gap-1">
-                  <span v-for="subject in resource.subjects" :key="subject.id" class="px-2 py-1 text-xs bg-brand-borders/50 text-text-secondary rounded">{{ subject.name }}</span>
-                  <span v-if="resource.subjects.length === 0" class="text-xs text-text-secondary">None</span>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <div class="flex flex-wrap gap-1">
-                  <span v-for="topic in resource.topics" :key="topic.id" class="px-2 py-1 text-xs bg-status-info-light text-status-info rounded">{{ topic.name }}</span>
-                  <span v-if="resource.topics.length === 0" class="text-xs text-text-secondary">None</span>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <span :class="resource.is_active ? 'bg-status-success-light text-status-success' : 'bg-brand-borders text-text-secondary'" class="px-2 py-1 text-xs font-medium rounded-full">{{ resource.is_active ? 'Active' : 'Inactive' }}</span>
-              </td>
-              <td class="px-6 py-4 text-right space-x-2">
-                <button @click="editResource(resource)" class="text-secondary hover:text-secondary-hover text-sm font-medium transition-colors" aria-label="Edit resource">Edit</button>
-                <button @click="confirmDelete(resource)" class="text-status-urgent hover:text-status-urgent-hover text-sm font-medium transition-colors" aria-label="Delete resource">Delete</button>
-              </td>
-            </tr>
-            <tr v-if="resources.data.length === 0">
-              <td colspan="7" class="px-6 py-12 text-center text-text-secondary">No resources found. <button @click="showCreateModal = true" class="text-secondary hover:underline transition-colors">Create one</button>.</td>
-            </tr>
-          </tbody>
-        </table>
+    <div v-else class="space-y-4">
+      <!-- Desktop Table View -->
+      <div class="hidden lg:block glass-card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-brand-borders/50" role="table">
+            <thead class="bg-white/50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Resource</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Type</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Difficulty</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Subjects</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Topics</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-text-secondary uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-brand-borders/50" role="rowgroup">
+              <tr v-for="resource in resources.data" :key="resource.id" class="hover:bg-white/30 transition-colors" role="row">
+                <td class="px-6 py-4">
+                  <div class="text-sm font-medium text-text-primary">{{ resource.title }}</div>
+                  <div class="text-sm text-text-secondary line-clamp-1">{{ resource.description }}</div>
+                  <a :href="resource.url" target="_blank" rel="noopener noreferrer" class="text-xs text-secondary hover:underline transition-colors">{{ resource.url }}</a>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="px-2 py-1 text-xs font-medium rounded-full" :class="typeClass(resource.resource_type)">{{ resource.resource_type }}</span>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="px-2 py-1 text-xs font-medium rounded-full" :class="difficultyClass(resource.difficulty)">{{ resource.difficulty }}</span>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex flex-wrap gap-1">
+                    <span v-for="subject in resource.subjects" :key="subject.id" class="px-2 py-1 text-xs bg-brand-borders/50 text-text-secondary rounded">{{ subject.name }}</span>
+                    <span v-if="resource.subjects.length === 0" class="text-xs text-text-secondary">None</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex flex-wrap gap-1">
+                    <span v-for="topic in resource.topics" :key="topic.id" class="px-2 py-1 text-xs bg-status-info-light text-status-info rounded">{{ topic.name }}</span>
+                    <span v-if="resource.topics.length === 0" class="text-xs text-text-secondary">None</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4">
+                  <span :class="resource.is_active ? 'bg-status-success-light text-status-success' : 'bg-brand-borders text-text-secondary'" class="px-2 py-1 text-xs font-medium rounded-full">{{ resource.is_active ? 'Active' : 'Inactive' }}</span>
+                </td>
+                <td class="px-6 py-4 text-right space-x-2">
+                  <button @click="editResource(resource)" class="text-secondary hover:text-secondary-hover text-sm font-medium transition-colors" aria-label="Edit resource">Edit</button>
+                  <button @click="confirmDelete(resource)" class="text-status-urgent hover:text-status-urgent-hover text-sm font-medium transition-colors" aria-label="Delete resource">Delete</button>
+                </td>
+              </tr>
+              <tr v-if="resources.data.length === 0">
+                <td colspan="7" class="px-6 py-12 text-center text-text-secondary">No resources found. <button @click="showCreateModal = true" class="text-secondary hover:underline transition-colors">Create one</button>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div v-if="resources.last_page > 1" class="px-6 py-4 border-t border-brand-borders/50">
+          <nav class="flex items-center justify-between" aria-label="Pagination">
+            <p class="text-sm text-text-secondary">Showing {{ resources.from }} to {{ resources.to }} of {{ resources.total }} resources</p>
+            <div class="flex space-x-2">
+              <button @click="fetchResources({ page: resources.current_page - 1 })" :disabled="resources.current_page === 1" class="btn-secondary text-sm" aria-label="Previous page">Previous</button>
+              <button @click="fetchResources({ page: resources.current_page + 1 })" :disabled="resources.current_page === resources.last_page" class="btn-secondary text-sm" aria-label="Next page">Next</button>
+            </div>
+          </nav>
+        </div>
       </div>
 
-      <div v-if="resources.last_page > 1" class="px-6 py-4 border-t border-brand-borders/50">
-        <nav class="flex items-center justify-between" aria-label="Pagination">
-          <p class="text-sm text-text-secondary">Showing {{ resources.from }} to {{ resources.to }} of {{ resources.total }} resources</p>
-          <div class="flex space-x-2">
-            <button @click="fetchResources({ page: resources.current_page - 1 })" :disabled="resources.current_page === 1" class="btn-secondary text-sm" aria-label="Previous page">Previous</button>
-            <button @click="fetchResources({ page: resources.current_page + 1 })" :disabled="resources.current_page === resources.last_page" class="btn-secondary text-sm" aria-label="Next page">Next</button>
+      <!-- Mobile Card View -->
+      <div class="lg:hidden">
+        <div class="grid grid-cols-1 gap-4" role="list">
+          <ResourceCard
+            v-for="resource in resources.data"
+            :key="resource.id"
+            :resource="resource"
+            @view="recordView"
+            role="listitem"
+          />
+          <div v-if="resources.data.length === 0" class="rounded-xl border border-dashed border-brand-borders bg-brand-navbar-cards-alt p-10 text-center" role="listitem">
+            <p class="text-text-secondary">No resources found. <button @click="showCreateModal = true" class="text-secondary hover:underline transition-colors">Create one</button>.</p>
           </div>
-        </nav>
+        </div>
+
+        <div v-if="resources.last_page > 1" class="px-4 py-4 border-t border-brand-borders/50">
+          <nav class="flex items-center justify-between" aria-label="Pagination">
+            <p class="text-sm text-text-secondary">Showing {{ resources.from }} to {{ resources.to }} of {{ resources.total }} resources</p>
+            <div class="flex space-x-2">
+              <button @click="fetchResources({ page: resources.current_page - 1 })" :disabled="resources.current_page === 1" class="btn-secondary text-sm" aria-label="Previous page">Previous</button>
+              <button @click="fetchResources({ page: resources.current_page + 1 })" :disabled="resources.current_page === resources.last_page" class="btn-secondary text-sm" aria-label="Next page">Next</button>
+            </div>
+          </nav>
+        </div>
       </div>
     </div>
   </div>
@@ -230,6 +259,7 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import { useAdminStore } from '@/stores/admin';
 import type { Resource, Subject, Topic } from '@/types';
+import ResourceCard from '@/components/ResourceCard.vue';
 
 const adminStore = useAdminStore();
 

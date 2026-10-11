@@ -1,0 +1,4446 @@
+From 21d915db9936d29ef3cac8af1141ef74e736b16a Mon Sep 17 00:00:00 2001
+From: LemonsquareBilog <justingamil6@gmail.com>
+Date: Sun, 11 Oct 2026 22:51:54 +0800
+Subject: [PATCH] Fix application startup and authentication; prepare web-only
+ Vercel deployment
+
+---
+ study-planner/.dockerignore                   |  22 +
+ study-planner/.env.mobile.example             |   6 +-
+ study-planner/.env.vercel.example             |   9 +
+ study-planner/.gitignore                      |   5 +
+ study-planner/.vercelignore                   |  39 ++
+ study-planner/Dockerfile                      |  24 +
+ study-planner/Dockerfile.vite                 |  11 +
+ .../android/app/capacitor.build.gradle        |   2 +
+ .../android/capacitor.settings.gradle         |   6 +
+ study-planner/api/index.php                   |  34 ++
+ .../app/Providers/AppServiceProvider.php      |   7 +-
+ study-planner/bootstrap/app.php               |  20 +-
+ study-planner/capacitor.config.ts             |  12 +-
+ study-planner/composer.json                   |   6 +-
+ study-planner/composer.lock                   |  13 +-
+ study-planner/docker-compose.yml              |  75 +++
+ study-planner/package-lock.json               |  33 ++
+ study-planner/package.json                    |   9 +-
+ study-planner/playwright.config.ts            |  10 +-
+ study-planner/resources/js/App.vue            |   7 +-
+ study-planner/resources/js/app.ts             |   5 +-
+ .../js/components/MobileBottomNav.vue         | 243 ++++++++++
+ .../resources/js/components/ResourceCard.vue  | 139 +++++-
+ .../resources/js/components/UserCard.vue      | 277 +++++++++++
+ .../js/components/ui/SelectInput.vue          | 118 +++++
+ .../resources/js/layouts/AdminLayout.vue      |  70 ++-
+ .../resources/js/layouts/StudentLayout.vue    |  86 +++-
+ study-planner/resources/js/router/index.ts    |   9 +-
+ study-planner/resources/js/services/api.ts    |  49 +-
+ .../js/services/notificationService.ts        | 320 +++++++++++++
+ .../js/services/studyTimerService.ts          | 443 ++++++++++++++++++
+ study-planner/resources/js/stores/auth.ts     |   5 +-
+ .../js/views/admin/ResourcesView.vue          | 150 +++---
+ .../resources/js/views/admin/UsersView.vue    | 203 +++++---
+ .../resources/js/views/auth/LoginView.vue     |  10 +-
+ .../js/views/student/StudyPlanView.vue        | 420 +++--------------
+ study-planner/resources/views/app.blade.php   |   2 +-
+ study-planner/scripts/android-device.mjs      | 104 ++++
+ .../scripts/package-mobile-assets.ps1         |  50 ++
+ .../scripts/package-mobile-assets.py          |  21 +
+ study-planner/scripts/serve.ps1               |  39 ++
+ study-planner/scripts/start-stack.ps1         |  43 ++
+ .../tests/Feature/AuthenticationTest.php      |  68 +++
+ study-planner/tests/Feature/ExampleTest.php   |  14 +
+ .../tests/e2e/login-demo-removal.spec.ts      |   4 +-
+ .../tests/e2e/stack-rendering.spec.ts         |  71 +++
+ study-planner/vercel.json                     |  35 ++
+ study-planner/vite.config.js                  |  59 ++-
+ 48 files changed, 2805 insertions(+), 602 deletions(-)
+ create mode 100644 study-planner/.dockerignore
+ create mode 100644 study-planner/.env.vercel.example
+ create mode 100644 study-planner/.vercelignore
+ create mode 100644 study-planner/Dockerfile
+ create mode 100644 study-planner/Dockerfile.vite
+ create mode 100644 study-planner/api/index.php
+ create mode 100644 study-planner/docker-compose.yml
+ create mode 100644 study-planner/resources/js/components/MobileBottomNav.vue
+ create mode 100644 study-planner/resources/js/components/UserCard.vue
+ create mode 100644 study-planner/resources/js/components/ui/SelectInput.vue
+ create mode 100644 study-planner/resources/js/services/notificationService.ts
+ create mode 100644 study-planner/resources/js/services/studyTimerService.ts
+ create mode 100644 study-planner/scripts/android-device.mjs
+ create mode 100644 study-planner/scripts/package-mobile-assets.ps1
+ create mode 100644 study-planner/scripts/package-mobile-assets.py
+ create mode 100644 study-planner/scripts/serve.ps1
+ create mode 100644 study-planner/scripts/start-stack.ps1
+ create mode 100644 study-planner/tests/Feature/AuthenticationTest.php
+ create mode 100644 study-planner/tests/e2e/stack-rendering.spec.ts
+ create mode 100644 study-planner/vercel.json
+
+diff --git a/study-planner/.dockerignore b/study-planner/.dockerignore
+new file mode 100644
+index 00000000..7ec7ef20
+--- /dev/null
++++ b/study-planner/.dockerignore
+@@ -0,0 +1,22 @@
++.git
++.agents
++.claude
++agentic-awesome-skills
++node_modules
++vendor
++.env
++.env.*
++android
++www
++www_backup
++graphify-out
++resources/js/graphify-out
++playwright-report
++test-results
++storage/logs
++storage/framework/cache
++storage/framework/sessions
++storage/framework/views
++bootstrap/cache/*.php
++public/hot
++public/build
+diff --git a/study-planner/.env.mobile.example b/study-planner/.env.mobile.example
+index 9c460a1d..353a7f16 100644
+--- a/study-planner/.env.mobile.example
++++ b/study-planner/.env.mobile.example
+@@ -1,10 +1,10 @@
+ # Mobile App Environment Variables
+-# Copy this to .env.production and update for your deployment
++# Copy this to .env.mobile and update for your deployment
+ 
+ # API Base URL - Change this to your Laravel backend URL
+ # For local testing on device: http://YOUR_COMPUTER_IP:8000/api
+ # For production: https://your-domain.com/api
+-VITE_API_BASE_URL=http://127.0.0.1:8000/api
++VITE_API_BASE_URL=http://YOUR_COMPUTER_IP:8000/api
+ 
+ # App name
+-VITE_APP_NAME="Study Planner"
+\ No newline at end of file
++VITE_APP_NAME="Study Planner"
+diff --git a/study-planner/.env.vercel.example b/study-planner/.env.vercel.example
+new file mode 100644
+index 00000000..302d580a
+--- /dev/null
++++ b/study-planner/.env.vercel.example
+@@ -0,0 +1,9 @@
++# Configure these in Vercel Project Settings > Environment Variables.
++# Root Directory: study-planner; Node.js version: 22.x; Framework: Other.
++# APP_KEY must be a persistent key generated with php artisan key:generate --show.
++APP_KEY=
++APP_URL=https://YOUR_PROJECT.vercel.app
++# Use a cloud PostgreSQL URL, with credentials, and SSL enabled.
++# The Docker hostname "postgres" and laptop IP addresses cannot be used here.
++DB_URL=
++DB_SSLMODE=require
+diff --git a/study-planner/.gitignore b/study-planner/.gitignore
+index 7be55e2e..5cf66eee 100644
+--- a/study-planner/.gitignore
++++ b/study-planner/.gitignore
+@@ -3,6 +3,11 @@
+ .env
+ .env.backup
+ .env.production
++.env.mobile
++.env.docker
++.env.vercel
++/.vercel/
++/storage/framework/testing/
+ .phpactor.json
+ .phpunit.result.cache
+ /.codex
+diff --git a/study-planner/.vercelignore b/study-planner/.vercelignore
+new file mode 100644
+index 00000000..fc9f307e
+--- /dev/null
++++ b/study-planner/.vercelignore
+@@ -0,0 +1,39 @@
++# Native projects and packaged mobile assets never enter the web deployment.
++android/
++ios/
++www/
++www_backup/
++capacitor.config.ts
++.env*
++*.apk
++*.aab
++node_modules/
++vendor/
++.git/
++.agents/
++.claude/
++.codex/
++agentic-awesome-skills/
++graphify-out/
++resources/js/graphify-out/
++playwright-report/
++test-results/
++tests/
++scripts/android-device.mjs
++scripts/package-mobile-assets.*
++scripts/serve.ps1
++scripts/start-stack.ps1
++Dockerfile*
++docker-compose.yml
++database/*.sqlite
++database/*.sql
++storage/logs/*
++storage/framework/cache/**
++storage/framework/sessions/**
++storage/framework/views/**
++storage/framework/testing/**
++bootstrap/cache/*.php
++public/hot
++public/index.html
++public/fonts-manifest.dev.json
++*.log
+diff --git a/study-planner/Dockerfile b/study-planner/Dockerfile
+new file mode 100644
+index 00000000..410e2711
+--- /dev/null
++++ b/study-planner/Dockerfile
+@@ -0,0 +1,24 @@
++FROM php:8.3-cli
++
++RUN apt-get update && apt-get install -y \
++    libpq-dev \
++    libonig-dev \
++    git \
++    unzip \
++    && docker-php-ext-install pdo_pgsql pgsql mbstring bcmath \
++    && apt-get clean && rm -rf /var/lib/apt/lists/*
++
++WORKDIR /var/www/html
++
++COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
++
++COPY composer.json composer.lock artisan ./
++RUN composer install --no-dev --optimize-autoloader --no-scripts
++
++COPY . .
++
++RUN mkdir -p storage/framework/cache/data storage/framework/sessions \
++    storage/framework/views storage/logs bootstrap/cache \
++    && php artisan package:discover --ansi
++
++EXPOSE 8000
+diff --git a/study-planner/Dockerfile.vite b/study-planner/Dockerfile.vite
+new file mode 100644
+index 00000000..b56dc636
+--- /dev/null
++++ b/study-planner/Dockerfile.vite
+@@ -0,0 +1,11 @@
++FROM node:24-alpine
++
++WORKDIR /var/www/html
++
++COPY package*.json ./
++
++RUN npm ci
++
++EXPOSE 5173
++
++CMD ["npm", "run", "build:web"]
+diff --git a/study-planner/android/app/capacitor.build.gradle b/study-planner/android/app/capacitor.build.gradle
+index cef3d902..b6158438 100644
+--- a/study-planner/android/app/capacitor.build.gradle
++++ b/study-planner/android/app/capacitor.build.gradle
+@@ -9,8 +9,10 @@ android {
+ 
+ apply from: "../capacitor-cordova-android-plugins/cordova.variables.gradle"
+ dependencies {
++    implementation project(':capacitor-app')
+     implementation project(':capacitor-haptics')
+     implementation project(':capacitor-keyboard')
++    implementation project(':capacitor-local-notifications')
+     implementation project(':capacitor-splash-screen')
+     implementation project(':capacitor-status-bar')
+ 
+diff --git a/study-planner/android/capacitor.settings.gradle b/study-planner/android/capacitor.settings.gradle
+index 035559e3..552c9557 100644
+--- a/study-planner/android/capacitor.settings.gradle
++++ b/study-planner/android/capacitor.settings.gradle
+@@ -2,12 +2,18 @@
+ include ':capacitor-android'
+ project(':capacitor-android').projectDir = new File('../node_modules/@capacitor/android/capacitor')
+ 
++include ':capacitor-app'
++project(':capacitor-app').projectDir = new File('../node_modules/@capacitor/app/android')
++
+ include ':capacitor-haptics'
+ project(':capacitor-haptics').projectDir = new File('../node_modules/@capacitor/haptics/android')
+ 
+ include ':capacitor-keyboard'
+ project(':capacitor-keyboard').projectDir = new File('../node_modules/@capacitor/keyboard/android')
+ 
++include ':capacitor-local-notifications'
++project(':capacitor-local-notifications').projectDir = new File('../node_modules/@capacitor/local-notifications/android')
++
+ include ':capacitor-splash-screen'
+ project(':capacitor-splash-screen').projectDir = new File('../node_modules/@capacitor/splash-screen/android')
+ 
+diff --git a/study-planner/api/index.php b/study-planner/api/index.php
+new file mode 100644
+index 00000000..e0229ac6
+--- /dev/null
++++ b/study-planner/api/index.php
+@@ -0,0 +1,34 @@
++<?php
++
++use Illuminate\Foundation\Application;
++use Illuminate\Http\Request;
++
++define('LARAVEL_START', microtime(true));
++
++// Vercel's application bundle is read-only; only temporary runtime files go here.
++$runtimeStorage = sys_get_temp_dir().'/study-planner';
++foreach (['framework/views', 'framework/sessions', 'framework/cache/data', 'logs'] as $directory) {
++    $path = $runtimeStorage.'/'.$directory;
++    if (! is_dir($path) && ! mkdir($path, 0700, true) && ! is_dir($path)) {
++        throw new RuntimeException('Unable to initialize application runtime storage.');
++    }
++}
++
++foreach ([
++    'LARAVEL_STORAGE_PATH' => $runtimeStorage,
++    'VIEW_COMPILED_PATH' => $runtimeStorage.'/framework/views',
++    'APP_PACKAGES_CACHE' => $runtimeStorage.'/framework/packages.php',
++    'APP_SERVICES_CACHE' => $runtimeStorage.'/framework/services.php',
++] as $name => $value) {
++    putenv($name.'='.$value);
++    $_ENV[$name] = $value;
++    $_SERVER[$name] = $value;
++}
++
++require __DIR__.'/../vendor/autoload.php';
++
++/** @var Application $app */
++$app = require __DIR__.'/../bootstrap/app.php';
++$app->useStoragePath($runtimeStorage);
++$app->addAbsoluteCachePathPrefix($runtimeStorage);
++$app->handleRequest(Request::capture());
+diff --git a/study-planner/app/Providers/AppServiceProvider.php b/study-planner/app/Providers/AppServiceProvider.php
+index cec722cb..cf902c86 100644
+--- a/study-planner/app/Providers/AppServiceProvider.php
++++ b/study-planner/app/Providers/AppServiceProvider.php
+@@ -2,8 +2,9 @@
+ 
+ namespace App\Providers;
+ 
+-use Illuminate\Support\ServiceProvider;
+ use Illuminate\Http\Request;
++use Illuminate\Support\Facades\Vite;
++use Illuminate\Support\ServiceProvider;
+ 
+ class AppServiceProvider extends ServiceProvider
+ {
+@@ -11,6 +12,10 @@ public function register(): void {}
+ 
+     public function boot(): void
+     {
++        if ($this->app->isProduction()) {
++            Vite::useHotFile(storage_path('framework/vite-production.hot'));
++        }
++
+         Request::macro('isStudent', fn () => $this->user()?->role === 'student');
+     }
+ }
+diff --git a/study-planner/bootstrap/app.php b/study-planner/bootstrap/app.php
+index 7ebfd023..b3ee5548 100644
+--- a/study-planner/bootstrap/app.php
++++ b/study-planner/bootstrap/app.php
+@@ -1,14 +1,14 @@
+ <?php
+ 
++use App\Http\Middleware\RoleMiddleware;
++use Illuminate\Auth\AuthenticationException;
++use Illuminate\Auth\Middleware\Authenticate;
+ use Illuminate\Foundation\Application;
+ use Illuminate\Foundation\Configuration\Exceptions;
+ use Illuminate\Foundation\Configuration\Middleware;
+ use Illuminate\Http\Request;
+-use Illuminate\Auth\AuthenticationException;
+-use Illuminate\Auth\Middleware\Authenticate;
+ use Illuminate\Routing\Exceptions\RouteNotFoundException;
+ use Illuminate\Support\Facades\Log;
+-use Throwable;
+ 
+ return Application::configure(basePath: dirname(__DIR__))
+     ->withRouting(
+@@ -18,8 +18,11 @@
+         health: '/up',
+     )
+     ->withMiddleware(function (Middleware $middleware): void {
++        if (getenv('VERCEL') === '1') {
++            $middleware->trustProxies(at: '*');
++        }
+         $middleware->alias([
+-            'role' => \App\Http\Middleware\RoleMiddleware::class,
++            'role' => RoleMiddleware::class,
+         ]);
+     })
+     ->withExceptions(function (Exceptions $exceptions): void {
+@@ -33,12 +36,12 @@
+                 'expects_json' => $request->expectsJson(),
+                 'url' => $request->url(),
+             ]);
+-            
++
+             if ($request->is('api/*') || $request->expectsJson()) {
+                 return response()->json(['message' => 'Unauthenticated'], 401);
+             }
+         });
+-        
++
+         $exceptions->render(function (RouteNotFoundException $e, Request $request) {
+             Log::info('RouteNotFoundException caught', [
+                 'message' => $e->getMessage(),
+@@ -46,12 +49,12 @@
+                 'expects_json' => $request->expectsJson(),
+                 'url' => $request->url(),
+             ]);
+-            
++
+             if ($request->is('api/*') || $request->expectsJson()) {
+                 return response()->json(['message' => 'Unauthenticated'], 401);
+             }
+         });
+-        
++
+         $exceptions->render(function (Throwable $e, Request $request) {
+             Log::info('Throwable caught', [
+                 'class' => get_class($e),
+@@ -69,5 +72,6 @@
+     if ($request->is('api/*') || $request->expectsJson()) {
+         return null;
+     }
++
+     return route('login');
+ });
+diff --git a/study-planner/capacitor.config.ts b/study-planner/capacitor.config.ts
+index 3d6088e4..d4f140b9 100644
+--- a/study-planner/capacitor.config.ts
++++ b/study-planner/capacitor.config.ts
+@@ -1,11 +1,16 @@
+ import type { CapacitorConfig } from '@capacitor/cli';
++import { loadEnv } from 'vite';
++
++const mobileEnv = loadEnv('mobile', process.cwd(), 'VITE_');
++const usesHttpApi = mobileEnv.VITE_API_BASE_URL?.startsWith('http://') ?? false;
+ 
+ const config: CapacitorConfig = {
+   appId: 'com.studyplanner.app',
+   appName: 'Study Planner',
+   webDir: 'www',
+   server: {
+-    androidScheme: 'https'
++    androidScheme: usesHttpApi ? 'http' : 'https',
++    cleartext: usesHttpApi,
+   },
+   plugins: {
+     SplashScreen: {
+@@ -26,6 +31,11 @@ const config: CapacitorConfig = {
+     Haptics: {
+       enabled: true,
+     },
++    LocalNotifications: {
++      smallIcon: 'ic_stat_notification',
++      iconColor: '#B33F62',
++      sound: 'default',
++    },
+   },
+ };
+ 
+diff --git a/study-planner/composer.json b/study-planner/composer.json
+index 4406a6e2..7c6cbd94 100644
+--- a/study-planner/composer.json
++++ b/study-planner/composer.json
+@@ -13,7 +13,7 @@
+     },
+     "require-dev": {
+         "fakerphp/faker": "^1.23",
+-        "laravel/boost": "*",
++        "laravel/boost": "^2.10",
+         "laravel/pail": "^1.2.5",
+         "laravel/pao": "^1.0.6",
+         "laravel/pint": "^1.27",
+@@ -34,6 +34,10 @@
+         }
+     },
+     "scripts": {
++        "vercel": [
++            "@php artisan package:discover --ansi",
++            "npm run build:web"
++        ],
+         "setup": [
+             "composer install",
+             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+diff --git a/study-planner/composer.lock b/study-planner/composer.lock
+index 1bbff24a..b4e6de89 100644
+--- a/study-planner/composer.lock
++++ b/study-planner/composer.lock
+@@ -4,7 +4,7 @@
+         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+         "This file is @generated automatically"
+     ],
+-    "content-hash": "7013311a1774a6a6dafd2d4653bbaa38",
++    "content-hash": "14421a87a51379d16ab5a524798a8f48",
+     "packages": [
+         {
+             "name": "brick/math",
+@@ -6543,16 +6543,16 @@
+         },
+         {
+             "name": "laravel/boost",
+-            "version": "v2.10.1",
++            "version": "v2.10.3",
+             "source": {
+                 "type": "git",
+                 "url": "https://github.com/laravel/boost.git",
+-                "reference": "3e7bab5c7c80b6d2764ef3db1e3eb801204da84e"
++                "reference": "75c269a8a53e931c7252e7cd562e1a209356a7c6"
+             },
+             "dist": {
+                 "type": "zip",
+-                "url": "https://api.github.com/repos/laravel/boost/zipball/3e7bab5c7c80b6d2764ef3db1e3eb801204da84e",
+-                "reference": "3e7bab5c7c80b6d2764ef3db1e3eb801204da84e",
++                "url": "https://api.github.com/repos/laravel/boost/zipball/75c269a8a53e931c7252e7cd562e1a209356a7c6",
++                "reference": "75c269a8a53e931c7252e7cd562e1a209356a7c6",
+                 "shasum": ""
+             },
+             "require": {
+@@ -6567,6 +6567,7 @@
+                 "php": "^8.2"
+             },
+             "require-dev": {
++                "jasonmccreary/double": "^1.0",
+                 "laravel/pint": "^1.27.0",
+                 "mockery/mockery": "^1.6.12",
+                 "orchestra/testbench": "^9.15.0|^10.6|^11.0",
+@@ -6605,7 +6606,7 @@
+                 "issues": "https://github.com/laravel/boost/issues",
+                 "source": "https://github.com/laravel/boost"
+             },
+-            "time": "2026-10-01T02:02:28+00:00"
++            "time": "2026-10-07T19:07:19+00:00"
+         },
+         {
+             "name": "laravel/mcp",
+diff --git a/study-planner/docker-compose.yml b/study-planner/docker-compose.yml
+new file mode 100644
+index 00000000..193569b0
+--- /dev/null
++++ b/study-planner/docker-compose.yml
+@@ -0,0 +1,75 @@
++services:
++  postgres:
++    image: postgres:16-alpine
++    container_name: study_planner_postgres
++    environment:
++      POSTGRES_DB: ${DB_DATABASE:-study_planner}
++      POSTGRES_USER: ${DB_USERNAME:-postgres}
++      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
++    ports:
++      - "${POSTGRES_PORT:-15432}:5432"
++    volumes:
++      - postgres_data:/var/lib/postgresql/data
++    healthcheck:
++      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
++      interval: 10s
++      timeout: 5s
++      retries: 5
++    networks:
++      - study-planner-network
++
++  app:
++    build:
++      context: .
++      dockerfile: Dockerfile
++    container_name: study_planner_app
++    env_file:
++      - .env
++    environment:
++      APP_ENV: production
++      APP_DEBUG: "false"
++      SESSION_DRIVER: file
++      CACHE_STORE: file
++      DB_CONNECTION: pgsql
++      DB_HOST: postgres
++      DB_PORT: 5432
++      DB_DATABASE: ${DB_DATABASE:-study_planner}
++      DB_USERNAME: ${DB_USERNAME:-postgres}
++      DB_PASSWORD: ${DB_PASSWORD:-postgres}
++      APP_URL: http://localhost:8000
++    ports:
++      - "8000:8000"
++    volumes:
++      - .:/var/www/html
++      - vendor_data:/var/www/html/vendor
++      - bootstrap_cache:/var/www/html/bootstrap/cache
++    depends_on:
++      postgres:
++        condition: service_healthy
++      vite:
++        condition: service_completed_successfully
++    command: >-
++      sh -c "php artisan config:clear && php artisan migrate --force --no-interaction &&
++      php artisan serve --host=0.0.0.0 --port=8000"
++    networks:
++      - study-planner-network
++
++  vite:
++    build:
++      context: .
++      dockerfile: Dockerfile.vite
++    container_name: study_planner_vite
++    volumes:
++      - .:/var/www/html
++      - /var/www/html/node_modules
++    networks:
++      - study-planner-network
++
++networks:
++  study-planner-network:
++    driver: bridge
++
++volumes:
++  postgres_data:
++  vendor_data:
++  bootstrap_cache:
+diff --git a/study-planner/package-lock.json b/study-planner/package-lock.json
+index 82b96d12..5e4ed55f 100644
+--- a/study-planner/package-lock.json
++++ b/study-planner/package-lock.json
+@@ -6,13 +6,16 @@
+         "": {
+             "dependencies": {
+                 "@capacitor/android": "^8.5.2",
++                "@capacitor/app": "^8.1.2",
+                 "@capacitor/cli": "^8.5.2",
+                 "@capacitor/core": "^8.5.2",
+                 "@capacitor/haptics": "^8.0.2",
+                 "@capacitor/ios": "^8.5.2",
+                 "@capacitor/keyboard": "^8.0.5",
++                "@capacitor/local-notifications": "^8.3.1",
+                 "@capacitor/splash-screen": "^8.0.2",
+                 "@capacitor/status-bar": "^8.0.3",
++                "@heroicons/vue": "^2.2.0",
+                 "axios": "^1.20.0",
+                 "pinia": "^4.0.3",
+                 "vue": "^3.5.42",
+@@ -33,6 +36,9 @@
+             },
+             "optionalDependencies": {
+                 "@laravel/multiplex": "^0.4.1"
++            },
++            "engines": {
++                "node": "22.x"
+             }
+         },
+         "node_modules/@alcalzone/ansi-tokenize": {
+@@ -104,6 +110,15 @@
+                 "@capacitor/core": "^8.5.0"
+             }
+         },
++        "node_modules/@capacitor/app": {
++            "version": "8.1.2",
++            "resolved": "https://registry.npmjs.org/@capacitor/app/-/app-8.1.2.tgz",
++            "integrity": "sha512-uKBlsrXH0IdvUn69e/KKYbZ32A06pcrUdG8LWuZ/6y33YMXZXLEEdNSwl+jKS/SrsTWqnePs8EqSWaiQM3mUGA==",
++            "license": "MIT",
++            "peerDependencies": {
++                "@capacitor/core": ">=8.0.0"
++            }
++        },
+         "node_modules/@capacitor/cli": {
+             "version": "8.5.2",
+             "resolved": "https://registry.npmjs.org/@capacitor/cli/-/cli-8.5.2.tgz",
+@@ -182,6 +197,15 @@
+                 "@capacitor/core": ">=8.0.0"
+             }
+         },
++        "node_modules/@capacitor/local-notifications": {
++            "version": "8.3.1",
++            "resolved": "https://registry.npmjs.org/@capacitor/local-notifications/-/local-notifications-8.3.1.tgz",
++            "integrity": "sha512-F7zu/+p/mIR958YP4axOkeI5hBKRaXDyYjbNPrAil2wWfd7OxScPSTvP9t85NpQ0eULVRu0/sntoxOg6ck477A==",
++            "license": "MIT",
++            "peerDependencies": {
++                "@capacitor/core": ">=8.0.0"
++            }
++        },
+         "node_modules/@capacitor/splash-screen": {
+             "version": "8.0.2",
+             "resolved": "https://registry.npmjs.org/@capacitor/splash-screen/-/splash-screen-8.0.2.tgz",
+@@ -200,6 +224,15 @@
+                 "@capacitor/core": ">=8.0.0"
+             }
+         },
++        "node_modules/@heroicons/vue": {
++            "version": "2.2.0",
++            "resolved": "https://registry.npmjs.org/@heroicons/vue/-/vue-2.2.0.tgz",
++            "integrity": "sha512-G3dbSxoeEKqbi/DFalhRxJU4mTXJn7GwZ7ae8NuEQzd1bqdd0jAbdaBZlHPcvPD2xI1iGzNVB4k20Un2AguYPw==",
++            "license": "MIT",
++            "peerDependencies": {
++                "vue": ">= 3"
++            }
++        },
+         "node_modules/@ionic/cli-framework-output": {
+             "version": "2.2.8",
+             "resolved": "https://registry.npmjs.org/@ionic/cli-framework-output/-/cli-framework-output-2.2.8.tgz",
+diff --git a/study-planner/package.json b/study-planner/package.json
+index 59d141f0..4aa76486 100644
+--- a/study-planner/package.json
++++ b/study-planner/package.json
+@@ -2,10 +2,14 @@
+     "$schema": "https://www.schemastore.org/package.json",
+     "private": true,
+     "type": "module",
++    "engines": {
++        "node": "22.x"
++    },
+     "scripts": {
+         "build": "npm run build:mobile && npm run build:web",
+-        "build:mobile": "vite build",
++        "build:mobile": "vite build --mode mobile",
+         "build:web": "vite build --mode web",
++        "vercel-build": "npm run build:web",
+         "dev": "vite --mode web",
+         "mobile:build": "npm run build:mobile && npx cap sync android",
+         "mobile:open": "npx cap open android",
+@@ -29,13 +33,16 @@
+     },
+     "dependencies": {
+         "@capacitor/android": "^8.5.2",
++        "@capacitor/app": "^8.1.2",
+         "@capacitor/cli": "^8.5.2",
+         "@capacitor/core": "^8.5.2",
+         "@capacitor/haptics": "^8.0.2",
+         "@capacitor/ios": "^8.5.2",
+         "@capacitor/keyboard": "^8.0.5",
++        "@capacitor/local-notifications": "^8.3.1",
+         "@capacitor/splash-screen": "^8.0.2",
+         "@capacitor/status-bar": "^8.0.3",
++        "@heroicons/vue": "^2.2.0",
+         "axios": "^1.20.0",
+         "pinia": "^4.0.3",
+         "vue": "^3.5.42",
+diff --git a/study-planner/playwright.config.ts b/study-planner/playwright.config.ts
+index 0fb66728..3598bfd4 100644
+--- a/study-planner/playwright.config.ts
++++ b/study-planner/playwright.config.ts
+@@ -2,15 +2,17 @@ import { defineConfig, devices } from '@playwright/test';
+ 
+ export default defineConfig({
+   testDir: './tests/e2e',
+-  fullyParallel: true,
++  fullyParallel: false,
+   forbidOnly: !!process.env.CI,
+   retries: process.env.CI ? 2 : 0,
+-  workers: process.env.CI ? 1 : undefined,
+-  reporter: 'html',
++  workers: 1,
++  reporter: 'line',
++  timeout: 60000,
+   use: {
+-    baseURL: 'http://localhost:5174/build',
++    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:8000',
+     trace: 'on-first-retry',
+     actionTimeout: 15000,
++    navigationTimeout: 30000,
+   },
+   projects: [
+     {
+diff --git a/study-planner/resources/js/App.vue b/study-planner/resources/js/App.vue
+index df3b6816..6bce85e0 100644
+--- a/study-planner/resources/js/App.vue
++++ b/study-planner/resources/js/App.vue
+@@ -1,7 +1,10 @@
+ <template>
+   <router-view v-slot="{ Component }">
+     <transition name="fade" mode="out-in">
+-      <component :is="Component" />
++      <component v-if="Component" :is="Component" />
++      <div v-else class="min-h-screen flex items-center justify-center bg-brand-background text-text-primary" role="status">
++        Loading Study Planner…
++      </div>
+     </transition>
+   </router-view>
+ </template>
+@@ -16,4 +19,4 @@
+ .fade-leave-to {
+   opacity: 0;
+ }
+-</style>
+\ No newline at end of file
++</style>
+diff --git a/study-planner/resources/js/app.ts b/study-planner/resources/js/app.ts
+index 46f569fb..0db0399b 100644
+--- a/study-planner/resources/js/app.ts
++++ b/study-planner/resources/js/app.ts
+@@ -8,7 +8,4 @@ const app = createApp(App);
+ app.use(createPinia());
+ app.use(router);
+ 
+-const authStore = (await import('@/stores/auth')).useAuthStore();
+-await authStore.initialize();
+-
+-app.mount('#app');
+\ No newline at end of file
++app.mount('#app');
+diff --git a/study-planner/resources/js/components/MobileBottomNav.vue b/study-planner/resources/js/components/MobileBottomNav.vue
+new file mode 100644
+index 00000000..5c24ad3a
+--- /dev/null
++++ b/study-planner/resources/js/components/MobileBottomNav.vue
+@@ -0,0 +1,243 @@
++<template>
++  <nav
++    v-if="isMobile"
++    class="mobile-bottom-nav"
++    role="navigation"
++    aria-label="Main navigation"
++  >
++    <div class="nav-background" aria-hidden="true"></div>
++    <div class="nav-content">
++      <button
++        v-for="item in navItems"
++        :key="item.route"
++        :class="[
++          'nav-item',
++          { 'nav-item--active': isActive(item.route) }
++        ]"
++        @click="navigate(item.route)"
++        :aria-label="item.label"
++        :aria-current="isActive(item.route) ? 'page' : undefined"
++      >
++        <span class="nav-icon" aria-hidden="true">
++          <component :is="item.icon" class="h-6 w-6" />
++        </span>
++        <span class="nav-label">{{ item.label }}</span>
++        <span
++          v-if="item.badge && item.badge > 0"
++          class="nav-badge"
++          :aria-label="`${item.badge} unread ${item.label.toLowerCase()}`"
++        >
++          {{ item.badge > 9 ? '9+' : item.badge }}
++        </span>
++      </button>
++    </div>
++  </nav>
++</template>
++
++<script setup lang="ts">
++import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
++import { useRouter, useRoute } from 'vue-router';
++import { useAuthStore } from '@/stores/auth';
++import { useStudentStore } from '@/stores/student';
++import {
++  HomeIcon,
++  CheckCircleIcon,
++  CalendarIcon,
++  UserCircleIcon,
++  BellIcon,
++  BookOpenIcon,
++  ChartBarIcon,
++  Cog6ToothIcon,
++} from '@heroicons/vue/24/outline';
++
++const router = useRouter();
++const route = useRoute();
++const authStore = useAuthStore();
++const studentStore = useStudentStore();
++
++const isMobile = ref(false);
++
++function checkMobile() {
++  isMobile.value = window.innerWidth < 768;
++}
++
++onMounted(() => {
++  checkMobile();
++  window.addEventListener('resize', checkMobile);
++});
++
++onBeforeUnmount(() => {
++  window.removeEventListener('resize', checkMobile);
++});
++
++const unreadNotifications = computed(() => studentStore.unreadNotificationsCount || 0);
++
++const navItems = computed(() => [
++  { route: '/dashboard', label: 'Home', icon: HomeIcon, badge: 0 },
++  { route: '/tasks', label: 'Tasks', icon: CheckCircleIcon, badge: 0 },
++  { route: '/study-plan', label: 'Study', icon: CalendarIcon, badge: 0 },
++  { route: '/notifications', label: 'Alerts', icon: BellIcon, badge: unreadNotifications.value },
++  { route: '/progress', label: 'Progress', icon: ChartBarIcon, badge: 0 },
++]);
++
++function isActive(routePath: string): boolean {
++  return route.path.startsWith(routePath);
++}
++
++function navigate(routePath: string): void {
++  router.push(routePath);
++}
++</script>
++
++<style scoped>
++.mobile-bottom-nav {
++  position: fixed;
++  bottom: 0;
++  left: 0;
++  right: 0;
++  z-index: 50;
++  display: none;
++  padding-bottom: env(safe-area-inset-bottom);
++}
++
++@media (max-width: 1023px) {
++  .mobile-bottom-nav {
++    display: block;
++  }
++}
++
++.nav-background {
++  position: absolute;
++  inset: 0;
++  background: rgba(255, 249, 250, 0.85);
++  backdrop-filter: blur(24px);
++  -webkit-backdrop-filter: blur(24px);
++  border-top: 1px solid rgba(243, 210, 218, 0.5);
++  box-shadow: 0 -8px 32px rgba(179, 63, 98, 0.12);
++  border-radius: 24px 24px 0 0;
++  margin: 0 16px 16px 16px;
++  box-sizing: border-box;
++}
++
++.nav-content {
++  position: relative;
++  display: flex;
++  align-items: center;
++  justify-content: space-around;
++  padding: 0.5rem;
++  height: 72px;
++  max-width: 480px;
++  margin: 0 auto;
++}
++
++.nav-item {
++  display: flex;
++  flex-direction: column;
++  align-items: center;
++  justify-content: center;
++  gap: 0.25rem;
++  padding: 0.5rem 0.75rem;
++  border-radius: 1.5rem;
++  transition: all 200ms ease-out;
++  flex: 1;
++  min-width: 0;
++  color: #7A5C66;
++  background: transparent;
++  border: none;
++  cursor: pointer;
++}
++
++.nav-item:focus-visible {
++  outline: none;
++  box-shadow: 0 0 0 2px rgba(179, 63, 98, 0.5), 0 0 0 4px white;
++}
++
++.nav-item--active {
++  color: #B33F62;
++  background: linear-gradient(135deg, rgba(179, 63, 98, 0.12) 0%, rgba(179, 63, 98, 0.08) 100%);
++  box-shadow:
++    0 4px 16px rgba(179, 63, 98, 0.2),
++    inset 0 1px 0 rgba(255, 255, 255, 0.3);
++}
++
++.nav-icon {
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  width: 28px;
++  height: 28px;
++  transition: transform 150ms ease-out;
++}
++
++.nav-item--active .nav-icon {
++  transform: translateY(-1px);
++}
++
++.nav-label {
++  font-size: 0.625rem;
++  font-weight: 500;
++  letter-spacing: 0.05em;
++  line-height: 1;
++}
++
++.nav-badge {
++  position: absolute;
++  top: -0.25rem;
++  right: -0.25rem;
++  min-width: 16px;
++  height: 20px;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  padding: 0 0.375rem;
++  background: #C6485F;
++  color: white;
++  font-size: 9px;
++  font-weight: 700;
++  border-radius: 9999px;
++  border: 2px solid white;
++  box-shadow: 0 2px 8px rgba(198, 72, 95, 0.4);
++  transform: scale(1);
++  transition: transform 150ms ease-out;
++}
++
++.nav-item--active .nav-badge {
++  background: #C6485F;
++  box-shadow: 0 2px 8px rgba(198, 72, 95, 0.5);
++}
++
++/* Animation for nav item appearance */
++@keyframes navItemSlideUp {
++  from {
++    opacity: 0;
++    transform: translateY(20px);
++  }
++  to {
++    opacity: 1;
++    transform: translateY(0);
++  }
++}
++
++.nav-item {
++  animation: navItemSlideUp 0.4s ease-out backwards;
++}
++
++.nav-item:nth-child(1) { animation-delay: 50ms; }
++.nav-item:nth-child(2) { animation-delay: 100ms; }
++.nav-item:nth-child(3) { animation-delay: 150ms; }
++.nav-item:nth-child(4) { animation-delay: 200ms; }
++.nav-item:nth-child(5) { animation-delay: 250ms; }
++
++/* Pressed state */
++.nav-item:active:not(.nav-item--active) {
++  transform: scale(0.96);
++  background: rgba(179, 63, 98, 0.08);
++}
++
++/* Safe area handling for notched devices */
++@supports (padding-bottom: env(safe-area-inset-bottom)) {
++  .mobile-bottom-nav {
++    padding-bottom: env(safe-area-inset-bottom);
++  }
++}
++</style>
+\ No newline at end of file
+diff --git a/study-planner/resources/js/components/ResourceCard.vue b/study-planner/resources/js/components/ResourceCard.vue
+index 7954262c..46e7dc13 100644
+--- a/study-planner/resources/js/components/ResourceCard.vue
++++ b/study-planner/resources/js/components/ResourceCard.vue
+@@ -1,15 +1,27 @@
+ <template>
+-  <article class="bg-brand-navbar-cards-alt border border-brand-borders rounded-xl p-4 hover:shadow-md transition-shadow" role="region" :aria-label="`${resource.title} - ${resource.resource_type}`">
+-    <div class="flex items-start justify-between mb-2">
+-      <span class="px-2 py-1 text-xs font-medium rounded-full" :class="typeClass">{{ resource.resource_type }}</span>
+-      <span class="px-2 py-1 text-xs font-medium rounded-full" :class="difficultyClass">{{ resource.difficulty }}</span>
++  <article
++    class="resource-card"
++    role="region"
++    :aria-label="`${resource.title} - ${resource.resource_type}`"
++  >
++    <div class="resource-header">
++      <span class="badge" :class="typeClass">{{ resource.resource_type }}</span>
++      <span class="badge" :class="difficultyClass">{{ resource.difficulty }}</span>
+     </div>
+-    <h3 class="font-semibold text-text-primary mb-1 line-clamp-2">{{ resource.title }}</h3>
+-    <p v-if="resource.topics?.length" class="text-xs font-medium text-primary mb-1">{{ resource.topics[0].subject?.name || resource.subjects?.[0]?.name || 'Subject' }} · {{ resource.topics[0].name }}</p>
+-    <p v-else-if="resource.subjects?.length" class="text-xs font-medium text-primary mb-1">{{ resource.subjects[0].name }}</p>
+-    <p class="text-sm text-text-secondary mb-3 line-clamp-2">{{ resource.description || 'No description available' }}</p>
+-    <div class="flex items-center justify-between">
+-      <span v-if="resource.recommendation_reason" class="px-2 py-1 text-xs font-medium rounded-full" :class="reasonClass">
++
++    <h3 class="resource-title">{{ resource.title }}</h3>
++
++    <p v-if="resource.topics?.length" class="resource-meta">
++      {{ resource.topics[0].subject?.name || resource.subjects?.[0]?.name || 'Subject' }} · {{ resource.topics[0].name }}
++    </p>
++    <p v-else-if="resource.subjects?.length" class="resource-meta">
++      {{ resource.subjects[0].name }}
++    </p>
++
++    <p class="resource-description">{{ resource.description || 'No description available' }}</p>
++
++    <div class="resource-footer">
++      <span v-if="resource.recommendation_reason" class="badge" :class="reasonClass">
+         {{ reasonLabel }}
+       </span>
+       <a
+@@ -17,7 +29,7 @@
+         target="_blank"
+         rel="noopener noreferrer"
+         @click="$emit('view', resource.id, resource.topics?.[0]?.id)"
+-        class="btn-primary text-xs py-1 px-3"
++        class="btn-primary"
+         :aria-label="`View ${resource.title}`"
+       >
+         View
+@@ -78,4 +90,107 @@ const reasonLabel = computed(() => {
+   };
+   return labels[props.resource.recommendation_reason || 'related'] || 'Related';
+ });
+-</script>
+\ No newline at end of file
++</script>
++
++<style scoped>
++.resource-card {
++  background: rgba(255, 249, 250, 0.9);
++  backdrop-filter: blur(10px);
++  -webkit-backdrop-filter: blur(10px);
++  border: 1px solid #f3d2da;
++  border-radius: 1rem;
++  padding: 1rem;
++  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
++  transition: box-shadow 0.2s ease;
++  display: flex;
++  flex-direction: column;
++  height: 100%;
++}
++
++.resource-card:hover {
++  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
++}
++
++.resource-header {
++  display: flex;
++  align-items: flex-start;
++  justify-content: space-between;
++  margin-bottom: 0.5rem;
++}
++
++.resource-title {
++  font-weight: 600;
++  color: #33222a;
++  margin-bottom: 0.25rem;
++  display: -webkit-box;
++  -webkit-line-clamp: 2;
++  -webkit-box-orient: vertical;
++  overflow: hidden;
++}
++
++.resource-meta {
++  font-size: 0.75rem;
++  font-weight: 500;
++  color: #b33f62;
++  margin-bottom: 0.25rem;
++}
++
++.resource-description {
++  font-size: 0.875rem;
++  color: #7a5c66;
++  margin-bottom: 0.75rem;
++  display: -webkit-box;
++  -webkit-line-clamp: 2;
++  -webkit-box-orient: vertical;
++  overflow: hidden;
++  flex: 1;
++}
++
++.resource-footer {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  margin-top: auto;
++  padding-top: 0.75rem;
++  border-top: 1px solid rgba(243, 210, 218, 0.5);
++}
++
++.badge {
++  padding: 0.25rem 0.5rem;
++  font-size: 0.75rem;
++  font-weight: 500;
++  border-radius: 9999px;
++}
++
++.btn-primary {
++  display: inline-flex;
++  align-items: center;
++  justify-content: center;
++  padding: 0.5rem 0.75rem;
++  font-size: 0.75rem;
++  font-weight: 500;
++  border-radius: 9999px;
++  color: white;
++  background-color: #b33f62;
++  transition: background-color 0.2s ease;
++}
++
++.btn-primary:hover {
++  background-color: #96334f;
++}
++
++/* Mobile card layout adjustments */
++@media (max-width: 768px) {
++  .resource-card {
++    padding: 1rem;
++  }
++
++  .resource-title {
++    font-size: 1rem;
++  }
++
++  .resource-description {
++    -webkit-line-clamp: 3;
++  }
++}
++</style>
+\ No newline at end of file
+diff --git a/study-planner/resources/js/components/UserCard.vue b/study-planner/resources/js/components/UserCard.vue
+new file mode 100644
+index 00000000..ee16908d
+--- /dev/null
++++ b/study-planner/resources/js/components/UserCard.vue
+@@ -0,0 +1,277 @@
++<template>
++  <article class="user-card" role="region" :aria-label="`User: ${user.name}`">
++    <div class="user-header">
++      <div class="user-avatar">
++        <span class="avatar-text">{{ user.name.charAt(0).toUpperCase() }}</span>
++      </div>
++      <div class="user-info">
++        <h3 class="user-name">{{ user.name }}</h3>
++        <p class="user-email">{{ user.email }}</p>
++        <div class="user-meta">
++          <span v-if="user.course" class="meta-item">
++            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
++              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
++            </svg>
++            <span>{{ user.course }}</span>
++          </span>
++          <span v-if="user.year_level" class="meta-item">
++            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
++              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
++            </svg>
++            <span>Year {{ user.year_level }}</span>
++          </span>
++        </div>
++      </div>
++      <span class="user-role-badge" :class="roleClass(user.role)">{{ user.role }}</span>
++    </div>
++
++    <div class="user-stats">
++      <div class="stat-item">
++        <span class="stat-value">{{ user.subjects_count || 0 }}</span>
++        <span class="stat-label">Subjects</span>
++      </div>
++      <div class="stat-divider" aria-hidden="true"></div>
++      <div class="stat-item">
++        <span class="stat-value">{{ user.tasks_count || 0 }}</span>
++        <span class="stat-label">Tasks</span>
++      </div>
++      <div class="stat-divider" aria-hidden="true"></div>
++      <div class="stat-item">
++        <span class="stat-value">{{ user.quiz_attempts_count || 0 }}</span>
++        <span class="stat-label">Quizzes</span>
++      </div>
++    </div>
++
++    <div class="user-footer">
++      <span class="status-badge" :class="user.is_active ? 'bg-status-success-light text-status-success' : 'bg-brand-borders text-text-secondary'">
++        {{ user.is_active ? 'Active' : 'Inactive' }}
++      </span>
++      <div class="user-actions">
++        <button @click="$emit('edit', user)" class="action-btn" aria-label="Edit user">
++          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
++            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
++          </svg>
++        </button>
++      </div>
++    </div>
++  </article>
++</template>
++
++<script setup lang="ts">
++import { computed } from 'vue';
++import type { User } from '@/types';
++
++interface Props {
++  user: User;
++}
++
++interface Emits {
++  edit: [user: User];
++}
++
++const props = defineProps<Props>();
++const emit = defineEmits<Emits>();
++
++const roleClass = computed(() => {
++  const classes: Record<string, string> = {
++    admin: 'bg-status-info-light text-status-info',
++    student: 'bg-primary-light text-primary',
++    instructor: 'bg-status-success-light text-status-success',
++  };
++  return classes[props.user.role] || 'bg-brand-borders text-text-secondary';
++});
++</script>
++
++<style scoped>
++.user-card {
++  background: rgba(255, 249, 250, 0.9);
++  backdrop-filter: blur(10px);
++  -webkit-backdrop-filter: blur(10px);
++  border: 1px solid #f3d2da;
++  border-radius: 1rem;
++  padding: 1rem;
++  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
++  transition: box-shadow 0.2s ease;
++  display: flex;
++  flex-direction: column;
++  height: 100%;
++}
++
++.user-card:hover {
++  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
++}
++
++.user-header {
++  display: flex;
++  align-items: flex-start;
++  justify-content: space-between;
++  gap: 0.75rem;
++  margin-bottom: 1rem;
++}
++
++.user-avatar {
++  display: flex;
++  height: 3rem;
++  width: 3rem;
++  flex-shrink: 0;
++  align-items: center;
++  justify-content: center;
++  border-radius: 0.75rem;
++  background-color: #b33f62;
++}
++
++.avatar-text {
++  font-size: 1.25rem;
++  font-weight: 700;
++  color: white;
++}
++
++.user-info {
++  flex: 1;
++  min-width: 0;
++}
++
++.user-name {
++  font-size: 1rem;
++  font-weight: 600;
++  color: #33222a;
++  overflow: hidden;
++  text-overflow: ellipsis;
++  white-space: nowrap;
++}
++
++.user-email {
++  font-size: 0.875rem;
++  color: #7a5c66;
++  margin-top: 0.125rem;
++  overflow: hidden;
++  text-overflow: ellipsis;
++  white-space: nowrap;
++}
++
++.user-meta {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 0.5rem;
++  margin-top: 0.5rem;
++}
++
++.meta-item {
++  display: inline-flex;
++  align-items: center;
++  gap: 0.25rem;
++  font-size: 0.75rem;
++  color: #7a5c66;
++}
++
++.meta-item svg {
++  height: 0.75rem;
++  width: 0.75rem;
++  color: #7a5c66;
++  opacity: 0.7;
++}
++
++.user-role-badge {
++  padding: 0.25rem 0.5rem;
++  font-size: 0.75rem;
++  font-weight: 500;
++  border-radius: 9999px;
++  flex-shrink: 0;
++}
++
++.user-stats {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  padding: 0.75rem 0;
++  border-top: 1px solid rgba(243, 210, 218, 0.5);
++  border-bottom: 1px solid rgba(243, 210, 218, 0.5);
++}
++
++.stat-item {
++  display: flex;
++  flex-direction: column;
++  align-items: center;
++  text-align: center;
++  flex: 1;
++}
++
++.stat-value {
++  font-size: 1.5rem;
++  font-weight: 700;
++  color: #33222a;
++}
++
++.stat-label {
++  font-size: 0.75rem;
++  color: #7a5c66;
++  margin-top: 0.125rem;
++}
++
++.stat-divider {
++  width: 1px;
++  height: 2rem;
++  background-color: rgba(243, 210, 218, 0.5);
++}
++
++.user-footer {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  margin-top: 1rem;
++  padding-top: 0.75rem;
++  border-top: 1px solid rgba(243, 210, 218, 0.5);
++}
++
++.status-badge {
++  padding: 0.25rem 0.5rem;
++  font-size: 0.75rem;
++  font-weight: 500;
++  border-radius: 9999px;
++}
++
++.user-actions {
++  display: flex;
++  align-items: center;
++  gap: 0.5rem;
++}
++
++.action-btn {
++  padding: 0.5rem;
++  border-radius: 0.5rem;
++  color: #7a5c66;
++  transition: color 0.2s ease, background-color 0.2s ease;
++}
++
++.action-btn:hover {
++  color: #b33f62;
++  background-color: #fff5f7;
++}
++
++@media (max-width: 768px) {
++  .user-card {
++    padding: 1rem;
++  }
++
++  .user-header {
++    gap: 0.5rem;
++  }
++
++  .user-avatar {
++    height: 2.5rem;
++    width: 2.5rem;
++  }
++
++  .avatar-text {
++    font-size: 1.125rem;
++  }
++
++  .stat-value {
++    font-size: 1.25rem;
++  }
++
++  .stat-label {
++    font-size: 0.75rem;
++  }
++}
++</style>
+\ No newline at end of file
+diff --git a/study-planner/resources/js/components/ui/SelectInput.vue b/study-planner/resources/js/components/ui/SelectInput.vue
+new file mode 100644
+index 00000000..8f328437
+--- /dev/null
++++ b/study-planner/resources/js/components/ui/SelectInput.vue
+@@ -0,0 +1,118 @@
++<template>
++  <div class="flex flex-col gap-1.5">
++    <label v-if="label" :for="id" class="input-label">{{ label }}</label>
++    <div class="relative">
++      <select
++        :id="id"
++        :value="modelValue"
++        @change="onChange"
++        :disabled="disabled"
++        :required="required"
++        :aria-describedby="errorId"
++        class="select-input"
++        :class="{ 'select-error': error }"
++      >
++        <option v-if="placeholder" value="" disabled>{{ placeholder }}</option>
++        <option
++          v-for="option in options"
++          :key="option.value"
++          :value="option.value"
++        >
++          {{ option.label }}
++        </option>
++      </select>
++      <div class="select-icon" aria-hidden="true">
++        <svg class="h-5 w-5 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
++          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
++        </svg>
++      </div>
++    </div>
++    <p v-if="error" :id="errorId" class="input-error-message">{{ error }}</p>
++    <p v-else-if="hint" :id="hintId" class="text-xs text-text-secondary mt-1">{{ hint }}</p>
++  </div>
++</template>
++
++<script setup lang="ts">
++import { computed } from 'vue';
++
++interface Option {
++  value: string | number;
++  label: string;
++}
++
++const props = defineProps<{
++  modelValue: string | number | null;
++  options: Option[];
++  label?: string;
++  placeholder?: string;
++  disabled?: boolean;
++  required?: boolean;
++  error?: string;
++  hint?: string;
++  id?: string;
++  name?: string;
++}>();
++
++const emit = defineEmits<{
++  'update:modelValue': [value: string | number | null];
++  change: [value: string | number | null];
++}>();
++
++const id = computed(() => props.id || `select-${Math.random().toString(36).slice(2, 9)}`);
++const errorId = computed(() => `${id.value}-error`);
++const hintId = computed(() => `${id.value}-hint`);
++
++function onChange(event: Event) {
++  const target = event.target as HTMLSelectElement;
++  emit('update:modelValue', target.value);
++  emit('change', target.value);
++}
++</script>
++
++<style scoped>
++.select-input {
++  appearance: none;
++  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%237A5C66' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
++  background-position: right 0.5rem center;
++  background-repeat: no-repeat;
++  background-size: 1.5em 1.5em;
++  padding-right: 2.5rem;
++  width: 100%;
++  padding: 0.625rem 0.75rem;
++  border: 1px solid #f3d2da;
++  border-radius: 0.375rem;
++  font-size: 0.875rem;
++  line-height: 1.5;
++  color: #33222a;
++  background-color: white;
++  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
++}
++
++.select-input:focus {
++  outline: none;
++  border-color: #b33f62;
++  box-shadow: 0 0 0 2px rgba(179, 63, 98, 0.5);
++  z-index: 10;
++}
++
++.select-input:disabled {
++  opacity: 0.5;
++  cursor: not-allowed;
++  background-color: #f9fafb;
++}
++
++.select-error {
++  border-color: #c6485f;
++  box-shadow: 0 0 0 2px rgba(198, 72, 95, 0.5);
++  border-color: #c6485f;
++}
++
++.select-icon {
++  position: absolute;
++  inset: 0 0 0 auto;
++  display: flex;
++  align-items: center;
++  padding-right: 0.75rem;
++  pointer-events: none;
++}
++</style>
+\ No newline at end of file
+diff --git a/study-planner/resources/js/layouts/AdminLayout.vue b/study-planner/resources/js/layouts/AdminLayout.vue
+index 548df129..bc19bf55 100644
+--- a/study-planner/resources/js/layouts/AdminLayout.vue
++++ b/study-planner/resources/js/layouts/AdminLayout.vue
+@@ -4,7 +4,15 @@
+     <div class="absolute -top-20 -right-20 w-72 h-72 bg-white/30 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+     <div class="absolute -bottom-20 -left-20 w-96 h-96 bg-brand-borders/40 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+ 
+-    <header class="glass-header sticky top-0 z-40 relative">
++    <!-- Mobile navigation drawer overlay -->
++    <div
++      v-if="mobileMenuOpen"
++      class="fixed inset-0 z-40 bg-black/50 lg:hidden"
++      @click="mobileMenuOpen = false"
++      aria-hidden="true"
++    ></div>
++
++    <header class="glass-header sticky top-0 z-50 relative">
+       <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Admin navigation">
+         <div class="flex justify-between h-16">
+           <div class="flex items-center">
+@@ -27,31 +35,65 @@
+ 
+             <div class="flex items-center space-x-3">
+               <span class="hidden sm:block text-sm font-medium text-text-secondary">{{ authStore.user?.name }}</span>
+-              <button @click="mobileMenuOpen = !mobileMenuOpen" class="panel-menu-toggle btn-secondary px-3" :aria-expanded="mobileMenuOpen" aria-label="Toggle navigation menu">
+-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+-              </button>
+-              <router-link to="/dashboard" class="panel-desktop-action btn-secondary text-sm" aria-label="Switch to student view">
++              <router-link to="/dashboard" class="hidden sm:btn-secondary text-sm" aria-label="Switch to student view">
+                 Student View
+               </router-link>
+-              <button @click="logout" class="btn-secondary text-sm" aria-label="Log out">
++              <button
++                @click="mobileMenuOpen = !mobileMenuOpen"
++                class="lg:hidden btn-secondary p-2 rounded-lg"
++                :aria-expanded="mobileMenuOpen"
++                aria-label="Toggle navigation menu"
++                aria-controls="admin-mobile-menu"
++              >
++                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
++                  <path v-if="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
++                  <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
++                </svg>
++              </button>
++              <button @click="logout" class="btn-secondary text-sm hidden sm:inline-flex" aria-label="Log out">
+                 Log Out
+               </button>
+             </div>
+           </div>
+         </div>
+-        <nav v-if="mobileMenuOpen" class="panel-mobile-nav border-t border-brand-borders py-3 space-y-1" aria-label="Mobile admin navigation">
+-          <router-link to="/admin" class="nav-link block" @click="mobileMenuOpen = false">Dashboard</router-link>
+-          <router-link to="/admin/resources" class="nav-link block" @click="mobileMenuOpen = false">Resources</router-link>
+-          <router-link to="/admin/subjects" class="nav-link block" @click="mobileMenuOpen = false">Subjects</router-link>
+-          <router-link to="/admin/users" class="nav-link block" @click="mobileMenuOpen = false">Users</router-link>
+-          <router-link to="/admin/settings" class="nav-link block" @click="mobileMenuOpen = false">Settings</router-link>
+-          <router-link to="/dashboard" class="nav-link block" @click="mobileMenuOpen = false">Student View</router-link>
++
++        <!-- Mobile Navigation Drawer -->
++        <nav
++          id="admin-mobile-menu"
++          v-if="mobileMenuOpen"
++          class="lg:hidden fixed inset-y-0 right-0 z-50 w-64 glass-header shadow-xl transform transition-transform duration-300 ease-in-out"
++          aria-label="Mobile admin navigation"
++        >
++          <div class="flex flex-col h-full">
++            <div class="p-4 border-b border-brand-borders/50">
++              <h3 class="text-lg font-semibold text-text-primary">Admin Navigation</h3>
++            </div>
++            <nav class="flex-1 py-4 space-y-1 px-3 overflow-y-auto" aria-label="Mobile admin navigation">
++              <router-link to="/admin" class="nav-link block px-3 py-3" @click="mobileMenuOpen = false">Dashboard</router-link>
++              <router-link to="/admin/resources" class="nav-link block px-3 py-3" @click="mobileMenuOpen = false">Resources</router-link>
++              <router-link to="/admin/subjects" class="nav-link block px-3 py-3" @click="mobileMenuOpen = false">Subjects</router-link>
++              <router-link to="/admin/users" class="nav-link block px-3 py-3" @click="mobileMenuOpen = false">Users</router-link>
++              <router-link to="/admin/settings" class="nav-link block px-3 py-3" @click="mobileMenuOpen = false">Settings</router-link>
++              <router-link to="/dashboard" class="nav-link block px-3 py-3 text-secondary" @click="mobileMenuOpen = false">Student View</router-link>
++            </nav>
++            <div class="p-4 border-t border-brand-borders/50 space-y-2">
++              <router-link to="/dashboard" class="btn-secondary w-full justify-center text-secondary" @click="mobileMenuOpen = false">
++                Student View
++              </router-link>
++              <button @click="mobileMenuOpen = false; logout()" class="btn-secondary w-full justify-center text-status-urgent">
++                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
++                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
++                </svg>
++                Log Out
++              </button>
++            </div>
++          </div>
+         </nav>
+       </nav>
+     </header>
+ 
+     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative" role="main">
+-      <div class="glass-card p-6">
++      <div class="glass-card p-4 sm:p-6">
+         <router-view />
+       </div>
+     </main>
+diff --git a/study-planner/resources/js/layouts/StudentLayout.vue b/study-planner/resources/js/layouts/StudentLayout.vue
+index 908a2e42..849be73e 100644
+--- a/study-planner/resources/js/layouts/StudentLayout.vue
++++ b/study-planner/resources/js/layouts/StudentLayout.vue
+@@ -3,8 +3,16 @@
+     <!-- Aurora decorative blobs -->
+     <div class="absolute -top-20 -right-20 w-72 h-72 bg-white/30 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+     <div class="absolute -bottom-20 -left-20 w-96 h-96 bg-brand-borders/40 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+-    
+-    <header class="glass-header sticky top-0 z-40 relative">
++
++    <!-- Mobile navigation drawer overlay -->
++    <div
++      v-if="mobileMenuOpen"
++      class="fixed inset-0 z-40 bg-black/50 lg:hidden"
++      @click="mobileMenuOpen = false"
++      aria-hidden="true"
++    ></div>
++
++    <header class="glass-header sticky top-0 z-50 relative">
+       <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
+         <div class="flex justify-between h-16">
+           <div class="flex items-center">
+@@ -33,27 +41,79 @@
+ 
+             <div class="flex items-center space-x-3">
+               <span class="hidden sm:block text-sm font-medium text-text-secondary">{{ authStore.user?.name }}</span>
+-              <router-link v-if="authStore.isAdmin" to="/admin" class="btn-secondary text-sm text-secondary" aria-label="Return to admin panel">
++              <router-link v-if="authStore.isAdmin" to="/admin" class="btn-secondary text-sm text-secondary hidden sm:inline-flex" aria-label="Return to admin panel">
+                 Admin Panel
+               </router-link>
+-              <button @click="mobileMenuOpen = !mobileMenuOpen" class="panel-menu-toggle btn-secondary px-3" :aria-expanded="mobileMenuOpen" aria-label="Toggle navigation menu">
+-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
++              <button
++                @click="mobileMenuOpen = !mobileMenuOpen"
++                class="lg:hidden btn-secondary p-2 rounded-lg"
++                :aria-expanded="mobileMenuOpen"
++                aria-label="Toggle navigation menu"
++                aria-controls="mobile-menu"
++              >
++                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
++                  <path v-if="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
++                  <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
++                </svg>
+               </button>
+-              <button @click="logout" class="btn-secondary text-sm" aria-label="Log out">
++              <button @click="logout" class="btn-secondary text-sm hidden sm:inline-flex" aria-label="Log out">
+                 Log Out
+               </button>
+             </div>
+           </div>
+         </div>
+-        <nav v-if="mobileMenuOpen" class="panel-mobile-nav border-t border-brand-borders py-3 space-y-1" aria-label="Mobile student navigation">
+-          <router-link v-if="authStore.isAdmin" to="/admin" class="nav-link block font-semibold text-secondary" @click="mobileMenuOpen = false">Admin Panel</router-link>
+-          <router-link v-for="item in studentNav" :key="item.to" :to="item.to" class="nav-link block" @click="mobileMenuOpen = false">{{ item.label }}</router-link>
+-        </nav>
+       </nav>
+     </header>
+ 
+-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative" role="main">
+-      <div class="glass-card p-6">
++        <!-- Mobile Navigation Drawer -->
++        <nav
++          id="mobile-menu"
++          v-if="mobileMenuOpen"
++          class="lg:hidden fixed inset-y-0 right-0 z-50 w-64 glass-header shadow-xl transform transition-transform duration-300 ease-in-out"
++          aria-label="Mobile navigation"
++        >
++          <div class="flex flex-col h-full">
++            <div class="p-4 border-b border-brand-borders/50">
++              <h3 class="text-lg font-semibold text-text-primary">Navigation</h3>
++            </div>
++            <nav class="flex-1 py-4 space-y-1 px-3 overflow-y-auto" aria-label="Mobile student navigation">
++              <router-link
++                v-if="authStore.isAdmin"
++                to="/admin"
++                class="nav-link block font-semibold text-secondary px-3 py-3"
++                @click="mobileMenuOpen = false"
++              >
++                Admin Panel
++              </router-link>
++              <router-link
++                v-for="item in studentNav"
++                :key="item.to"
++                :to="item.to"
++                class="nav-link block px-3 py-3"
++                @click="mobileMenuOpen = false"
++              >
++                {{ item.label }}
++              </router-link>
++            </nav>
++            <div class="p-4 border-t border-brand-borders/50 space-y-2">
++              <router-link v-if="authStore.isAdmin" to="/admin" class="btn-secondary w-full justify-center" @click="mobileMenuOpen = false">
++                Admin Panel
++              </router-link>
++              <button @click="mobileMenuOpen = false; logout()" class="btn-secondary w-full justify-center text-status-urgent">
++                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
++                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
++                </svg>
++                Log Out
++              </button>
++            </div>
++</div>
++        </nav>
++
++    <!-- Mobile Bottom Navigation -->
++    <MobileBottomNav />
++
++    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative pb-24 lg:pb-8" role="main">
++      <div class="glass-card p-4 sm:p-6">
+         <router-view />
+       </div>
+     </main>
+@@ -65,10 +125,12 @@ import { computed, ref } from 'vue';
+ import { useAuthStore } from '@/stores/auth';
+ import { useStudentStore } from '@/stores/student';
+ import { useRouter } from 'vue-router';
++import MobileBottomNav from '@/components/MobileBottomNav.vue';
+ 
+ const authStore = useAuthStore();
+ const studentStore = useStudentStore();
+ const router = useRouter();
++
+ const mobileMenuOpen = ref(false);
+ const studentNav = [
+   { to: '/dashboard', label: 'Dashboard' },
+diff --git a/study-planner/resources/js/router/index.ts b/study-planner/resources/js/router/index.ts
+index a7bfdcc1..cce3f554 100644
+--- a/study-planner/resources/js/router/index.ts
++++ b/study-planner/resources/js/router/index.ts
+@@ -1,8 +1,9 @@
+-import { createRouter, createWebHistory } from 'vue-router';
++import { Capacitor } from '@capacitor/core';
++import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router';
+ import { useAuthStore } from '@/stores/auth';
+ 
+ const router = createRouter({
+-  history: createWebHistory(),
++  history: Capacitor.isNativePlatform() ? createWebHashHistory() : createWebHistory(),
+   routes: [
+     {
+       path: '/login',
+@@ -55,7 +56,7 @@ const router = createRouter({
+ 
+ router.beforeEach(async (to, from) => {
+   const authStore = useAuthStore();
+-  
++
+   if (!authStore.isAuthenticated && !authStore.loading) {
+     await authStore.initialize();
+   }
+@@ -75,4 +76,4 @@ router.beforeEach(async (to, from) => {
+   return true;
+ });
+ 
+-export default router;
+\ No newline at end of file
++export default router;
+diff --git a/study-planner/resources/js/services/api.ts b/study-planner/resources/js/services/api.ts
+index 83498514..8d952fed 100644
+--- a/study-planner/resources/js/services/api.ts
++++ b/study-planner/resources/js/services/api.ts
+@@ -22,12 +22,12 @@ import type {
+   AdminDashboardData,
+ } from '@/types';
+ 
+-const API_BASE_URL = import.meta.env.MODE === 'web'
++const API_BASE_URL = ['web', 'development'].includes(import.meta.env.MODE)
+   ? '/api'
+   : import.meta.env.VITE_API_BASE_URL || '/api';
+ 
+ export function isLocalPlatform(): boolean {
+-  if (Capacitor.isNativePlatform()) return true;
++  if (Capacitor.isNativePlatform()) return !import.meta.env.VITE_API_BASE_URL;
+   if (typeof window !== 'undefined') {
+     if (window.location.protocol === 'file:') return true;
+     if (localStorage.getItem('sp_demo_mode') === 'true') return true;
+@@ -72,8 +72,13 @@ class ApiService {
+       (error: AxiosError) => {
+         if (error.response?.status === 401 && !isLocalPlatform()) {
+           apiService.clearToken();
+-          if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+-            window.location.href = '/login';
++          if (typeof window !== 'undefined') {
++            void import('@/stores/auth').then(({ useAuthStore }) => {
++              const authStore = useAuthStore();
++              authStore.user = null;
++              authStore.isAuthenticated = false;
++              return import('@/router');
++            }).then(({ default: router }) => router.replace('/login'));
+           }
+         }
+         return Promise.reject(error);
+@@ -108,21 +113,9 @@ class ApiService {
+       this.token = response.data.token;
+       return response.data;
+     }
+-    try {
+-      const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/login', { email, password });
+-      this.setToken(response.data.data.token);
+-      return response.data.data;
+-    } catch (err: any) {
+-      // Fallback to localApi if backend is unreachable
+-      if (!err.response && typeof window !== 'undefined') {
+-        console.warn('[API] Backend unreachable, falling back to local demo mode');
+-        localStorage.setItem('sp_demo_mode', 'true');
+-        const response = await localApi.login(email, password);
+-        this.token = response.data.token;
+-        return response.data;
+-      }
+-      throw err;
+-    }
++    const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/login', { email, password });
++    this.setToken(response.data.data.token);
++    return response.data.data;
+   }
+ 
+   async register(name: string, email: string, password: string, password_confirmation: string) {
+@@ -131,19 +124,9 @@ class ApiService {
+       this.token = response.data.token;
+       return response.data;
+     }
+-    try {
+-      const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/register', { name, email, password, password_confirmation });
+-      this.setToken(response.data.data.token);
+-      return response.data.data;
+-    } catch (err: any) {
+-      if (!err.response && typeof window !== 'undefined') {
+-        localStorage.setItem('sp_demo_mode', 'true');
+-        const response = await localApi.register(name, email, password);
+-        this.token = response.data.token;
+-        return response.data;
+-      }
+-      throw err;
+-    }
++    const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/register', { name, email, password, password_confirmation });
++    this.setToken(response.data.data.token);
++    return response.data.data;
+   }
+ 
+   async logout() {
+@@ -671,4 +654,4 @@ class ApiService {
+   }
+ }
+ 
+-export const api = new ApiService();
+\ No newline at end of file
++export const api = new ApiService();
+diff --git a/study-planner/resources/js/services/notificationService.ts b/study-planner/resources/js/services/notificationService.ts
+new file mode 100644
+index 00000000..9fbbca68
+--- /dev/null
++++ b/study-planner/resources/js/services/notificationService.ts
+@@ -0,0 +1,320 @@
++import type { Notification as LocalNotification } from '@capacitor/local-notifications';
++import { LocalNotifications } from '@capacitor/local-notifications';
++import { Capacitor } from '@capacitor/core';
++import type { Task, StudySession } from '@/types';
++
++interface NotificationOptions {
++  title: string;
++  body: string;
++  id?: number;
++  schedule?: { at: Date; repeats?: boolean; every?: 'year' | 'month' | 'two-weeks' | 'week' | 'day' | 'hour' | 'minute' };
++  actionTypeId?: string;
++  extra?: Record<string, any>;
++  sound?: string;
++  attachments?: Array<{ id: string; url: string; hideThumbnail?: boolean }>;
++}
++
++class NotificationService {
++  private initialized = false;
++  private permissionGranted = false;
++  private pendingNotifications: Map<string, LocalNotification> = new Map();
++
++  async initialize(): Promise<void> {
++    if (this.initialized) return;
++
++    try {
++      // Request permissions
++      const perm = await LocalNotifications.requestPermissions();
++      this.permissionGranted = perm.display === 'granted';
++
++      // Set up notification channels for Android
++      if (Capacitor.getPlatform() === 'android') {
++        await LocalNotifications.createChannel({
++          id: 'task-reminders',
++          name: 'Task Reminders',
++          description: 'Reminders for upcoming tasks and deadlines',
++          importance: 4,
++          visibility: 1,
++          sound: 'default',
++          vibration: true,
++        });
++
++        await LocalNotifications.createChannel({
++          id: 'study-timer',
++          name: 'Study Timer',
++          description: 'Study session timer alerts and completions',
++          importance: 4,
++          visibility: 1,
++          sound: 'default',
++          vibration: true,
++        });
++
++        await LocalNotifications.createChannel({
++          id: 'study-completion',
++          name: 'Study Completion',
++          description: 'Notifications when study sessions complete',
++          importance: 5,
++          visibility: 1,
++          sound: 'default',
++          vibration: true,
++        });
++      }
++
++      // Set up action types for interactive notifications
++      await LocalNotifications.setActionTypes({
++        types: [
++          {
++            id: 'task-actions',
++            actions: [
++              { id: 'view', title: 'View Task', requiresAuthentication: true },
++              { id: 'snooze', title: 'Snooze 15min', requiresAuthentication: false },
++            ],
++          },
++          {
++            id: 'timer-complete',
++            actions: [
++              { id: 'view-session', title: 'View Session', requiresAuthentication: true },
++              { id: 'take-break', title: 'Take Break', requiresAuthentication: false },
++            ],
++          },
++        ],
++      });
++
++      // Handle notification clicks
++      LocalNotifications.addListener('localNotificationActionPerformed', (action) => {
++        this.handleNotificationAction(action);
++      });
++
++      this.initialized = true;
++    } catch (error) {
++      console.warn('Notification service initialization failed:', error);
++    }
++  }
++
++  private handleNotificationAction(action: any): void {
++    const { notification, actionId } = action;
++    const extra = notification.extra || {};
++
++    switch (actionId) {
++      case 'view':
++      case 'view-task':
++        if (extra.taskId) {
++          window.location.href = `/tasks/${extra.taskId}`;
++        }
++        break;
++      case 'snooze':
++        if (extra.taskId) {
++          this.snoozeTaskReminder(extra.taskId, 15);
++        }
++        break;
++      case 'view-session':
++        if (extra.sessionId) {
++          window.location.href = `/study-plan?session=${extra.sessionId}`;
++        }
++        break;
++      case 'take-break':
++        // Handle break action
++        break;
++    }
++  }
++
++  async scheduleTaskReminder(task: Task): Promise<void> {
++    if (!this.permissionGranted) return;
++
++    const deadline = new Date(task.deadline);
++    const now = new Date();
++
++    // Schedule reminders at different intervals
++    const reminders = [
++      { hours: 24, label: '24 hours' },
++      { hours: 2, label: '2 hours' },
++      { hours: 0.5, label: '30 minutes' },
++    ];
++
++    for (const reminder of reminders) {
++      const reminderTime = new Date(deadline.getTime() - reminder.hours * 60 * 60 * 1000);
++
++      if (reminderTime > now) {
++        await this.scheduleNotification({
++          title: `Upcoming Deadline: ${task.title}`,
++          body: `${task.subject?.name || 'Task'} · Due ${deadline.toLocaleString()} (${reminder.label} left)`,
++          id: `task-${task.id}-${reminder.hours}h`,
++          schedule: { at: reminderTime },
++          extra: { taskId: task.id, type: 'task_reminder' },
++          actionTypeId: 'task-actions',
++        });
++      }
++    }
++  }
++
++  async cancelTaskReminders(taskId: number): Promise<void> {
++    const ids = [
++      `task-${taskId}-24h`,
++      `task-${taskId}-2h`,
++      `task-${taskId}-0.5h`,
++    ].map(id => ({ id }));
++
++    await LocalNotifications.cancel({ notifications: ids });
++  }
++
++  async scheduleStudySessionReminder(session: StudySession): Promise<void> {
++    if (!this.permissionGranted) return;
++
++    const sessionDate = new Date(`${session.scheduled_date}T${session.start_time}`);
++    const now = new Date();
++
++    // 30 minutes before
++    const reminderTime = new Date(sessionDate.getTime() - 30 * 60 * 1000);
++
++    if (reminderTime > now) {
++      await this.scheduleNotification({
++        title: 'Study Session Starting Soon',
++        body: `${session.subject?.name || 'Study session'} · ${session.topic?.name || 'General'} at ${session.start_time}`,
++        id: `session-${session.id}-reminder`,
++        schedule: { at: reminderTime },
++        extra: { sessionId: session.id, type: 'study_session_reminder' },
++        actionTypeId: 'timer-complete',
++      });
++    }
++  }
++
++  async scheduleTimerCompletionNotification(
++    taskId: number,
++    taskTitle: string,
++    subjectName: string,
++    delayMs: number
++  ): Promise<void> {
++    if (!this.permissionGranted) return;
++
++    const fireTime = new Date(Date.now() + delayMs);
++
++    await this.scheduleNotification({
++      title: 'Study Session Complete',
++      body: `Your ${subjectName} study session "${taskTitle}" has finished.`,
++      id: `timer-complete-${taskId}-${Date.now()}`,
++      schedule: { at: fireTime },
++      extra: { taskId, type: 'timer_completion' },
++      actionTypeId: 'timer-complete',
++      sound: 'default',
++    });
++  }
++
++  async scheduleOngoingTimerNotification(
++    taskId: number,
++    taskTitle: string,
++    subjectName: string,
++    remainingMinutes: number
++  ): Promise<void> {
++    if (!this.permissionGranted) return;
++
++    await this.scheduleNotification({
++      title: 'Study Session in Progress',
++      body: `${subjectName} - ${taskTitle} · ${remainingMinutes} minutes remaining`,
++      id: `ongoing-timer-${taskId}`,
++      extra: { taskId, type: 'ongoing_timer' },
++      actionTypeId: 'timer-complete',
++      // Ongoing notifications don't have a schedule - they're shown immediately
++    });
++  }
++
++  async cancelOngoingTimerNotification(taskId: number): Promise<void> {
++    await LocalNotifications.cancel({
++      notifications: [{ id: `ongoing-timer-${taskId}` }]
++    });
++  }
++
++  async showTaskCompletionNotification(task: Task): Promise<void> {
++    if (!this.permissionGranted) return;
++
++    await this.scheduleNotification({
++      title: 'Task Completed! 🎉',
++      body: `Great job! You completed "${task.title}".`,
++      id: `task-complete-${task.id}-${Date.now()}`,
++      extra: { taskId: task.id, type: 'task_completion' },
++      actionTypeId: 'task-actions',
++    });
++  }
++
++  async showStudyStreakNotification(days: number): Promise<void> {
++    if (!this.permissionGranted) return;
++
++    await this.scheduleNotification({
++      title: 'Study Streak! 🔥',
++      body: `Amazing! You've studied for ${days} consecutive days.`,
++      id: `streak-${Date.now()}`,
++      extra: { type: 'streak', days },
++    });
++  }
++
++  private async scheduleNotification(options: NotificationOptions): Promise<void> {
++    if (!this.permissionGranted) return;
++
++    try {
++      const notification: LocalNotification = {
++        title: options.title,
++        body: options.body,
++        id: options.id ? parseInt(options.id.replace(/\D/g, '')) || Date.now() : Date.now(),
++        schedule: options.schedule,
++        actionTypeId: options.actionTypeId,
++        extra: options.extra,
++        sound: options.sound || 'default',
++        attachments: options.attachments,
++        smallIcon: 'ic_stat_notification',
++        iconColor: '#B33F62',
++      };
++
++      await LocalNotifications.schedule({ notifications: [notification] });
++      this.pendingNotifications.set(options.id || String(notification.id), notification);
++    } catch (error) {
++      console.warn('Failed to schedule notification:', error);
++    }
++  }
++
++  async snoozeTaskReminder(taskId: number, minutes: number): Promise<void> {
++    const task = await this.getTaskById(taskId);
++    if (!task) return;
++
++    const fireTime = new Date(Date.now() + minutes * 60 * 1000);
++
++    await this.scheduleNotification({
++      title: `Snoozed: ${task.title}`,
++      body: `Reminder snoozed for ${minutes} minutes.`,
++      id: `task-${taskId}-snooze-${Date.now()}`,
++      schedule: { at: fireTime },
++      extra: { taskId, type: 'task_reminder', snoozed: true },
++      actionTypeId: 'task-actions',
++    });
++  }
++
++  async cancelAllNotifications(): Promise<void> {
++    await LocalNotifications.cancelAll();
++    this.pendingNotifications.clear();
++  }
++
++  async getPendingNotifications(): Promise<LocalNotification[]> {
++    const result = await LocalNotifications.getPending();
++    return result.notifications;
++  }
++
++  // Helper to get task by ID (would need to be implemented based on your store)
++  private async getTaskById(taskId: number): Promise<any> {
++    // This would typically come from your store or API
++    return null;
++  }
++
++  async requestPermissions(): Promise<boolean> {
++    try {
++      const perm = await LocalNotifications.requestPermissions();
++      this.permissionGranted = perm.display === 'granted';
++      return this.permissionGranted;
++    } catch {
++      return false;
++    }
++  }
++
++  isPermissionGranted(): boolean {
++    return this.permissionGranted;
++  }
++}
++
++export const notificationService = new NotificationService();
+\ No newline at end of file
+diff --git a/study-planner/resources/js/services/studyTimerService.ts b/study-planner/resources/js/services/studyTimerService.ts
+new file mode 100644
+index 00000000..c1f9c468
+--- /dev/null
++++ b/study-planner/resources/js/services/studyTimerService.ts
+@@ -0,0 +1,443 @@
++import { ref, computed, watch } from 'vue';
++import { Capacitor } from '@capacitor/core';
++import { App } from '@capacitor/app';
++import type { StudySession, Task } from '@/types';
++
++// Timer mode types
++export type TimerMode = 'study' | 'break';
++export type TimerStatus = 'idle' | 'running' | 'paused' | 'completed';
++
++// Timer state for a specific task/session
++export interface TimerState {
++  id: number;
++  totalMs: number;
++  remainingMs: number;
++  startedAt: number | null;
++  status: TimerStatus;
++  mode: TimerMode;
++  sessionId?: number;
++  taskId?: number;
++  subjectName?: string;
++  taskTitle?: string;
++  updatedAt: number;
++}
++
++// Background timer tick event
++interface TimerTickEvent {
++  timerId: number;
++  remainingMs: number;
++  status: TimerStatus;
++}
++
++const STORAGE_KEY = 'study-plan-timer-states-v2';
++const BACKGROUND_TICK_INTERVAL = 1000; // 1 second for background updates
++
++class StudyTimerService {
++  private timerStates = ref<Record<number, TimerState>>({});
++  private timerInterval: number | null = null;
++  private backgroundTaskRegistered = false;
++  private listeners: Set<(event: TimerTickEvent) => void> = new Set();
++  private isInitialized = false;
++
++  // Get all timer states
++  get states(): Record<number, TimerState> {
++    return this.timerStates.value;
++  }
++
++  // Get a specific timer state
++  getState(id: number): TimerState | undefined {
++    return this.timerStates.value[id];
++  }
++
++  // Get timer state for a specific task/session
++  getStateForTask(taskId: number, sessionId?: number): TimerState | undefined {
++    const key = sessionId ?? taskId;
++    return this.timerStates.value[key];
++  }
++
++  // Get all active (running) timers
++  get activeTimers(): TimerState[] {
++    return Object.values(this.timerStates.value).filter(
++      state => state.status === 'running'
++    );
++  }
++
++  // Initialize the service
++  async initialize(): Promise<void> {
++    if (this.isInitialized) return;
++
++    // Load persisted state
++    this.loadPersistedState();
++
++    // Start the main timer interval
++    this.startTimerInterval();
++
++    // Register app state listeners for mobile
++    if (Capacitor.isNativePlatform()) {
++      await this.registerAppStateListeners();
++    }
++
++    // Listen for app visibility changes
++    document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
++
++    this.isInitialized = true;
++  }
++
++  // Create or get timer state for a task/session
++  getOrCreateTimerState(params: {
++    id: number;
++    totalMinutes: number;
++    sessionId?: number;
++    taskId?: number;
++    subjectName?: string;
++    taskTitle?: string;
++  }): TimerState {
++    const key = params.sessionId ?? params.id;
++
++    if (!this.timerStates.value[key]) {
++      this.timerStates.value[key] = {
++        id: key,
++        totalMs: params.totalMinutes * 60_000,
++        remainingMs: params.totalMinutes * 60_000,
++        startedAt: null,
++        status: 'idle',
++        mode: 'study',
++        sessionId: params.sessionId,
++        taskId: params.taskId,
++        subjectName: params.subjectName,
++        taskTitle: params.taskTitle,
++        updatedAt: Date.now(),
++      };
++    } else {
++      // Ensure totalMs is correct
++      const state = this.timerStates.value[key];
++      if (state.totalMs <= 0) {
++        state.totalMs = params.totalMinutes * 60_000;
++        state.remainingMs = state.totalMs;
++      }
++    }
++
++    return this.timerStates.value[key];
++  }
++
++  // Start a timer
++  startTimer(id: number): void {
++    const state = this.timerStates.value[id];
++    if (!state || state.status === 'running') return;
++
++    const currentRemaining = this.getRemainingMs(state);
++    state.mode = 'study';
++    state.status = 'running';
++    state.startedAt = Date.now() - (state.totalMs - currentRemaining);
++    state.remainingMs = currentRemaining;
++    state.updatedAt = Date.now();
++
++    this.persistState();
++    this.notifyListeners(id);
++  }
++
++  // Pause a timer
++  pauseTimer(id: number): void {
++    const state = this.timerStates.value[id];
++    if (!state || state.status !== 'running') return;
++
++    state.remainingMs = this.getRemainingMs(state);
++    state.startedAt = null;
++    state.status = 'paused';
++    state.updatedAt = Date.now();
++
++    this.persistState();
++    this.notifyListeners(id);
++  }
++
++  // Resume a paused timer
++  resumeTimer(id: number): void {
++    const state = this.timerStates.value[id];
++    if (!state || state.status !== 'paused') return;
++
++    const currentRemaining = this.getRemainingMs(state);
++    state.status = 'running';
++    state.mode = 'study';
++    state.startedAt = Date.now() - (state.totalMs - currentRemaining);
++    state.remainingMs = currentRemaining;
++    state.updatedAt = Date.now();
++
++    this.persistState();
++    this.notifyListeners(id);
++  }
++
++  // Complete a timer
++  completeTimer(id: number): void {
++    const state = this.timerStates.value[id];
++    if (!state || state.status === 'completed') return;
++
++    state.status = 'completed';
++    state.startedAt = null;
++    state.remainingMs = 0;
++    state.updatedAt = Date.now();
++
++    this.persistState();
++    this.notifyListeners(id);
++  }
++
++  // Start a break timer
++  startBreak(id: number, breakMinutes: number = 5): void {
++    const state = this.timerStates.value[id];
++    if (!state) return;
++
++    state.mode = 'break';
++    state.totalMs = breakMinutes * 60_000;
++    state.remainingMs = state.totalMs;
++    state.startedAt = Date.now();
++    state.status = 'running';
++    state.updatedAt = Date.now();
++
++    this.persistState();
++    this.notifyListeners(id);
++  }
++
++  // Switch timer mode (study/break)
++  switchMode(id: number, mode: TimerMode): void {
++    const state = this.timerStates.value[id];
++    if (!state) return;
++
++    const currentRemaining = this.getRemainingMs(state);
++    const wasRunning = state.status === 'running';
++
++    state.mode = mode;
++    state.remainingMs = currentRemaining;
++    state.updatedAt = Date.now();
++
++    if (wasRunning) {
++      state.startedAt = Date.now() - (state.totalMs - currentRemaining);
++    }
++
++    this.persistState();
++    this.notifyListeners(id);
++  }
++
++  // Get remaining milliseconds for a timer state
++  getRemainingMs(state: TimerState, now: number = Date.now()): number {
++    if (!state) return 0;
++    if (state.status === 'running' && state.startedAt) {
++      return Math.max(0, state.totalMs - (now - state.startedAt));
++    }
++    if (state.status === 'completed') {
++      return 0;
++    }
++    return Math.max(0, state.remainingMs);
++  }
++
++  // Format countdown for display
++  formatCountdown(ms: number): string {
++    const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
++    const minutes = Math.floor(totalSeconds / 60);
++    const seconds = totalSeconds % 60;
++    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
++  }
++
++  // Subscribe to timer updates
++  subscribe(listener: (event: TimerTickEvent) => void): () => void {
++    this.listeners.add(listener);
++    return () => this.listeners.delete(listener);
++  }
++
++  // Notify all listeners of a timer update
++  private notifyListeners(timerId: number): void {
++    const state = this.timerStates.value[timerId];
++    if (!state) return;
++
++    const event: TimerTickEvent = {
++      timerId,
++      remainingMs: this.getRemainingMs(state),
++      status: state.status,
++    };
++
++    this.listeners.forEach(listener => {
++      try {
++        listener(event);
++      } catch (error) {
++        console.warn('Timer listener error:', error);
++      }
++    });
++  }
++
++  // Persist all timer states to localStorage
++  private persistState(): void {
++    try {
++      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.timerStates.value));
++    } catch (error) {
++      console.warn('Failed to save study timer state:', error);
++    }
++  }
++
++  // Load persisted timer states from localStorage
++  private loadPersistedState(): void {
++    try {
++      const raw = localStorage.getItem(STORAGE_KEY);
++      if (!raw) return;
++      const parsed = JSON.parse(raw) as Record<number, TimerState>;
++      this.timerStates.value = parsed ?? {};
++
++      // Reset any running timers to paused state (they can't run while app was closed)
++      Object.values(this.timerStates.value).forEach(state => {
++        if (state.status === 'running') {
++          state.status = 'paused';
++          state.remainingMs = Math.max(0, state.remainingMs);
++          state.startedAt = null;
++        }
++      });
++    } catch (error) {
++      console.warn('Failed to restore saved study timers:', error);
++    }
++  }
++
++  // Start the main timer interval
++  private startTimerInterval(): void {
++    this.timerInterval = window.setInterval(() => {
++      this.activeTimers.forEach(state => {
++        const remaining = this.getRemainingMs(state);
++
++        if (remaining <= 0 && state.status === 'running') {
++          this.completeTimer(state.id);
++
++          // Trigger completion notification
++          if (state.taskId) {
++            this.dispatchTimerCompleteEvent(state);
++          }
++        } else {
++          // Update remaining time for running timers
++          this.notifyListeners(state.id);
++        }
++      });
++    }, 250);
++  }
++
++  // Dispatch timer completion event for notifications
++  private dispatchTimerCompleteEvent(state: TimerState): void {
++    window.dispatchEvent(
++      new CustomEvent('study-timer-complete', {
++        detail: {
++          timerId: state.id,
++          taskId: state.taskId,
++          sessionId: state.sessionId,
++          subjectName: state.subjectName,
++          taskTitle: state.taskTitle,
++          mode: state.mode,
++        },
++      })
++    );
++  }
++
++  // Handle app visibility changes
++  private handleVisibilityChange(): void {
++    if (document.hidden) {
++      // App went to background - pause all running timers
++      this.activeTimers.forEach(state => {
++        if (state.status === 'running') {
++          state.remainingMs = this.getRemainingMs(state);
++          state.startedAt = null;
++          state.status = 'paused';
++          state.updatedAt = Date.now();
++        }
++      });
++      this.persistState();
++    } else {
++      // App came to foreground - resume paused timers that were running
++      Object.values(this.timerStates.value).forEach(state => {
++        if (state.status === 'paused' && state.remainingMs > 0) {
++          // Optionally auto-resume, or keep paused for user to resume manually
++          // For study timers, we'll keep them paused so user can explicitly resume
++        }
++      });
++    }
++  }
++
++  // Register app state listeners for Capacitor
++  private async registerAppStateListeners(): Promise<void> {
++    if (this.backgroundTaskRegistered) return;
++
++    try {
++      // Listen for app state changes
++      App.addListener('appStateChange', ({ isActive }) => {
++        if (!isActive) {
++          // App went to background - pause all running timers
++          this.handleVisibilityChange();
++        }
++      });
++
++      // Listen for app exit
++      App.addListener('appExit', async () => {
++        // Save state before app exits
++        this.persistState();
++
++        // Schedule local notifications for active timers
++        this.activeTimers.forEach(state => {
++          if (state.status === 'running') {
++            const remainingMs = this.getRemainingMs(state);
++            if (remainingMs > 0 && state.taskId) {
++              this.scheduleCompletionNotification(state, remainingMs);
++            }
++          }
++        });
++      });
++
++      this.backgroundTaskRegistered = true;
++    } catch (error) {
++      console.warn('App state listener registration failed:', error);
++    }
++  }
++
++  // Schedule local notification for timer completion
++  private async scheduleCompletionNotification(state: TimerState, remainingMs: number): Promise<void> {
++    try {
++      const { LocalNotifications } = await import('@capacitor/local-notifications');
++
++      const fireTime = new Date(Date.now() + remainingMs);
++
++      await LocalNotifications.schedule({
++        notifications: [{
++          title: 'Study Session Complete',
++          body: `Your ${state.subjectName || 'study'} session "${state.taskTitle || 'Study'}" has finished.`,
++          id: `timer-complete-${state.id}-${Date.now()}`,
++          schedule: { at: fireTime },
++          extra: {
++            timerId: state.id,
++            taskId: state.taskId,
++            sessionId: state.sessionId,
++            type: 'timer_completion'
++          },
++          actionTypeId: 'timer-complete',
++          sound: 'default',
++        }],
++      });
++    } catch (error) {
++      console.warn('Failed to schedule completion notification:', error);
++    }
++  }
++
++  // Clean up timer state
++  removeTimer(id: number): void {
++    delete this.timerStates.value[id];
++    this.persistState();
++  }
++
++  // Clear all timer states
++  clearAll(): void {
++    this.timerStates.value = {};
++    this.persistState();
++  }
++
++  // Cleanup
++  destroy(): void {
++    if (this.timerInterval) {
++      window.clearInterval(this.timerInterval);
++      this.timerInterval = null;
++    }
++    document.removeEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
++    this.listeners.clear();
++    this.isInitialized = false;
++  }
++}
++
++export const studyTimerService = new StudyTimerService();
+\ No newline at end of file
+diff --git a/study-planner/resources/js/stores/auth.ts b/study-planner/resources/js/stores/auth.ts
+index 05806c66..cd1234f3 100644
+--- a/study-planner/resources/js/stores/auth.ts
++++ b/study-planner/resources/js/stores/auth.ts
+@@ -8,12 +8,15 @@ export const useAuthStore = defineStore('auth', () => {
+   const isAuthenticated = ref(false);
+   const loading = ref(false);
+   const error = ref<string | null>(null);
++  let initialized = false;
+ 
+   const userRole = computed(() => user.value?.role);
+   const isStudent = computed(() => user.value?.role === 'student');
+   const isAdmin = computed(() => user.value?.role === 'admin');
+ 
+   async function initialize() {
++    if (initialized) return;
++    initialized = true;
+     api.loadToken();
+     if (api.token) {
+       try {
+@@ -108,4 +111,4 @@ export const useAuthStore = defineStore('auth', () => {
+     updateProfile,
+     updatePassword,
+   };
+-});
+\ No newline at end of file
++});
+diff --git a/study-planner/resources/js/views/admin/ResourcesView.vue b/study-planner/resources/js/views/admin/ResourcesView.vue
+index 8beb72bd..dbc5142a 100644
+--- a/study-planner/resources/js/views/admin/ResourcesView.vue
++++ b/study-planner/resources/js/views/admin/ResourcesView.vue
+@@ -1,6 +1,6 @@
+ <template>
+   <div class="space-y-8">
+-    <div class="flex items-center justify-between">
++    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+       <div>
+         <h1 class="text-2xl font-bold text-text-primary">Resources</h1>
+         <p class="mt-1 text-sm text-text-secondary">Manage the learning resource library.</p>
+@@ -40,68 +40,97 @@
+       </svg>
+     </div>
+ 
+-    <div v-else class="glass-card overflow-hidden">
+-      <div class="overflow-x-auto">
+-        <table class="min-w-full divide-y divide-brand-borders/50" role="table">
+-          <thead class="bg-white/50">
+-            <tr>
+-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Resource</th>
+-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Type</th>
+-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Difficulty</th>
+-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Subjects</th>
+-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Topics</th>
+-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Status</th>
+-              <th class="px-6 py-3 text-right text-xs font-medium text-text-secondary uppercase tracking-wider">Actions</th>
+-            </tr>
+-          </thead>
+-          <tbody class="divide-y divide-brand-borders/50" role="rowgroup">
+-            <tr v-for="resource in resources.data" :key="resource.id" class="hover:bg-white/30 transition-colors" role="row">
+-              <td class="px-6 py-4">
+-                <div class="text-sm font-medium text-text-primary">{{ resource.title }}</div>
+-                <div class="text-sm text-text-secondary line-clamp-1">{{ resource.description }}</div>
+-                <a :href="resource.url" target="_blank" rel="noopener noreferrer" class="text-xs text-secondary hover:underline transition-colors">{{ resource.url }}</a>
+-              </td>
+-              <td class="px-6 py-4">
+-                <span class="px-2 py-1 text-xs font-medium rounded-full" :class="typeClass(resource.resource_type)">{{ resource.resource_type }}</span>
+-              </td>
+-              <td class="px-6 py-4">
+-                <span class="px-2 py-1 text-xs font-medium rounded-full" :class="difficultyClass(resource.difficulty)">{{ resource.difficulty }}</span>
+-              </td>
+-              <td class="px-6 py-4">
+-                <div class="flex flex-wrap gap-1">
+-                  <span v-for="subject in resource.subjects" :key="subject.id" class="px-2 py-1 text-xs bg-brand-borders/50 text-text-secondary rounded">{{ subject.name }}</span>
+-                  <span v-if="resource.subjects.length === 0" class="text-xs text-text-secondary">None</span>
+-                </div>
+-              </td>
+-              <td class="px-6 py-4">
+-                <div class="flex flex-wrap gap-1">
+-                  <span v-for="topic in resource.topics" :key="topic.id" class="px-2 py-1 text-xs bg-status-info-light text-status-info rounded">{{ topic.name }}</span>
+-                  <span v-if="resource.topics.length === 0" class="text-xs text-text-secondary">None</span>
+-                </div>
+-              </td>
+-              <td class="px-6 py-4">
+-                <span :class="resource.is_active ? 'bg-status-success-light text-status-success' : 'bg-brand-borders text-text-secondary'" class="px-2 py-1 text-xs font-medium rounded-full">{{ resource.is_active ? 'Active' : 'Inactive' }}</span>
+-              </td>
+-              <td class="px-6 py-4 text-right space-x-2">
+-                <button @click="editResource(resource)" class="text-secondary hover:text-secondary-hover text-sm font-medium transition-colors" aria-label="Edit resource">Edit</button>
+-                <button @click="confirmDelete(resource)" class="text-status-urgent hover:text-status-urgent-hover text-sm font-medium transition-colors" aria-label="Delete resource">Delete</button>
+-              </td>
+-            </tr>
+-            <tr v-if="resources.data.length === 0">
+-              <td colspan="7" class="px-6 py-12 text-center text-text-secondary">No resources found. <button @click="showCreateModal = true" class="text-secondary hover:underline transition-colors">Create one</button>.</td>
+-            </tr>
+-          </tbody>
+-        </table>
++    <div v-else class="space-y-4">
++      <!-- Desktop Table View -->
++      <div class="hidden lg:block glass-card overflow-hidden">
++        <div class="overflow-x-auto">
++          <table class="min-w-full divide-y divide-brand-borders/50" role="table">
++            <thead class="bg-white/50">
++              <tr>
++                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Resource</th>
++                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Type</th>
++                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Difficulty</th>
++                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Subjects</th>
++                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Topics</th>
++                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Status</th>
++                <th class="px-6 py-3 text-right text-xs font-medium text-text-secondary uppercase tracking-wider">Actions</th>
++              </tr>
++            </thead>
++            <tbody class="divide-y divide-brand-borders/50" role="rowgroup">
++              <tr v-for="resource in resources.data" :key="resource.id" class="hover:bg-white/30 transition-colors" role="row">
++                <td class="px-6 py-4">
++                  <div class="text-sm font-medium text-text-primary">{{ resource.title }}</div>
++                  <div class="text-sm text-text-secondary line-clamp-1">{{ resource.description }}</div>
++                  <a :href="resource.url" target="_blank" rel="noopener noreferrer" class="text-xs text-secondary hover:underline transition-colors">{{ resource.url }}</a>
++                </td>
++                <td class="px-6 py-4">
++                  <span class="px-2 py-1 text-xs font-medium rounded-full" :class="typeClass(resource.resource_type)">{{ resource.resource_type }}</span>
++                </td>
++                <td class="px-6 py-4">
++                  <span class="px-2 py-1 text-xs font-medium rounded-full" :class="difficultyClass(resource.difficulty)">{{ resource.difficulty }}</span>
++                </td>
++                <td class="px-6 py-4">
++                  <div class="flex flex-wrap gap-1">
++                    <span v-for="subject in resource.subjects" :key="subject.id" class="px-2 py-1 text-xs bg-brand-borders/50 text-text-secondary rounded">{{ subject.name }}</span>
++                    <span v-if="resource.subjects.length === 0" class="text-xs text-text-secondary">None</span>
++                  </div>
++                </td>
++                <td class="px-6 py-4">
++                  <div class="flex flex-wrap gap-1">
++                    <span v-for="topic in resource.topics" :key="topic.id" class="px-2 py-1 text-xs bg-status-info-light text-status-info rounded">{{ topic.name }}</span>
++                    <span v-if="resource.topics.length === 0" class="text-xs text-text-secondary">None</span>
++                  </div>
++                </td>
++                <td class="px-6 py-4">
++                  <span :class="resource.is_active ? 'bg-status-success-light text-status-success' : 'bg-brand-borders text-text-secondary'" class="px-2 py-1 text-xs font-medium rounded-full">{{ resource.is_active ? 'Active' : 'Inactive' }}</span>
++                </td>
++                <td class="px-6 py-4 text-right space-x-2">
++                  <button @click="editResource(resource)" class="text-secondary hover:text-secondary-hover text-sm font-medium transition-colors" aria-label="Edit resource">Edit</button>
++                  <button @click="confirmDelete(resource)" class="text-status-urgent hover:text-status-urgent-hover text-sm font-medium transition-colors" aria-label="Delete resource">Delete</button>
++                </td>
++              </tr>
++              <tr v-if="resources.data.length === 0">
++                <td colspan="7" class="px-6 py-12 text-center text-text-secondary">No resources found. <button @click="showCreateModal = true" class="text-secondary hover:underline transition-colors">Create one</button>.</td>
++              </tr>
++            </tbody>
++          </table>
++        </div>
++
++        <div v-if="resources.last_page > 1" class="px-6 py-4 border-t border-brand-borders/50">
++          <nav class="flex items-center justify-between" aria-label="Pagination">
++            <p class="text-sm text-text-secondary">Showing {{ resources.from }} to {{ resources.to }} of {{ resources.total }} resources</p>
++            <div class="flex space-x-2">
++              <button @click="fetchResources({ page: resources.current_page - 1 })" :disabled="resources.current_page === 1" class="btn-secondary text-sm" aria-label="Previous page">Previous</button>
++              <button @click="fetchResources({ page: resources.current_page + 1 })" :disabled="resources.current_page === resources.last_page" class="btn-secondary text-sm" aria-label="Next page">Next</button>
++            </div>
++          </nav>
++        </div>
+       </div>
+ 
+-      <div v-if="resources.last_page > 1" class="px-6 py-4 border-t border-brand-borders/50">
+-        <nav class="flex items-center justify-between" aria-label="Pagination">
+-          <p class="text-sm text-text-secondary">Showing {{ resources.from }} to {{ resources.to }} of {{ resources.total }} resources</p>
+-          <div class="flex space-x-2">
+-            <button @click="fetchResources({ page: resources.current_page - 1 })" :disabled="resources.current_page === 1" class="btn-secondary text-sm" aria-label="Previous page">Previous</button>
+-            <button @click="fetchResources({ page: resources.current_page + 1 })" :disabled="resources.current_page === resources.last_page" class="btn-secondary text-sm" aria-label="Next page">Next</button>
++      <!-- Mobile Card View -->
++      <div class="lg:hidden">
++        <div class="grid grid-cols-1 gap-4" role="list">
++          <ResourceCard
++            v-for="resource in resources.data"
++            :key="resource.id"
++            :resource="resource"
++            @view="recordView"
++            role="listitem"
++          />
++          <div v-if="resources.data.length === 0" class="rounded-xl border border-dashed border-brand-borders bg-brand-navbar-cards-alt p-10 text-center" role="listitem">
++            <p class="text-text-secondary">No resources found. <button @click="showCreateModal = true" class="text-secondary hover:underline transition-colors">Create one</button>.</p>
+           </div>
+-        </nav>
++        </div>
++
++        <div v-if="resources.last_page > 1" class="px-4 py-4 border-t border-brand-borders/50">
++          <nav class="flex items-center justify-between" aria-label="Pagination">
++            <p class="text-sm text-text-secondary">Showing {{ resources.from }} to {{ resources.to }} of {{ resources.total }} resources</p>
++            <div class="flex space-x-2">
++              <button @click="fetchResources({ page: resources.current_page - 1 })" :disabled="resources.current_page === 1" class="btn-secondary text-sm" aria-label="Previous page">Previous</button>
++              <button @click="fetchResources({ page: resources.current_page + 1 })" :disabled="resources.current_page === resources.last_page" class="btn-secondary text-sm" aria-label="Next page">Next</button>
++            </div>
++          </nav>
++        </div>
+       </div>
+     </div>
+   </div>
+@@ -230,6 +259,7 @@
+ import { ref, onMounted, watch, computed } from 'vue';
+ import { useAdminStore } from '@/stores/admin';
+ import type { Resource, Subject, Topic } from '@/types';
++import ResourceCard from '@/components/ResourceCard.vue';
+ 
+ const adminStore = useAdminStore();
+ 
+diff --git a/study-planner/resources/js/views/admin/UsersView.vue b/study-planner/resources/js/views/admin/UsersView.vue
+index 170d87d4..d5044d99 100644
+--- a/study-planner/resources/js/views/admin/UsersView.vue
++++ b/study-planner/resources/js/views/admin/UsersView.vue
+@@ -1,26 +1,35 @@
+ <template>
+   <div class="space-y-8">
+-    <div class="flex items-center justify-between">
++    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+       <div>
+         <h1 class="text-2xl font-bold text-text-primary">Users</h1>
+         <p class="mt-1 text-sm text-text-secondary">Manage user accounts and roles.</p>
+       </div>
++      <button @click="openAddModal" class="btn-primary" aria-label="Add new user">
++        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
++          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
++        </svg>
++        Add User
++      </button>
+     </div>
+ 
+     <div class="glass-card p-4 mb-6">
+       <div class="flex flex-wrap gap-4">
+         <input type="text" v-model="filters.search" @input="debouncedFetch" placeholder="Search users..." class="input-field-glass flex-1 min-w-[200px]" aria-label="Search users" />
+-        <select v-model="filters.role" @change="fetchUsers" class="input-field-glass w-auto" aria-label="Filter by role">
+-          <option value="">All Roles</option>
+-          <option value="admin">Admin</option>
+-          <option value="student">Student</option>
+-          <option value="instructor">Instructor</option>
+-        </select>
+-        <select v-model="filters.is_active" @change="fetchUsers" class="input-field-glass w-auto" aria-label="Filter by status">
+-          <option value="">All Statuses</option>
+-          <option value="true">Active</option>
+-          <option value="false">Inactive</option>
+-        </select>
++        <SelectInput
++          v-model="filters.role"
++          :options="roleOptions"
++          placeholder="All Roles"
++          @change="fetchUsers"
++          aria-label="Filter by role"
++        />
++        <SelectInput
++          v-model="filters.is_active"
++          :options="statusOptions"
++          placeholder="All Statuses"
++          @change="fetchUsers"
++          aria-label="Filter by status"
++        />
+       </div>
+     </div>
+ 
+@@ -31,56 +40,86 @@
+       </svg>
+     </div>
+ 
+-    <div v-else class="glass-card overflow-hidden">
+-      <div class="overflow-x-auto">
+-        <table class="min-w-full divide-y divide-brand-borders/50" role="table">
+-          <thead class="bg-white/50">
+-            <tr>
+-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">User</th>
+-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Role</th>
+-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Course</th>
+-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Year</th>
+-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Status</th>
+-              <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Stats</th>
+-              <th class="px-6 py-3 text-right text-xs font-medium text-text-secondary uppercase tracking-wider">Actions</th>
+-            </tr>
+-          </thead>
+-          <tbody class="divide-y divide-brand-borders/50" role="rowgroup">
+-            <tr v-for="user in users.data" :key="user.id" class="hover:bg-white/30 transition-colors" role="row">
+-              <td class="px-6 py-4">
+-                <div class="text-sm font-bold text-text-primary">{{ user.name }}</div>
+-                <div class="text-sm text-text-secondary">{{ user.email }}</div>
+-              </td>
+-              <td class="px-6 py-4">
+-                <span class="px-2 py-1 text-xs font-medium rounded-full" :class="roleClass(user.role)">{{ user.role }}</span>
+-              </td>
+-              <td class="px-6 py-4 text-sm text-text-secondary">{{ user.course || '—' }}</td>
+-              <td class="px-6 py-4 text-sm text-text-secondary">{{ user.year_level || '—' }}</td>
+-              <td class="px-6 py-4">
+-                <span :class="user.is_active ? 'bg-status-success-light text-status-success' : 'bg-brand-borders text-text-secondary'" class="px-2 py-1 text-xs font-medium rounded-full">{{ user.is_active ? 'Active' : 'Inactive' }}</span>
+-              </td>
+-              <td class="px-6 py-4 text-sm text-text-secondary">
+-                {{ user.subjects_count || 0 }} subjects · {{ user.tasks_count || 0 }} tasks · {{ user.quiz_attempts_count || 0 }} quizzes
+-              </td>
+-              <td class="px-6 py-4 text-right space-x-2">
+-                <button @click="editUser(user)" class="text-secondary hover:text-secondary-hover text-sm font-medium transition-colors" aria-label="Edit user">Edit</button>
+-              </td>
+-            </tr>
+-            <tr v-if="users.data.length === 0">
+-              <td colspan="7" class="px-6 py-12 text-center text-text-secondary">No users found.</td>
+-            </tr>
+-          </tbody>
+-        </table>
++    <div v-else class="space-y-4">
++      <!-- Desktop Table View -->
++      <div class="hidden lg:block glass-card overflow-hidden">
++        <div class="overflow-x-auto">
++          <table class="min-w-full divide-y divide-brand-borders/50" role="table">
++            <thead class="bg-white/50">
++              <tr>
++                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">User</th>
++                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Role</th>
++                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Course</th>
++                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Year</th>
++                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Status</th>
++                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Stats</th>
++                <th class="px-6 py-3 text-right text-xs font-medium text-text-secondary uppercase tracking-wider">Actions</th>
++              </tr>
++            </thead>
++            <tbody class="divide-y divide-brand-borders/50" role="rowgroup">
++              <tr v-for="user in users.data" :key="user.id" class="hover:bg-white/30 transition-colors" role="row">
++                <td class="px-6 py-4">
++                  <div class="text-sm font-bold text-text-primary">{{ user.name }}</div>
++                  <div class="text-sm text-text-secondary">{{ user.email }}</div>
++                </td>
++                <td class="px-6 py-4">
++                  <span class="px-2 py-1 text-xs font-medium rounded-full" :class="roleClass(user.role)">{{ user.role }}</span>
++                </td>
++                <td class="px-6 py-4 text-sm text-text-secondary">{{ user.course || '—' }}</td>
++                <td class="px-6 py-4 text-sm text-text-secondary">{{ user.year_level || '—' }}</td>
++                <td class="px-6 py-4">
++                  <span :class="user.is_active ? 'bg-status-success-light text-status-success' : 'bg-brand-borders text-text-secondary'" class="px-2 py-1 text-xs font-medium rounded-full">{{ user.is_active ? 'Active' : 'Inactive' }}</span>
++                </td>
++                <td class="px-6 py-4 text-sm text-text-secondary">
++                  {{ user.subjects_count || 0 }} subjects · {{ user.tasks_count || 0 }} tasks · {{ user.quiz_attempts_count || 0 }} quizzes
++                </td>
++                <td class="px-6 py-4 text-right space-x-2">
++                  <button @click="editUser(user)" class="text-secondary hover:text-secondary-hover text-sm font-medium transition-colors" aria-label="Edit user">Edit</button>
++                </td>
++              </tr>
++              <tr v-if="users.data.length === 0">
++                <td colspan="7" class="px-6 py-12 text-center text-text-secondary">No users found.</td>
++              </tr>
++            </tbody>
++          </table>
++        </div>
++
++        <div v-if="users.last_page > 1" class="px-6 py-4 border-t border-brand-borders/50">
++          <nav class="flex items-center justify-between" aria-label="Pagination">
++            <p class="text-sm text-text-secondary">Showing {{ users.from }} to {{ users.to }} of {{ users.total }} users</p>
++            <div class="flex space-x-2">
++              <button @click="fetchUsers({ page: users.current_page - 1 })" :disabled="users.current_page === 1" class="btn-secondary text-sm" aria-label="Previous page">Previous</button>
++              <button @click="fetchUsers({ page: users.current_page + 1 })" :disabled="users.current_page === users.last_page" class="btn-secondary text-sm" aria-label="Next page">Next</button>
++            </div>
++          </nav>
++        </div>
+       </div>
+ 
+-      <div v-if="users.last_page > 1" class="px-6 py-4 border-t border-brand-borders/50">
+-        <nav class="flex items-center justify-between" aria-label="Pagination">
+-          <p class="text-sm text-text-secondary">Showing {{ users.from }} to {{ users.to }} of {{ users.total }} users</p>
+-          <div class="flex space-x-2">
+-            <button @click="fetchUsers({ page: users.current_page - 1 })" :disabled="users.current_page === 1" class="btn-secondary text-sm" aria-label="Previous page">Previous</button>
+-            <button @click="fetchUsers({ page: users.current_page + 1 })" :disabled="users.current_page === users.last_page" class="btn-secondary text-sm" aria-label="Next page">Next</button>
++      <!-- Mobile Card View -->
++      <div class="lg:hidden">
++        <div class="grid grid-cols-1 gap-4" role="list">
++          <UserCard
++            v-for="user in users.data"
++            :key="user.id"
++            :user="user"
++            @edit="editUser"
++            role="listitem"
++          />
++          <div v-if="users.data.length === 0" class="rounded-xl border border-dashed border-brand-borders bg-brand-navbar-cards-alt p-10 text-center" role="listitem">
++            <p class="text-text-secondary">No users found.</p>
++            <button @click="openAddModal" class="mt-4 btn-primary">Add User</button>
+           </div>
+-        </nav>
++        </div>
++
++        <div v-if="users.last_page > 1" class="px-4 py-4 border-t border-brand-borders/50">
++          <nav class="flex items-center justify-between" aria-label="Pagination">
++            <p class="text-sm text-text-secondary">Showing {{ users.from }} to {{ users.to }} of {{ users.total }} users</p>
++            <div class="flex space-x-2">
++              <button @click="fetchUsers({ page: users.current_page - 1 })" :disabled="users.current_page === 1" class="btn-secondary text-sm" aria-label="Previous page">Previous</button>
++              <button @click="fetchUsers({ page: users.current_page + 1 })" :disabled="users.current_page === users.last_page" class="btn-secondary text-sm" aria-label="Next page">Next</button>
++            </div>
++          </nav>
++        </div>
+       </div>
+     </div>
+   </div>
+@@ -153,12 +192,15 @@
+ import { ref, onMounted, watch } from 'vue';
+ import { useAdminStore } from '@/stores/admin';
+ import type { User } from '@/types';
++import SelectInput from '@/components/ui/SelectInput.vue';
++import UserCard from '@/components/UserCard.vue';
+ 
+ const adminStore = useAdminStore();
+ 
+ const users = ref({ data: [] as User[], current_page: 1, last_page: 1, from: 0, to: 0, total: 0 });
+ const loading = ref(true);
+ const showEditModal = ref(false);
++const showAddModal = ref(false);
+ const editingUser = ref<User | null>(null);
+ const editing = ref(false);
+ const filters = ref({ search: '', role: '', is_active: '' });
+@@ -166,12 +208,25 @@ const filters = ref({ search: '', role: '', is_active: '' });
+ const editForm = ref({
+   name: '',
+   email: '',
++  password: '',
++  password_confirmation: '',
+   role: 'student',
+   course: '',
+   year_level: 1,
+   is_active: true,
+ });
+ 
++const roleOptions = [
++  { value: 'student', label: 'Student' },
++  { value: 'instructor', label: 'Instructor' },
++  { value: 'admin', label: 'Admin' },
++];
++
++const statusOptions = [
++  { value: 'true', label: 'Active' },
++  { value: 'false', label: 'Inactive' },
++];
++
+ const debounceTimer = ref<ReturnType<typeof setTimeout> | null>(null);
+ 
+ onMounted(async () => {
+@@ -218,20 +273,33 @@ function roleClass(role: string) {
+ 
+ function editUser(user: User) {
+   editingUser.value = user;
+-  editForm.value = { name: user.name, email: user.email, role: user.role, course: user.course || '', year_level: user.year_level || 1, is_active: user.is_active };
++  editForm.value = { name: user.name, email: user.email, password: '', password_confirmation: '', role: user.role, course: user.course || '', year_level: user.year_level || 1, is_active: user.is_active };
+   showEditModal.value = true;
+ }
+ 
++function openAddModal() {
++  editForm.value = { name: '', email: '', password: '', password_confirmation: '', role: 'student', course: '', year_level: 1, is_active: true };
++  editingUser.value = null;
++  showAddModal.value = true;
++}
++
+ function closeEditModal() {
+   showEditModal.value = false;
+   editingUser.value = null;
+ }
+ 
++function closeAddModal() {
++  showAddModal.value = false;
++  editForm.value = { name: '', email: '', password: '', password_confirmation: '', role: 'student', course: '', year_level: 1, is_active: true };
++}
++
+ async function submitEdit() {
+   if (!editingUser.value) return;
+   editing.value = true;
+   try {
+-    await adminStore.updateUser(editingUser.value.id, editForm.value);
++    const { password, password_confirmation, ...updateData } = editForm.value;
++    const payload = password ? { ...updateData, password, password_confirmation } : updateData;
++    await adminStore.updateUser(editingUser.value.id, payload);
+     closeEditModal();
+     await fetchUsers();
+   } catch (err) {
+@@ -240,4 +308,17 @@ async function submitEdit() {
+     editing.value = false;
+   }
+ }
++
++async function submitAdd() {
++  editing.value = true;
++  try {
++    await adminStore.createUser(editForm.value);
++    closeAddModal();
++    await fetchUsers();
++  } catch (err) {
++    console.error('Failed to create user:', err);
++  } finally {
++    editing.value = false;
++  }
++}
+ </script>
+\ No newline at end of file
+diff --git a/study-planner/resources/js/views/auth/LoginView.vue b/study-planner/resources/js/views/auth/LoginView.vue
+index d6f8bbf7..3ec50d6f 100644
+--- a/study-planner/resources/js/views/auth/LoginView.vue
++++ b/study-planner/resources/js/views/auth/LoginView.vue
+@@ -3,7 +3,7 @@
+     <!-- Aurora decorative blobs -->
+     <div class="absolute -top-20 -right-20 w-72 h-72 bg-white/30 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+     <div class="absolute -bottom-20 -left-20 w-96 h-96 bg-brand-borders/40 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+-    
++
+     <div class="relative w-full max-w-[440px] mx-auto">
+       <!-- Glass Card -->
+       <div class="glass-login-card p-8 sm:p-10">
+@@ -134,7 +134,11 @@ async function handleSubmit() {
+     if (err.response?.data?.errors) {
+       errors.value = err.response.data.errors;
+     } else {
+-      error.value = err.response?.data?.message || 'Login failed. Please try again.';
++      error.value = err.response?.data?.message || (
++        !err.response
++          ? 'Unable to reach the server. Check your connection and try again.'
++          : 'Login failed. Please try again.'
++      );
+     }
+   } finally {
+     loading.value = false;
+@@ -144,4 +148,4 @@ async function handleSubmit() {
+ 
+ <style scoped>
+ /* No scoped styles needed - using global classes from app.css */
+-</style>
+\ No newline at end of file
++</style>
+diff --git a/study-planner/resources/js/views/student/StudyPlanView.vue b/study-planner/resources/js/views/student/StudyPlanView.vue
+index 076b16ea..6ca54752 100644
+--- a/study-planner/resources/js/views/student/StudyPlanView.vue
++++ b/study-planner/resources/js/views/student/StudyPlanView.vue
+@@ -254,8 +254,10 @@
+ </template>
+ 
+ <script setup lang="ts">
+-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
++import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
+ import { useStudentStore } from '@/stores/student';
++import { studyTimerService, type TimerState, type TimerMode, type TimerStatus } from '@/services/studyTimerService';
++import { notificationService } from '@/services/notificationService';
+ import type { StudySession, Task, Resource, Quiz } from '@/types';
+ 
+ const studentStore = useStudentStore();
+@@ -267,33 +269,22 @@ const planFrom = ref(new Date().toISOString().split('T')[0]);
+ const planTo = ref(new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]);
+ const selectedTask = ref<Task | null>(null);
+ const inAppNotification = ref<{ title: string; message: string } | null>(null);
+-const timerTick = ref(Date.now());
+ 
+-type TimerMode = 'study' | 'break';
+-type TimerStatus = 'idle' | 'running' | 'paused' | 'completed';
++const timerUnsubscribe: (() => void) | null = null;
+ 
+-type TimerState = {
+-  id: number;
+-  totalMs: number;
+-  remainingMs: number;
+-  startedAt: number | null;
+-  status: TimerStatus;
+-  mode: TimerMode;
+-};
++onMounted(async () => {
++  // Initialize services
++  await studyTimerService.initialize();
++  await notificationService.initialize();
+ 
+-const timerStorageKey = 'study-plan-timer-state-v1';
+-const timerStates = ref<Record<number, TimerState>>({});
+-let timerInterval: number | null = null;
++  // Subscribe to timer updates
++  studyTimerService.subscribe(handleTimerUpdate);
+ 
+-onMounted(async () => {
+-  loadSavedTimerState();
+-  timerInterval = window.setInterval(() => {
+-    timerTick.value = Date.now();
+-    const activeTimer = getActiveSelectedTaskTimer();
+-    if (activeTimer && activeTimer.status === 'running' && getTimerRemainingMs(activeTimer) <= 0) {
+-      void completeStudyTimer();
+-    }
+-  }, 250);
++  // Listen for timer completion events
++  window.addEventListener('study-timer-complete', handleTimerComplete);
++
++  // Request notification permissions on user interaction
++  await notificationService.requestPermissions();
+ 
+   await Promise.all([
+     fetchSessions(),
+@@ -304,126 +295,53 @@ onMounted(async () => {
+ });
+ 
+ onBeforeUnmount(() => {
+-  if (timerInterval) {
+-    window.clearInterval(timerInterval);
+-  }
++  window.removeEventListener('study-timer-complete', handleTimerComplete as EventListener);
++  if (timerUnsubscribe) timerUnsubscribe();
+ });
+ 
+-function loadSavedTimerState() {
+-  try {
+-    const raw = localStorage.getItem(timerStorageKey);
+-    if (!raw) return;
+-    const parsed = JSON.parse(raw) as Record<number, TimerState>;
+-    timerStates.value = parsed ?? {};
+-  } catch (error) {
+-    console.warn('Failed to restore saved study timers:', error);
+-  }
+-}
+-
+-function persistTimerState() {
+-  try {
+-    localStorage.setItem(timerStorageKey, JSON.stringify(timerStates.value));
+-  } catch (error) {
+-    console.warn('Failed to save study timer state:', error);
+-  }
+-}
+-
+-function isDateInRange(dateValue?: string | null): boolean {
+-  if (!dateValue) return false;
+-  const normalized = dateValue.slice(0, 10);
+-  return normalized >= planFrom.value && normalized <= planTo.value;
+-}
+-
+-function getTaskProgress(task: Task): number {
+-  if (task.status === 'completed') return 100;
+-  if (task.status === 'in_progress') return 60;
+-  if (task.status === 'cancelled') return 0;
+-  return 25;
+-}
+-
+-function formatDateTime(dateString?: string | null): string {
+-  if (!dateString) return 'Not scheduled';
+-  const value = new Date(dateString.includes('T') ? dateString : `${dateString}T00:00:00`);
+-  return value.toLocaleString('en-US', {
+-    month: 'short',
+-    day: 'numeric',
+-    year: 'numeric',
+-    hour: 'numeric',
+-    minute: '2-digit',
+-  });
+-}
+-
+-function formatShortDate(dateString?: string | null): string {
+-  if (!dateString) return 'TBD';
+-  const value = new Date(dateString.includes('T') ? dateString : `${dateString}T00:00:00`);
+-  return value.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+-}
++// Timer state is now managed by the service
++const selectedTaskTimer = computed(() => {
++  if (!selectedTask.value) return null;
++  const session = selectedTaskSession.value;
++  const timerId = session?.id ?? selectedTask.value.id;
++  return studyTimerService.getState(timerId);
++});
+ 
+-function formatTaskDate(dateString?: string | null): string {
+-  if (!dateString) return 'TBD';
+-  const value = new Date(dateString.includes('T') ? dateString : `${dateString}T00:00:00`);
+-  return value.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
++function handleTimerUpdate(event: { timerId: number; remainingMs: number; status: string }): void {
++  // Trigger reactivity update for timer display
++  // The service manages state internally, this just triggers re-renders
+ }
+ 
+-async function fetchSessions() {
+-  loading.value = true;
+-  try {
+-    sessions.value = await studentStore.fetchStudySessions({ from: planFrom.value, to: planTo.value });
+-  } catch (err) {
+-    console.error('Failed to load study sessions:', err);
+-  } finally {
+-    loading.value = false;
++function handleTimerComplete(event: CustomEvent): void {
++  const detail = event.detail;
++  if (detail.taskId) {
++    // Timer completed - show notification
++    notificationService.showTaskCompletionNotification({
++      id: detail.taskId,
++      title: detail.taskTitle || 'Study Task',
++    } as any);
+   }
+ }
+ 
+-async function generatePlan() {
+-  generating.value = true;
+-  try {
+-    await studentStore.generateStudyPlan(planFrom.value, planTo.value);
+-    await fetchSessions();
+-    await studentStore.fetchTasks({ from: planFrom.value, to: planTo.value });
+-  } catch (err) {
+-    console.error('Failed to generate study plan:', err);
+-  } finally {
+-    generating.value = false;
+-  }
++function openTask(task: Task) {
++  selectedTask.value = task;
++  // Initialize timer for this task
++  const session = selectedTaskSession.value;
++  const timerId = selectedTaskSession.value?.id ?? task.id;
++  studyTimerService.getOrCreateTimerState({
++    id: task.id,
++    totalMinutes: selectedTaskSession.value?.duration_minutes ?? task.estimated_minutes ?? 45,
++    sessionId: session?.id,
++    taskId: task.id,
++    subjectName: task.subject?.name,
++    taskTitle: task.title,
++  });
+ }
+ 
+-function onDateChange() {
+-  if (planFrom.value && planTo.value && planFrom.value <= planTo.value) {
+-    void fetchSessions();
+-    void studentStore.fetchTasks({ from: planFrom.value, to: planTo.value });
+-  }
++function closeTaskDetail() {
++  selectedTask.value = null;
+ }
+ 
+-const groupedSessions = computed(() => {
+-  const groups: Record<string, StudySession[]> = {};
+-  sessions.value.forEach(session => {
+-    if (!groups[session.scheduled_date]) groups[session.scheduled_date] = [];
+-    groups[session.scheduled_date].push(session);
+-  });
+-
+-  return Object.entries(groups)
+-    .map(([date, grouped]) => ({
+-      date,
+-      sessions: grouped.sort((a, b) => a.start_time.localeCompare(b.start_time)),
+-      totalMinutes: grouped.reduce((sum, session) => sum + session.duration_minutes, 0),
+-    }))
+-    .sort((a, b) => a.date.localeCompare(b.date));
+-});
+-
+-const tasksInPlan = computed(() => {
+-  return studentStore.tasks.filter(task => {
+-    if (task.status === 'cancelled') return false;
+-    const matchesDateRange =
+-      isDateInRange(task.start_date) ||
+-      isDateInRange(task.deadline) ||
+-      sessions.value.some(session => session.task_id === task.id && isDateInRange(session.scheduled_date));
+-
+-    return matchesDateRange;
+-  });
+-});
+-
+ const selectedTaskSession = computed(() => {
+   if (!selectedTask.value) return null;
+   return sessions.value.find(session => session.task_id === selectedTask.value?.id) ?? null;
+@@ -432,40 +350,12 @@ const selectedTaskSession = computed(() => {
+ const selectedTaskDurationMinutes = computed(() => {
+   if (!selectedTask.value) return 45;
+   return selectedTaskSession.value?.duration_minutes ?? selectedTask.value.estimated_minutes ?? 45;
+-});
+-
+-function getTimerStateForId(id: number): TimerState {
+-  if (!timerStates.value[id]) {
+-    timerStates.value[id] = {
+-      id,
+-      totalMs: selectedTaskDurationMinutes.value * 60_000,
+-      remainingMs: selectedTaskDurationMinutes.value * 60_000,
+-      startedAt: null,
+-      status: 'idle',
+-      mode: 'study',
+-    };
+-  }
+-
+-  const state = timerStates.value[id];
+-  if (state.totalMs <= 0) {
+-    state.totalMs = selectedTaskDurationMinutes.value * 60_000;
+-    state.remainingMs = state.totalMs;
+-  }
+-  return state;
+-}
+-
+-function getActiveSelectedTaskTimer(): TimerState | null {
+-  if (!selectedTask.value) return null;
+-  const timerId = selectedTaskSession.value?.id ?? selectedTask.value.id;
+-  return getTimerStateForId(timerId);
+-}
+-
+-const selectedTaskTimer = computed(() => getActiveSelectedTaskTimer());
++})
+ 
+ const activeTaskCountdownMs = computed(() => {
+   const state = selectedTaskTimer.value;
+   if (!state) return 0;
+-  return getTimerRemainingMs(state, timerTick.value);
++  return studyTimerService.getRemainingMs(state);
+ });
+ 
+ const timerModeLabel = computed(() => {
+@@ -483,16 +373,11 @@ const timerStatusMessage = computed(() => {
+   return state.mode === 'break' ? 'Break ready' : 'Study session ready';
+ });
+ 
+-function getTimerRemainingMs(state: TimerState, now = Date.now()): number {
+-  if (!state) return 0;
+-  if (state.status === 'running' && state.startedAt) {
+-    return Math.max(0, state.totalMs - (now - state.startedAt));
+-  }
+-  if (state.status === 'completed') {
+-    return 0;
+-  }
+-  return Math.max(0, state.remainingMs);
+-}
++const timerStatusClass = computed(() => {
++  const state = selectedTaskTimer.value;
++  if (!state) return 'text-text-secondary';
++  return state.status === 'paused' ? 'text-status-warning' : state.status === 'completed' ? 'text-status-success' : 'text-text-primary';
++});
+ 
+ function formatCountdown(ms: number): string {
+   const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+@@ -501,55 +386,32 @@ function formatCountdown(ms: number): string {
+   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+ }
+ 
+-function openTask(task: Task) {
+-  selectedTask.value = task;
+-}
+-
+-function closeTaskDetail() {
+-  selectedTask.value = null;
+-}
+-
+ function startSelectedTaskTimer() {
+   const state = selectedTaskTimer.value;
+   if (!state) return;
+-  const currentRemaining = getTimerRemainingMs(state);
+-  state.mode = 'study';
+-  state.status = 'running';
+-  state.startedAt = Date.now() - (state.totalMs - currentRemaining);
+-  state.remainingMs = currentRemaining;
++  studyTimerService.startTimer(state.id);
++
+   if (selectedTaskSession.value) {
+     void studentStore.updateStudySessionStatus(selectedTaskSession.value.id, 'in_progress').catch(err => console.error('Failed to start session:', err));
+   }
+-  persistTimerState();
+ }
+ 
+ function pauseSelectedTaskTimer() {
+   const state = selectedTaskTimer.value;
+-  if (!state || state.status !== 'running') return;
+-  state.remainingMs = getTimerRemainingMs(state);
+-  state.startedAt = null;
+-  state.status = 'paused';
+-  persistTimerState();
++  if (!state) return;
++  studyTimerService.pauseTimer(state.id);
+ }
+ 
+ function resumeSelectedTaskTimer() {
+   const state = selectedTaskTimer.value;
+-  if (!state || state.status !== 'paused') return;
+-  const currentRemaining = getTimerRemainingMs(state);
+-  state.mode = 'study';
+-  state.status = 'running';
+-  state.startedAt = Date.now() - (state.totalMs - currentRemaining);
+-  state.remainingMs = currentRemaining;
+-  persistTimerState();
++  if (!state) return;
++  studyTimerService.resumeTimer(state.id);
+ }
+ 
+ async function finishSelectedTask() {
+   const state = selectedTaskTimer.value;
+   if (!state) return;
+-  state.status = 'completed';
+-  state.startedAt = null;
+-  state.remainingMs = 0;
+-  persistTimerState();
++  studyTimerService.completeTimer(state.id);
+ 
+   if (selectedTaskSession.value) {
+     try {
+@@ -564,16 +426,16 @@ async function finishSelectedTask() {
+   }
+ 
+   showInAppNotification('Study Session Complete', 'Your scheduled study session has finished.');
+-  void playCompletionBell();
++  void notificationService.showStudyCompletionNotification(
++    selectedTaskSession.value?.subject?.name || 'Study',
++    selectedTask.value?.title || 'Study Session'
++  );
+ }
+ 
+ async function completeStudyTimer() {
+   const state = selectedTaskTimer.value;
+   if (!state || state.status === 'completed') return;
+-  state.status = 'completed';
+-  state.startedAt = null;
+-  state.remainingMs = 0;
+-  persistTimerState();
++  studyTimerService.completeTimer(state.id);
+ 
+   if (selectedTaskSession.value) {
+     try {
+@@ -584,18 +446,16 @@ async function completeStudyTimer() {
+   }
+ 
+   showInAppNotification('Study Session Complete', 'Your scheduled study session has finished.');
+-  void playCompletionBell();
++  void notificationService.showStudyCompletionNotification(
++    selectedTaskSession.value?.subject?.name || 'Study',
++    selectedTask.value?.title || 'Study Session'
++  );
+ }
+ 
+ function takeBreak() {
+   const state = selectedTaskTimer.value;
+   if (!state) return;
+-  state.mode = 'break';
+-  state.totalMs = 5 * 60_000;
+-  state.remainingMs = state.totalMs;
+-  state.startedAt = Date.now();
+-  state.status = 'running';
+-  persistTimerState();
++  studyTimerService.startBreak(state.id, 5);
+ }
+ 
+ function showInAppNotification(title: string, message: string) {
+@@ -605,43 +465,6 @@ function showInAppNotification(title: string, message: string) {
+   }, 6000);
+ }
+ 
+-async function playCompletionBell() {
+-  try {
+-    if ('Notification' in window && Notification.permission === 'granted') {
+-      new Notification('Study Session Complete', { body: 'Your scheduled study session has finished.' });
+-    } else if ('Notification' in window && Notification.permission === 'default') {
+-      await Notification.requestPermission().catch(() => undefined);
+-      if (Notification.permission === 'granted') {
+-        new Notification('Study Session Complete', { body: 'Your scheduled study session has finished.' });
+-      }
+-    }
+-  } catch (error) {
+-    console.warn('Notification API unavailable or blocked:', error);
+-  }
+-
+-  try {
+-    const AudioCtor = window.AudioContext || (window as any).webkitAudioContext;
+-    if (!AudioCtor) return;
+-    const audioCtx = new AudioCtor();
+-    const oscillator = audioCtx.createOscillator();
+-    const gain = audioCtx.createGain();
+-    oscillator.type = 'sine';
+-    oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+-    oscillator.frequency.exponentialRampToValueAtTime(660, audioCtx.currentTime + 0.25);
+-    gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+-    gain.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime + 0.02);
+-    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
+-    oscillator.connect(gain);
+-    gain.connect(audioCtx.destination);
+-    oscillator.start();
+-    oscillator.stop(audioCtx.currentTime + 0.45);
+-    await audioCtx.resume();
+-    setTimeout(() => audioCtx.close().catch(() => undefined), 600);
+-  } catch (error) {
+-    console.warn('Audio bell unavailable:', error);
+-  }
+-}
+-
+ async function markTaskDone(task: Task) {
+   if (task.status === 'completed') return;
+   try {
+@@ -657,99 +480,4 @@ async function markTaskDone(task: Task) {
+     console.error('Failed to mark task as done:', err);
+   }
+ }
+-
+-function sessionsForTask(taskId: number) {
+-  return sessions.value.filter(session => session.task_id === taskId).length;
+-}
+-
+-function priorityClass(priority: string) {
+-  const classes: Record<string, string> = {
+-    urgent: 'bg-status-urgent-light text-status-urgent',
+-    high: 'bg-status-warning-light text-status-warning',
+-    medium: 'bg-status-warning-light text-status-warning',
+-    low: 'bg-status-success-light text-status-success',
+-  };
+-  return classes[priority] || 'bg-brand-borders text-text-secondary';
+-}
+-
+-function formatDayHeader(dateString: string) {
+-  const date = new Date(dateString);
+-  const today = new Date();
+-  today.setHours(0, 0, 0, 0);
+-  const tomorrow = new Date(today);
+-  tomorrow.setDate(tomorrow.getDate() + 1);
+-
+-  if (date.getTime() === today.getTime()) return 'Today';
+-  if (date.getTime() === tomorrow.getTime()) return 'Tomorrow';
+-  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+-}
+-
+-function formatTime(timeString: string) {
+-  const [hours, minutes] = timeString.split(':');
+-  const hour = parseInt(hours, 10);
+-  const ampm = hour >= 12 ? 'PM' : 'AM';
+-  const hour12 = hour % 12 || 12;
+-  return `${hour12}:${minutes} ${ampm}`;
+-}
+-
+-function subjectColor(color: string) {
+-  const colors: Record<string, string> = {
+-    blue: 'bg-blue-500',
+-    green: 'bg-green-500',
+-    purple: 'bg-purple-500',
+-    red: 'bg-red-500',
+-    yellow: 'bg-yellow-500',
+-    pink: 'bg-pink-500',
+-    indigo: 'bg-indigo-500',
+-  };
+-  return colors[color] || 'bg-gray-500';
+-}
+-
+-function statusClass(status: string) {
+-  const classes = {
+-    scheduled: 'bg-primary-light text-primary',
+-    in_progress: 'bg-status-warning-light text-status-warning',
+-    completed: 'bg-status-success-light text-status-success',
+-    missed: 'bg-status-urgent-light text-status-urgent',
+-  };
+-  return classes[status as keyof typeof classes] || 'bg-brand-borders text-text-secondary';
+-}
+-
+-async function startSession(session: StudySession) {
+-  try {
+-    const updated = await studentStore.updateStudySessionStatus(session.id, 'in_progress');
+-    Object.assign(session, updated);
+-  } catch (err) {
+-    console.error('Failed to start study session:', err);
+-  }
+-}
+-
+-async function completeSession(session: StudySession) {
+-  try {
+-    const updated = await studentStore.updateStudySessionStatus(session.id, 'completed');
+-    Object.assign(session, updated);
+-  } catch (err) {
+-    console.error('Failed to complete study session:', err);
+-  }
+-}
+-
+-const relatedResources = computed<Resource[]>(() => {
+-  if (!selectedTask.value) return [];
+-  return studentStore.recommendations.filter(resource => {
+-    const matchesSubject = resource.subjects?.some(subject => subject.id === selectedTask.value?.subject_id);
+-    const matchesTopic = resource.topics?.some(topic => topic.id === selectedTask.value?.topic_id);
+-    return matchesSubject || matchesTopic;
+-  });
+-});
+-
+-const relatedQuiz = computed<Quiz | null>(() => {
+-  if (!selectedTask.value) return null;
+-  return studentStore.quizzes.find(quiz => quiz.topic_id === selectedTask.value?.topic_id) ?? null;
+-});
+-
+-const timerStatusClass = computed(() => {
+-  const state = selectedTaskTimer.value;
+-  if (!state) return 'text-text-secondary';
+-  return state.status === 'paused' ? 'text-status-warning' : state.status === 'completed' ? 'text-status-success' : 'text-text-primary';
+-});
+ </script>
+\ No newline at end of file
+diff --git a/study-planner/resources/views/app.blade.php b/study-planner/resources/views/app.blade.php
+index 1df07838..c0f83067 100644
+--- a/study-planner/resources/views/app.blade.php
++++ b/study-planner/resources/views/app.blade.php
+@@ -14,4 +14,4 @@
+ <body>
+     <div id="app"></div>
+ </body>
+-</html>
+\ No newline at end of file
++</html>
+diff --git a/study-planner/scripts/android-device.mjs b/study-planner/scripts/android-device.mjs
+new file mode 100644
+index 00000000..ad9b8632
+--- /dev/null
++++ b/study-planner/scripts/android-device.mjs
+@@ -0,0 +1,104 @@
++// Talks to an already-running local ADB server; does not start or configure it.
++import net from 'node:net';
++import fs from 'node:fs/promises';
++import { pathToFileURL } from 'node:url';
++
++export class AdbConnection {
++    constructor() {
++        this.socket = net.connect(5037, '127.0.0.1');
++        this.input = Buffer.alloc(0);
++        this.socket.setTimeout(60000, () => this.socket.destroy(new Error('ADB request timed out')));
++        this.socket.on('data', data => {
++            this.input = Buffer.concat([this.input, data]);
++            this.wake?.();
++        });
++        this.socket.on('error', error => { this.error = error; this.wake?.(); });
++        this.socket.on('end', () => { this.ended = true; this.wake?.(); });
++    }
++
++    async read(length) {
++        while (this.input.length < length) {
++            if (this.error) throw this.error;
++            if (this.ended) throw new Error('ADB connection closed unexpectedly');
++            await new Promise(resolve => { this.wake = resolve; });
++        }
++        this.wake = undefined;
++        const result = this.input.subarray(0, length);
++        this.input = this.input.subarray(length);
++        return result;
++    }
++
++    async request(service) {
++        this.socket.write(service.length.toString(16).padStart(4, '0') + service);
++        const status = (await this.read(4)).toString();
++        if (status !== 'OKAY') {
++            const length = parseInt((await this.read(4)).toString(), 16);
++            throw new Error((await this.read(length)).toString());
++        }
++    }
++
++    async transport(serial) {
++        await this.request(`host:transport:${serial}`);
++    }
++
++    async shell(serial, command) {
++        await this.transport(serial);
++        await this.request(`shell:${command}`);
++        while (!this.ended && !this.error) await new Promise(resolve => { this.wake = resolve; });
++        if (this.error) throw this.error;
++        return this.input.toString();
++    }
++
++    packet(id, data) {
++        const header = Buffer.alloc(8);
++        header.write(id, 0, 4, 'ascii');
++        header.writeUInt32LE(typeof data === 'number' ? data : data.length, 4);
++        this.socket.write(header);
++        if (typeof data !== 'number') this.socket.write(data);
++    }
++
++    async push(serial, localPath, remotePath) {
++        const contents = await fs.readFile(localPath);
++        await this.transport(serial);
++        await this.request('sync:');
++        this.packet('SEND', Buffer.from(`${remotePath},33188`));
++        for (let offset = 0; offset < contents.length; offset += 65536) {
++            this.packet('DATA', contents.subarray(offset, offset + 65536));
++        }
++        this.packet('DONE', Math.floor(Date.now() / 1000));
++        const response = await this.read(8);
++        if (response.subarray(0, 4).toString() !== 'OKAY') {
++            throw new Error((await this.read(response.readUInt32LE(4))).toString());
++        }
++    }
++
++    close() { this.socket.destroy(); }
++}
++
++export async function adbShell(serial, command) {
++    const connection = new AdbConnection();
++    try { return await connection.shell(serial, command); } finally { connection.close(); }
++}
++
++if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
++    const [operation, serial, ...args] = process.argv.slice(2);
++    const connection = new AdbConnection();
++    try {
++        if (operation === 'devices') {
++            await connection.request('host:devices-l');
++            const length = parseInt((await connection.read(4)).toString(), 16);
++            console.log((await connection.read(length)).toString());
++        } else if (operation === 'install') {
++            const remotePath = '/data/local/tmp/study-planner-updated.apk';
++            await connection.push(serial, args[0], remotePath);
++            connection.close();
++            const result = await adbShell(serial, `pm install -r -t ${remotePath}`);
++            console.log(result);
++            if (!result.includes('Success')) process.exitCode = 1;
++        } else if (operation === 'shell') {
++            console.log(await connection.shell(serial, args.join(' ')));
++        } else {
++            throw new Error('Usage: node scripts/android-device.mjs devices | install SERIAL APK | shell SERIAL COMMAND');
++        }
++    } finally { connection.close(); }
++}
+diff --git a/study-planner/scripts/package-mobile-assets.ps1 b/study-planner/scripts/package-mobile-assets.ps1
+new file mode 100644
+index 00000000..3771617f
+--- /dev/null
++++ b/study-planner/scripts/package-mobile-assets.ps1
+@@ -0,0 +1,50 @@
++param(
++    [string]$BaseApk = 'android/app/build/outputs/apk/debug/app-debug.apk',
++    [string]$OutputApk = 'android/app/build/outputs/apk/debug/study-planner-updated.apk',
++    [string]$BuildTools = 'C:/Users/Acer/AppData/Local/Android/Sdk/build-tools/36.0.0',
++    [string]$DebugKeystore = 'C:/Users/Acer/.android/debug.keystore'
++)
++
++# Asset-only fallback for an existing debug APK when Gradle is unavailable.
++# Native Java, resources and the compiled manifest are retained from BaseApk.
++$ErrorActionPreference = 'Stop'
++$projectPath = Split-Path $PSScriptRoot -Parent
++$basePath = (Resolve-Path (Join-Path $projectPath $BaseApk)).Path
++$outputPath = [IO.Path]::GetFullPath((Join-Path $projectPath $OutputApk))
++if (!$outputPath.StartsWith($projectPath + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
++    throw 'Output APK must be inside the project.'
++}
++if ($basePath -eq $outputPath) { throw 'Keep the original APK as a separate file.' }
++$assetsPath = Join-Path $projectPath 'android/app/src/main/assets'
++$config = Get-Content (Join-Path $assetsPath 'capacitor.config.json') -Raw | ConvertFrom-Json
++if ($config.server.url) { throw 'Sync the bundled application before packaging; server.url must be absent.' }
++
++Add-Type -AssemblyName System.IO.Compression.FileSystem
++$source = [IO.Compression.ZipFile]::OpenRead($basePath)
++$unsignedPath = $outputPath + '.unsigned'
++$alignedPath = $outputPath + '.aligned'
++try {
++    $pluginReader = [IO.StreamReader]::new($source.GetEntry('assets/capacitor.plugins.json').Open())
++    try { $oldPlugins = $pluginReader.ReadToEnd() | ConvertFrom-Json } finally { $pluginReader.Dispose() }
++    $newPlugins = Get-Content (Join-Path $assetsPath 'capacitor.plugins.json') -Raw | ConvertFrom-Json
++    if (Compare-Object ($oldPlugins.classpath | Sort-Object) ($newPlugins.classpath | Sort-Object)) {
++        throw 'Native plugins changed; a full Gradle build is required.'
++    }
++    foreach ($temporaryPath in @($unsignedPath, $alignedPath)) {
++        if (Test-Path -LiteralPath $temporaryPath) { Remove-Item -LiteralPath $temporaryPath }
++    }
++} finally { $source.Dispose() }
++
++& python (Join-Path $PSScriptRoot 'package-mobile-assets.py') $basePath $assetsPath $unsignedPath
++if ($LASTEXITCODE -ne 0) { throw 'APK asset packaging failed.' }
++
++& (Join-Path $BuildTools 'zipalign.exe') -P 16 -f 4 $unsignedPath $alignedPath
++if ($LASTEXITCODE -ne 0) { throw 'APK alignment failed.' }
++& (Join-Path $BuildTools 'apksigner.bat') sign --ks $DebugKeystore --ks-key-alias androiddebugkey --ks-pass pass:android --key-pass pass:android --out $outputPath $alignedPath
++if ($LASTEXITCODE -ne 0) { throw 'APK signing failed.' }
++& (Join-Path $BuildTools 'apksigner.bat') verify --print-certs $outputPath
++if ($LASTEXITCODE -ne 0) { throw 'APK signature verification failed.' }
++& (Join-Path $BuildTools 'zipalign.exe') -c -P 16 4 $outputPath
++if ($LASTEXITCODE -ne 0) { throw 'Signed APK alignment verification failed.' }
++foreach ($temporaryPath in @($unsignedPath, $alignedPath)) { Remove-Item -LiteralPath $temporaryPath }
++Get-Item -LiteralPath $outputPath | Select-Object FullName, Length, LastWriteTime
+diff --git a/study-planner/scripts/package-mobile-assets.py b/study-planner/scripts/package-mobile-assets.py
+new file mode 100644
+index 00000000..4aeb083f
+--- /dev/null
++++ b/study-planner/scripts/package-mobile-assets.py
+@@ -0,0 +1,21 @@
++"""Replace Capacitor assets while preserving the native APK and ZIP storage modes."""
++from pathlib import Path
++import re
++import sys
++import zipfile
++
++base, assets, output = map(Path, sys.argv[1:])
++with zipfile.ZipFile(base) as source, zipfile.ZipFile(output, "w") as destination:
++    for entry in source.infolist():
++        if (
++            entry.filename.startswith("assets/public/")
++            or entry.filename in ("assets/capacitor.config.json", "assets/capacitor.plugins.json")
++            or re.match(r"^META-INF/.*\.(SF|RSA|DSA|EC|MF)$", entry.filename)
++        ):
++            continue
++        if entry.filename == "resources.arsc" or entry.filename.startswith("lib/"):
++            entry.compress_type = zipfile.ZIP_STORED
++        destination.writestr(entry, source.read(entry.filename))
++    for asset in sorted(assets.rglob("*")):
++        if asset.is_file():
++            destination.write(asset, "assets/" + asset.relative_to(assets).as_posix(), zipfile.ZIP_DEFLATED)
+diff --git a/study-planner/scripts/serve.ps1 b/study-planner/scripts/serve.ps1
+new file mode 100644
+index 00000000..90bd2b74
+--- /dev/null
++++ b/study-planner/scripts/serve.ps1
+@@ -0,0 +1,39 @@
++param(
++    [string]$HostAddress = '0.0.0.0',
++    [int]$Port = 8001
++)
++
++$ErrorActionPreference = 'Stop'
++$projectPath = Split-Path $PSScriptRoot -Parent
++$phpExecutable = (Get-Command php).Source
++$extensionPath = Join-Path (Split-Path $phpExecutable -Parent) 'ext'
++$phpArguments = @()
++
++# Docker's service name is only resolvable inside its network. A host PHP
++# server uses the published PostgreSQL port, while explicit overrides win.
++$environmentPath = Join-Path $projectPath '.env'
++if (!$env:DB_HOST -and (Select-String -LiteralPath $environmentPath -Pattern '^DB_HOST=postgres\s*$' -Quiet)) {
++    $env:DB_HOST = '127.0.0.1'
++    if (!$env:DB_PORT) {
++        $publishedPort = Select-String -LiteralPath $environmentPath -Pattern '^POSTGRES_PORT=(\d+)\s*$'
++        $env:DB_PORT = if ($publishedPort) { $publishedPort.Matches[0].Groups[1].Value } else { '15432' }
++    }
++}
++
++if ((php --ini) -match 'Loaded Configuration File:\s+\(none\)') {
++    $phpArguments += @('-d', "extension_dir=$extensionPath")
++    foreach ($extension in @('pdo_pgsql', 'pdo_sqlite', 'mbstring', 'openssl', 'fileinfo', 'curl')) {
++        if (Test-Path -LiteralPath (Join-Path $extensionPath "php_$extension.dll")) {
++            $phpArguments += @('-d', "extension=$extension")
++        }
++    }
++}
++
++Push-Location (Join-Path $projectPath 'public')
++try {
++    $routerPath = Join-Path $projectPath 'vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php'
++    & $phpExecutable @phpArguments -S "${HostAddress}:$Port" -t . $routerPath
++    exit $LASTEXITCODE
++} finally {
++    Pop-Location
++}
+diff --git a/study-planner/scripts/start-stack.ps1 b/study-planner/scripts/start-stack.ps1
+new file mode 100644
+index 00000000..b6b6cbf4
+--- /dev/null
++++ b/study-planner/scripts/start-stack.ps1
+@@ -0,0 +1,43 @@
++param([string]$BaseUrl)
++
++$ErrorActionPreference = 'Stop'
++$projectPath = Split-Path $PSScriptRoot -Parent
++$composeExecutable = 'C:/Program Files/Docker/Docker/resources/cli-plugins/docker-compose.exe'
++if (!(Test-Path -LiteralPath $composeExecutable)) {
++    throw 'Docker Desktop Compose was not found. Install Docker Desktop before starting this stack.'
++}
++
++Push-Location $projectPath
++try {
++    if (!$BaseUrl) {
++        $mobileEnvironment = Join-Path $projectPath '.env.mobile'
++        $apiUrl = if (Test-Path -LiteralPath $mobileEnvironment) {
++            Select-String -LiteralPath $mobileEnvironment -Pattern '^VITE_API_BASE_URL=(https?://[^\s]+?)/api/?\s*$'
++        }
++        $BaseUrl = if ($apiUrl) { $apiUrl.Matches[0].Groups[1].Value } else { 'http://localhost:8000' }
++    }
++    $BaseUrl = $BaseUrl.TrimEnd('/')
++    & $composeExecutable config --quiet
++    if ($LASTEXITCODE -ne 0) { throw 'The Docker configuration is invalid.' }
++    & $composeExecutable up -d --build
++    if ($LASTEXITCODE -ne 0) {
++        throw 'Docker could not start the stack. Check Docker engine access and its startup output.'
++    }
++    & $composeExecutable exec -T app php artisan migrate:status
++    if ($LASTEXITCODE -ne 0) {
++        throw 'PostgreSQL is not ready. Check the app logs and database credentials in .env.'
++    }
++
++    # An unknown account must return a credential validation error, not HTTP 500.
++    $probeEmail = [Guid]::NewGuid().ToString('N') + '@example.invalid'
++    $body = @{ email = $probeEmail; password = 'StackProbe123!' } | ConvertTo-Json
++    try {
++        Invoke-WebRequest -UseBasicParsing -Uri "$BaseUrl/api/auth/login" -Method Post -ContentType 'application/json' -Headers @{ Accept = 'application/json' } -Body $body | Out-Null
++        throw 'The unknown-account login probe unexpectedly succeeded.'
++    } catch {
++        if (!$_.Exception.Response -or [int]$_.Exception.Response.StatusCode -ne 422) { throw }
++    }
++    Write-Output "PostgreSQL migrations and the login endpoint passed. Web: $BaseUrl"
++} finally {
++    Pop-Location
++}
+diff --git a/study-planner/tests/Feature/AuthenticationTest.php b/study-planner/tests/Feature/AuthenticationTest.php
+new file mode 100644
+index 00000000..9e5e0c28
+--- /dev/null
++++ b/study-planner/tests/Feature/AuthenticationTest.php
+@@ -0,0 +1,68 @@
++<?php
++
++namespace Tests\Feature;
++
++use App\Models\User;
++use Illuminate\Foundation\Testing\RefreshDatabase;
++use Illuminate\Support\Facades\Hash;
++use Tests\TestCase;
++
++class AuthenticationTest extends TestCase
++{
++    use RefreshDatabase;
++
++    public function test_registration_creates_an_account_that_can_sign_in_and_restore_its_session(): void
++    {
++        $credentials = ['email' => 'new-student@example.test', 'password' => 'Password123!'];
++        $registration = $this->postJson('/api/auth/register', [
++            ...$credentials,
++            'name' => 'New Student',
++            'password_confirmation' => $credentials['password'],
++        ]);
++
++        $registration->assertCreated()->assertJsonPath('data.user.role', 'student');
++        $this->assertDatabaseHas('study_preferences', ['user_id' => $registration->json('data.user.id')]);
++        $this->assertTrue(Hash::check($credentials['password'], User::first()->password));
++
++        $login = $this->postJson('/api/auth/login', $credentials);
++        $login->assertOk()->assertJsonPath('data.user.email', $credentials['email']);
++        $this->withToken($login->json('data.token'))->getJson('/api/auth/me')
++            ->assertOk()->assertJsonPath('data.email', $credentials['email']);
++    }
++
++    public function test_invalid_credentials_return_validation_errors_without_issuing_a_token(): void
++    {
++        User::create(['name' => 'Student', 'email' => 'student@example.test', 'password' => 'Password123!']);
++
++        $this->postJson('/api/auth/login', ['email' => 'student@example.test', 'password' => 'wrong-password'])
++            ->assertUnprocessable()->assertJsonValidationErrors('email');
++        $this->postJson('/api/auth/login', ['email' => 'missing@example.test', 'password' => 'Password123!'])
++            ->assertUnprocessable()->assertJsonValidationErrors('email');
++        $this->assertDatabaseCount('personal_access_tokens', 0);
++    }
++
++    public function test_deactivated_accounts_cannot_sign_in(): void
++    {
++        User::create([
++            'name' => 'Student', 'email' => 'inactive@example.test',
++            'password' => 'Password123!', 'is_active' => false,
++        ]);
++
++        $this->postJson('/api/auth/login', ['email' => 'inactive@example.test', 'password' => 'Password123!'])
++            ->assertUnprocessable()->assertJsonValidationErrors('email');
++        $this->assertDatabaseCount('personal_access_tokens', 0);
++    }
++
++    public function test_registration_does_not_replace_an_existing_accounts_credentials(): void
++    {
++        User::create(['name' => 'Student', 'email' => 'student@example.test', 'password' => 'Original123!']);
++
++        $this->postJson('/api/auth/register', [
++            'name' => 'Another Student', 'email' => 'student@example.test',
++            'password' => 'Different123!', 'password_confirmation' => 'Different123!',
++        ])->assertUnprocessable()->assertJsonValidationErrors('email');
++
++        $this->assertDatabaseCount('users', 1);
++        $this->assertTrue(Hash::check('Original123!', User::first()->password));
++    }
++}
+diff --git a/study-planner/tests/Feature/ExampleTest.php b/study-planner/tests/Feature/ExampleTest.php
+index 8364a84e..132f038d 100644
+--- a/study-planner/tests/Feature/ExampleTest.php
++++ b/study-planner/tests/Feature/ExampleTest.php
+@@ -3,6 +3,7 @@
+ namespace Tests\Feature;
+ 
+ // use Illuminate\Foundation\Testing\RefreshDatabase;
++use App\Providers\AppServiceProvider;
+ use Tests\TestCase;
+ 
+ class ExampleTest extends TestCase
+@@ -15,5 +16,18 @@ public function test_the_application_returns_a_successful_response(): void
+         $response = $this->get('/');
+ 
+         $response->assertStatus(200);
++        $response->assertSee('type="module"', false);
++        $response->assertSee('id="app"', false);
++    }
++
++    public function test_production_loads_bundled_assets_even_when_a_development_hot_file_exists(): void
++    {
++        $this->app['env'] = 'production';
++        $this->app->getProvider(AppServiceProvider::class)->boot();
++
++        $this->get('/login')
++            ->assertOk()
++            ->assertSee('/build/assets/', false)
++            ->assertDontSee('@vite/client', false);
+     }
+ }
+diff --git a/study-planner/tests/e2e/login-demo-removal.spec.ts b/study-planner/tests/e2e/login-demo-removal.spec.ts
+index 31cfd4ef..6f97dd7c 100644
+--- a/study-planner/tests/e2e/login-demo-removal.spec.ts
++++ b/study-planner/tests/e2e/login-demo-removal.spec.ts
+@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
+ 
+ test.describe('Login Page - Demo Access Removal Audit', () => {
+   test.beforeEach(async ({ page }) => {
+-    await page.goto('/login', { waitUntil: 'networkidle', timeout: 30000 });
++    page.on('console', msg => console.log(`Console ${msg.type()}: ${msg.text()}`));
++    page.on('pageerror', error => console.log(`Page error: ${error.message}`));
++    await page.goto('/login', { waitUntil: 'domcontentloaded', timeout: 30000 });
+   });
+ 
+   test('should NOT show the Interactive Demo Access section', async ({ page }) => {
+diff --git a/study-planner/tests/e2e/stack-rendering.spec.ts b/study-planner/tests/e2e/stack-rendering.spec.ts
+new file mode 100644
+index 00000000..2cc9f88f
+--- /dev/null
++++ b/study-planner/tests/e2e/stack-rendering.spec.ts
+@@ -0,0 +1,71 @@
++import { test, expect } from '@playwright/test';
++
++for (const viewport of [{ width: 1440, height: 900 }, { width: 393, height: 851 }]) {
++  test(`renders the login page at ${viewport.width}px`, async ({ page }) => {
++    await page.setViewportSize(viewport);
++    const errors: string[] = [];
++    page.on('pageerror', error => errors.push(error.message));
++    await page.goto('/login');
++    await expect(page.getByLabel('Email')).toBeVisible();
++    await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
++    expect(errors).toEqual([]);
++  });
++}
++
++test('shows a loading message while restoring a session', async ({ page }) => {
++  let release!: () => void;
++  const pending = new Promise<void>(resolve => { release = resolve; });
++  await page.addInitScript(() => localStorage.setItem('token', 'expired-session-test'));
++  await page.route('**/api/auth/me', async route => {
++    await pending;
++    await route.fulfill({ status: 401, json: { message: 'Unauthenticated' } });
++  });
++  try {
++    await page.goto('/login');
++    await expect(page.getByRole('status')).toHaveText('Loading Study Planner…');
++  } finally {
++    release();
++  }
++  await expect(page.getByLabel('Email')).toBeVisible();
++});
++
++test('reports an unreachable backend without switching to demo data', async ({ page }) => {
++  await page.route('**/api/auth/login', route => route.abort('failed'));
++  await page.goto('/login');
++  await page.getByLabel('Email').fill('student@example.test');
++  await page.getByLabel('Password', { exact: true }).fill('Password123!');
++  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
++  await expect(page.getByRole('alert')).toContainText('Unable to reach the server');
++  expect(await page.evaluate(() => localStorage.getItem('sp_demo_mode'))).toBeNull();
++  await expect(page).toHaveURL(/\/login$/);
++});
++
++test('an expired native session returns to login instead of the dashboard', async ({ page }) => {
++  await page.addInitScript(() => {
++    Object.assign(window, {
++      androidBridge: {},
++      Capacitor: {
++        PluginHeaders: [{ name: 'App', methods: [{ name: 'addListener', rtype: 'callback' }, { name: 'removeListener', rtype: 'promise' }] }],
++        nativeCallback: () => 'browser-test',
++        nativePromise: () => Promise.resolve({}),
++      },
++    });
++    localStorage.setItem('token', 'restored-test-token');
++  });
++  await page.route('**/api/**', route => {
++    const path = new URL(route.request().url()).pathname;
++    if (path === '/api/auth/me') {
++      return route.fulfill({ json: { data: { id: 1, name: 'Session Test', email: 'session@example.test', role: 'student', is_active: true } } });
++    }
++    if (path === '/api/student/dashboard') {
++      return route.fulfill({ json: { data: { progress: {}, recommendations: [], upcoming_tasks: [], upcoming_sessions: [], unread_notifications: 0 } } });
++    }
++    return route.fulfill({ status: 401, json: { message: 'Unauthenticated' } });
++  });
++  await page.goto('/#/dashboard');
++  await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible();
++  await page.goto('/#/tasks');
++  await expect(page.getByLabel('Email')).toBeVisible();
++  await expect(page).toHaveURL(/\/#\/login$/);
++  expect(await page.evaluate(() => localStorage.getItem('token'))).toBeNull();
++});
+diff --git a/study-planner/vercel.json b/study-planner/vercel.json
+new file mode 100644
+index 00000000..f3361fd4
+--- /dev/null
++++ b/study-planner/vercel.json
+@@ -0,0 +1,35 @@
++{
++  "$schema": "https://openapi.vercel.sh/vercel.json",
++  "version": 2,
++  "builds": [
++    {
++      "src": "api/index.php",
++      "use": "vercel-php@0.9.0",
++      "config": {
++        "excludeFiles": "{node_modules/**,android/**,ios/**,www/**,www_backup/**,tests/**,scripts/**,.git/**,.agents/**,.claude/**,agentic-awesome-skills/**,graphify-out/**,resources/js/graphify-out/**,playwright-report/**,test-results/**,.env,.env.*,storage/logs/**,storage/framework/testing/**,database/*.sqlite,public/hot}"
++      }
++    },
++    {
++      "src": "package.json",
++      "use": "@vercel/static-build",
++      "config": { "distDir": "public" }
++    }
++  ],
++  "routes": [
++    { "src": "/build/(.*)", "dest": "/build/$1" },
++    { "src": "/(favicon\\.ico|robots\\.txt)", "dest": "/$1" },
++    { "src": "/(.*)", "dest": "/api/index.php" }
++  ],
++  "env": {
++    "APP_NAME": "Study Planner",
++    "APP_ENV": "production",
++    "APP_DEBUG": "false",
++    "DB_CONNECTION": "pgsql",
++    "DB_SSLMODE": "require",
++    "SESSION_DRIVER": "cookie",
++    "SESSION_SECURE_COOKIE": "true",
++    "CACHE_STORE": "array",
++    "QUEUE_CONNECTION": "sync",
++    "LOG_CHANNEL": "stderr"
++  }
++}
+diff --git a/study-planner/vite.config.js b/study-planner/vite.config.js
+index 246c1e5d..1a204062 100644
+--- a/study-planner/vite.config.js
++++ b/study-planner/vite.config.js
+@@ -13,33 +13,27 @@ export default defineConfig(({ mode }) => {
+ 
+     return {
+         root: __dirname,
+-        base: isWebBuild ? '/build/' : '/',
++        base: isWebBuild ? '/build/' : './',
+         plugins: [
+-            laravel({
+-                input: ['resources/css/app.css', 'resources/js/app.ts'],
+-                refresh: true,
+-                publicDirectory,
+-                buildDirectory,
+-            }),
+-            vue({
+-                template: {
+-                    transformAssetUrls: {
+-                        base: null,
+-                        includeAbsolute: false,
+-                    },
+-                },
+-            }),
+-            tailwindcss(),
+             {
+                 name: 'generate-index-html',
+                 apply: 'build',
+-                closeBundle() {
++                enforce: 'post',
++                writeBundle() {
+                     if (isWebBuild) return;
+ 
+                     const wwwDir = path.resolve(__dirname, 'www');
+-                    const manifest = JSON.parse(fs.readFileSync(path.join(wwwDir, 'manifest.json'), 'utf8'));
++                    const manifestPath = path.join(wwwDir, '.vite', 'manifest.json');
++                    if (!fs.existsSync(manifestPath)) {
++                        throw new Error('Mobile build manifest is missing.');
++                    }
++                    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+                     const jsFile = manifest['resources/js/app.ts']?.file;
+-                    const cssFile = manifest['resources/css/app.css']?.css?.[0];
++                    const cssFile = manifest['resources/css/app.css']?.file;
++                    if (!jsFile || !cssFile) {
++                        throw new Error('Mobile build is missing its JavaScript or stylesheet entry.');
++                    }
++                    const cssFiles = new Set([cssFile, ...(manifest['resources/js/app.ts'].css || [])]);
+ 
+                     const html = `<!DOCTYPE html>
+ <html lang="en">
+@@ -51,16 +45,33 @@ export default defineConfig(({ mode }) => {
+     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+     <link rel="apple-touch-icon" href="apple-touch-icon.png">
+     <link rel="manifest" href="manifest.json">
+-    ${cssFile ? `<link rel="stylesheet" href="${cssFile}">` : ''}
++    ${[...cssFiles].map(file => `<link rel="stylesheet" href="${file}">`).join('\n    ')}
+ </head>
+ <body>
+     <div id="app"></div>
+-    ${jsFile ? `<script type="module" src="${jsFile}"></script>` : ''}
++    <script type="module" src="${jsFile}"></script>
+ </body>
+ </html>`;
+                     fs.writeFileSync(path.join(wwwDir, 'index.html'), html);
++                    // Also copy manifest.json to www root for Capacitor
++                    fs.copyFileSync(manifestPath, path.join(wwwDir, 'manifest.json'));
+                 }
+-            }
++            },
++            laravel({
++                input: ['resources/css/app.css', 'resources/js/app.ts'],
++                refresh: false,
++                publicDirectory,
++                buildDirectory,
++            }),
++            vue({
++                template: {
++                    transformAssetUrls: {
++                        base: null,
++                        includeAbsolute: false,
++                    },
++                },
++            }),
++            tailwindcss(),
+         ],
+         resolve: {
+             alias: {
+@@ -71,8 +82,10 @@ export default defineConfig(({ mode }) => {
+             outDir: outputDirectory,
+             assetsDir: 'assets',
+             emptyOutDir: true,
++            manifest: isWebBuild ? 'manifest.json' : true,
+         },
+         server: {
++            host: '127.0.0.1',
+             watch: {
+                 ignored: ['**/storage/framework/views/**'],
+             },
+@@ -88,4 +101,4 @@ export default defineConfig(({ mode }) => {
+             },
+         },
+     };
+-});
+\ No newline at end of file
++});
+-- 
+2.54.0.windows.1
+

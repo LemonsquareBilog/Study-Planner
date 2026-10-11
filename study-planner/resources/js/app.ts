@@ -8,7 +8,4 @@ const app = createApp(App);
 app.use(createPinia());
 app.use(router);
 
-const authStore = (await import('@/stores/auth')).useAuthStore();
-await authStore.initialize();
-
 app.mount('#app');

@@ -254,8 +254,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
 import { useStudentStore } from '@/stores/student';
+import { studyTimerService, type TimerState, type TimerMode, type TimerStatus } from '@/services/studyTimerService';
+import { notificationService } from '@/services/notificationService';
 import type { StudySession, Task, Resource, Quiz } from '@/types';
 
 const studentStore = useStudentStore();
@@ -267,33 +269,22 @@ const planFrom = ref(new Date().toISOString().split('T')[0]);
 const planTo = ref(new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]);
 const selectedTask = ref<Task | null>(null);
 const inAppNotification = ref<{ title: string; message: string } | null>(null);
-const timerTick = ref(Date.now());
 
-type TimerMode = 'study' | 'break';
-type TimerStatus = 'idle' | 'running' | 'paused' | 'completed';
-
-type TimerState = {
-  id: number;
-  totalMs: number;
-  remainingMs: number;
-  startedAt: number | null;
-  status: TimerStatus;
-  mode: TimerMode;
-};
-
-const timerStorageKey = 'study-plan-timer-state-v1';
-const timerStates = ref<Record<number, TimerState>>({});
-let timerInterval: number | null = null;
+const timerUnsubscribe: (() => void) | null = null;
 
 onMounted(async () => {
-  loadSavedTimerState();
-  timerInterval = window.setInterval(() => {
-    timerTick.value = Date.now();
-    const activeTimer = getActiveSelectedTaskTimer();
-    if (activeTimer && activeTimer.status === 'running' && getTimerRemainingMs(activeTimer) <= 0) {
-      void completeStudyTimer();
-    }
-  }, 250);
+  // Initialize services
+  await studyTimerService.initialize();
+  await notificationService.initialize();
+  
+  // Subscribe to timer updates
+  studyTimerService.subscribe(handleTimerUpdate);
+  
+  // Listen for timer completion events
+  window.addEventListener('study-timer-complete', handleTimerComplete);
+  
+  // Request notification permissions on user interaction
+  await notificationService.requestPermissions();
 
   await Promise.all([
     fetchSessions(),
@@ -304,125 +295,52 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  if (timerInterval) {
-    window.clearInterval(timerInterval);
-  }
+  window.removeEventListener('study-timer-complete', handleTimerComplete as EventListener);
+  if (timerUnsubscribe) timerUnsubscribe();
 });
 
-function loadSavedTimerState() {
-  try {
-    const raw = localStorage.getItem(timerStorageKey);
-    if (!raw) return;
-    const parsed = JSON.parse(raw) as Record<number, TimerState>;
-    timerStates.value = parsed ?? {};
-  } catch (error) {
-    console.warn('Failed to restore saved study timers:', error);
+// Timer state is now managed by the service
+const selectedTaskTimer = computed(() => {
+  if (!selectedTask.value) return null;
+  const session = selectedTaskSession.value;
+  const timerId = session?.id ?? selectedTask.value.id;
+  return studyTimerService.getState(timerId);
+});
+
+function handleTimerUpdate(event: { timerId: number; remainingMs: number; status: string }): void {
+  // Trigger reactivity update for timer display
+  // The service manages state internally, this just triggers re-renders
+}
+
+function handleTimerComplete(event: CustomEvent): void {
+  const detail = event.detail;
+  if (detail.taskId) {
+    // Timer completed - show notification
+    notificationService.showTaskCompletionNotification({
+      id: detail.taskId,
+      title: detail.taskTitle || 'Study Task',
+    } as any);
   }
 }
 
-function persistTimerState() {
-  try {
-    localStorage.setItem(timerStorageKey, JSON.stringify(timerStates.value));
-  } catch (error) {
-    console.warn('Failed to save study timer state:', error);
-  }
-}
-
-function isDateInRange(dateValue?: string | null): boolean {
-  if (!dateValue) return false;
-  const normalized = dateValue.slice(0, 10);
-  return normalized >= planFrom.value && normalized <= planTo.value;
-}
-
-function getTaskProgress(task: Task): number {
-  if (task.status === 'completed') return 100;
-  if (task.status === 'in_progress') return 60;
-  if (task.status === 'cancelled') return 0;
-  return 25;
-}
-
-function formatDateTime(dateString?: string | null): string {
-  if (!dateString) return 'Not scheduled';
-  const value = new Date(dateString.includes('T') ? dateString : `${dateString}T00:00:00`);
-  return value.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
+function openTask(task: Task) {
+  selectedTask.value = task;
+  // Initialize timer for this task
+  const session = selectedTaskSession.value;
+  const timerId = selectedTaskSession.value?.id ?? task.id;
+  studyTimerService.getOrCreateTimerState({
+    id: task.id,
+    totalMinutes: selectedTaskSession.value?.duration_minutes ?? task.estimated_minutes ?? 45,
+    sessionId: session?.id,
+    taskId: task.id,
+    subjectName: task.subject?.name,
+    taskTitle: task.title,
   });
 }
 
-function formatShortDate(dateString?: string | null): string {
-  if (!dateString) return 'TBD';
-  const value = new Date(dateString.includes('T') ? dateString : `${dateString}T00:00:00`);
-  return value.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+function closeTaskDetail() {
+  selectedTask.value = null;
 }
-
-function formatTaskDate(dateString?: string | null): string {
-  if (!dateString) return 'TBD';
-  const value = new Date(dateString.includes('T') ? dateString : `${dateString}T00:00:00`);
-  return value.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-async function fetchSessions() {
-  loading.value = true;
-  try {
-    sessions.value = await studentStore.fetchStudySessions({ from: planFrom.value, to: planTo.value });
-  } catch (err) {
-    console.error('Failed to load study sessions:', err);
-  } finally {
-    loading.value = false;
-  }
-}
-
-async function generatePlan() {
-  generating.value = true;
-  try {
-    await studentStore.generateStudyPlan(planFrom.value, planTo.value);
-    await fetchSessions();
-    await studentStore.fetchTasks({ from: planFrom.value, to: planTo.value });
-  } catch (err) {
-    console.error('Failed to generate study plan:', err);
-  } finally {
-    generating.value = false;
-  }
-}
-
-function onDateChange() {
-  if (planFrom.value && planTo.value && planFrom.value <= planTo.value) {
-    void fetchSessions();
-    void studentStore.fetchTasks({ from: planFrom.value, to: planTo.value });
-  }
-}
-
-const groupedSessions = computed(() => {
-  const groups: Record<string, StudySession[]> = {};
-  sessions.value.forEach(session => {
-    if (!groups[session.scheduled_date]) groups[session.scheduled_date] = [];
-    groups[session.scheduled_date].push(session);
-  });
-
-  return Object.entries(groups)
-    .map(([date, grouped]) => ({
-      date,
-      sessions: grouped.sort((a, b) => a.start_time.localeCompare(b.start_time)),
-      totalMinutes: grouped.reduce((sum, session) => sum + session.duration_minutes, 0),
-    }))
-    .sort((a, b) => a.date.localeCompare(b.date));
-});
-
-const tasksInPlan = computed(() => {
-  return studentStore.tasks.filter(task => {
-    if (task.status === 'cancelled') return false;
-    const matchesDateRange =
-      isDateInRange(task.start_date) ||
-      isDateInRange(task.deadline) ||
-      sessions.value.some(session => session.task_id === task.id && isDateInRange(session.scheduled_date));
-
-    return matchesDateRange;
-  });
-});
 
 const selectedTaskSession = computed(() => {
   if (!selectedTask.value) return null;
@@ -432,40 +350,12 @@ const selectedTaskSession = computed(() => {
 const selectedTaskDurationMinutes = computed(() => {
   if (!selectedTask.value) return 45;
   return selectedTaskSession.value?.duration_minutes ?? selectedTask.value.estimated_minutes ?? 45;
-});
-
-function getTimerStateForId(id: number): TimerState {
-  if (!timerStates.value[id]) {
-    timerStates.value[id] = {
-      id,
-      totalMs: selectedTaskDurationMinutes.value * 60_000,
-      remainingMs: selectedTaskDurationMinutes.value * 60_000,
-      startedAt: null,
-      status: 'idle',
-      mode: 'study',
-    };
-  }
-
-  const state = timerStates.value[id];
-  if (state.totalMs <= 0) {
-    state.totalMs = selectedTaskDurationMinutes.value * 60_000;
-    state.remainingMs = state.totalMs;
-  }
-  return state;
-}
-
-function getActiveSelectedTaskTimer(): TimerState | null {
-  if (!selectedTask.value) return null;
-  const timerId = selectedTaskSession.value?.id ?? selectedTask.value.id;
-  return getTimerStateForId(timerId);
-}
-
-const selectedTaskTimer = computed(() => getActiveSelectedTaskTimer());
+})
 
 const activeTaskCountdownMs = computed(() => {
   const state = selectedTaskTimer.value;
   if (!state) return 0;
-  return getTimerRemainingMs(state, timerTick.value);
+  return studyTimerService.getRemainingMs(state);
 });
 
 const timerModeLabel = computed(() => {
@@ -483,16 +373,11 @@ const timerStatusMessage = computed(() => {
   return state.mode === 'break' ? 'Break ready' : 'Study session ready';
 });
 
-function getTimerRemainingMs(state: TimerState, now = Date.now()): number {
-  if (!state) return 0;
-  if (state.status === 'running' && state.startedAt) {
-    return Math.max(0, state.totalMs - (now - state.startedAt));
-  }
-  if (state.status === 'completed') {
-    return 0;
-  }
-  return Math.max(0, state.remainingMs);
-}
+const timerStatusClass = computed(() => {
+  const state = selectedTaskTimer.value;
+  if (!state) return 'text-text-secondary';
+  return state.status === 'paused' ? 'text-status-warning' : state.status === 'completed' ? 'text-status-success' : 'text-text-primary';
+});
 
 function formatCountdown(ms: number): string {
   const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
@@ -501,56 +386,33 @@ function formatCountdown(ms: number): string {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
-function openTask(task: Task) {
-  selectedTask.value = task;
-}
-
-function closeTaskDetail() {
-  selectedTask.value = null;
-}
-
 function startSelectedTaskTimer() {
   const state = selectedTaskTimer.value;
   if (!state) return;
-  const currentRemaining = getTimerRemainingMs(state);
-  state.mode = 'study';
-  state.status = 'running';
-  state.startedAt = Date.now() - (state.totalMs - currentRemaining);
-  state.remainingMs = currentRemaining;
+  studyTimerService.startTimer(state.id);
+  
   if (selectedTaskSession.value) {
     void studentStore.updateStudySessionStatus(selectedTaskSession.value.id, 'in_progress').catch(err => console.error('Failed to start session:', err));
   }
-  persistTimerState();
 }
 
 function pauseSelectedTaskTimer() {
   const state = selectedTaskTimer.value;
-  if (!state || state.status !== 'running') return;
-  state.remainingMs = getTimerRemainingMs(state);
-  state.startedAt = null;
-  state.status = 'paused';
-  persistTimerState();
+  if (!state) return;
+  studyTimerService.pauseTimer(state.id);
 }
 
 function resumeSelectedTaskTimer() {
   const state = selectedTaskTimer.value;
-  if (!state || state.status !== 'paused') return;
-  const currentRemaining = getTimerRemainingMs(state);
-  state.mode = 'study';
-  state.status = 'running';
-  state.startedAt = Date.now() - (state.totalMs - currentRemaining);
-  state.remainingMs = currentRemaining;
-  persistTimerState();
+  if (!state) return;
+  studyTimerService.resumeTimer(state.id);
 }
 
 async function finishSelectedTask() {
   const state = selectedTaskTimer.value;
   if (!state) return;
-  state.status = 'completed';
-  state.startedAt = null;
-  state.remainingMs = 0;
-  persistTimerState();
-
+  studyTimerService.completeTimer(state.id);
+  
   if (selectedTaskSession.value) {
     try {
       await studentStore.updateStudySessionStatus(selectedTaskSession.value.id, 'completed');
@@ -564,17 +426,17 @@ async function finishSelectedTask() {
   }
 
   showInAppNotification('Study Session Complete', 'Your scheduled study session has finished.');
-  void playCompletionBell();
+  void notificationService.showStudyCompletionNotification(
+    selectedTaskSession.value?.subject?.name || 'Study',
+    selectedTask.value?.title || 'Study Session'
+  );
 }
 
 async function completeStudyTimer() {
   const state = selectedTaskTimer.value;
   if (!state || state.status === 'completed') return;
-  state.status = 'completed';
-  state.startedAt = null;
-  state.remainingMs = 0;
-  persistTimerState();
-
+  studyTimerService.completeTimer(state.id);
+  
   if (selectedTaskSession.value) {
     try {
       await studentStore.updateStudySessionStatus(selectedTaskSession.value.id, 'completed');
@@ -584,18 +446,16 @@ async function completeStudyTimer() {
   }
 
   showInAppNotification('Study Session Complete', 'Your scheduled study session has finished.');
-  void playCompletionBell();
+  void notificationService.showStudyCompletionNotification(
+    selectedTaskSession.value?.subject?.name || 'Study',
+    selectedTask.value?.title || 'Study Session'
+  );
 }
 
 function takeBreak() {
   const state = selectedTaskTimer.value;
   if (!state) return;
-  state.mode = 'break';
-  state.totalMs = 5 * 60_000;
-  state.remainingMs = state.totalMs;
-  state.startedAt = Date.now();
-  state.status = 'running';
-  persistTimerState();
+  studyTimerService.startBreak(state.id, 5);
 }
 
 function showInAppNotification(title: string, message: string) {
@@ -603,43 +463,6 @@ function showInAppNotification(title: string, message: string) {
   window.setTimeout(() => {
     inAppNotification.value = null;
   }, 6000);
-}
-
-async function playCompletionBell() {
-  try {
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('Study Session Complete', { body: 'Your scheduled study session has finished.' });
-    } else if ('Notification' in window && Notification.permission === 'default') {
-      await Notification.requestPermission().catch(() => undefined);
-      if (Notification.permission === 'granted') {
-        new Notification('Study Session Complete', { body: 'Your scheduled study session has finished.' });
-      }
-    }
-  } catch (error) {
-    console.warn('Notification API unavailable or blocked:', error);
-  }
-
-  try {
-    const AudioCtor = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioCtor) return;
-    const audioCtx = new AudioCtor();
-    const oscillator = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(660, audioCtx.currentTime + 0.25);
-    gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.4);
-    oscillator.connect(gain);
-    gain.connect(audioCtx.destination);
-    oscillator.start();
-    oscillator.stop(audioCtx.currentTime + 0.45);
-    await audioCtx.resume();
-    setTimeout(() => audioCtx.close().catch(() => undefined), 600);
-  } catch (error) {
-    console.warn('Audio bell unavailable:', error);
-  }
 }
 
 async function markTaskDone(task: Task) {
@@ -657,99 +480,4 @@ async function markTaskDone(task: Task) {
     console.error('Failed to mark task as done:', err);
   }
 }
-
-function sessionsForTask(taskId: number) {
-  return sessions.value.filter(session => session.task_id === taskId).length;
-}
-
-function priorityClass(priority: string) {
-  const classes: Record<string, string> = {
-    urgent: 'bg-status-urgent-light text-status-urgent',
-    high: 'bg-status-warning-light text-status-warning',
-    medium: 'bg-status-warning-light text-status-warning',
-    low: 'bg-status-success-light text-status-success',
-  };
-  return classes[priority] || 'bg-brand-borders text-text-secondary';
-}
-
-function formatDayHeader(dateString: string) {
-  const date = new Date(dateString);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-
-  if (date.getTime() === today.getTime()) return 'Today';
-  if (date.getTime() === tomorrow.getTime()) return 'Tomorrow';
-  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-}
-
-function formatTime(timeString: string) {
-  const [hours, minutes] = timeString.split(':');
-  const hour = parseInt(hours, 10);
-  const ampm = hour >= 12 ? 'PM' : 'AM';
-  const hour12 = hour % 12 || 12;
-  return `${hour12}:${minutes} ${ampm}`;
-}
-
-function subjectColor(color: string) {
-  const colors: Record<string, string> = {
-    blue: 'bg-blue-500',
-    green: 'bg-green-500',
-    purple: 'bg-purple-500',
-    red: 'bg-red-500',
-    yellow: 'bg-yellow-500',
-    pink: 'bg-pink-500',
-    indigo: 'bg-indigo-500',
-  };
-  return colors[color] || 'bg-gray-500';
-}
-
-function statusClass(status: string) {
-  const classes = {
-    scheduled: 'bg-primary-light text-primary',
-    in_progress: 'bg-status-warning-light text-status-warning',
-    completed: 'bg-status-success-light text-status-success',
-    missed: 'bg-status-urgent-light text-status-urgent',
-  };
-  return classes[status as keyof typeof classes] || 'bg-brand-borders text-text-secondary';
-}
-
-async function startSession(session: StudySession) {
-  try {
-    const updated = await studentStore.updateStudySessionStatus(session.id, 'in_progress');
-    Object.assign(session, updated);
-  } catch (err) {
-    console.error('Failed to start study session:', err);
-  }
-}
-
-async function completeSession(session: StudySession) {
-  try {
-    const updated = await studentStore.updateStudySessionStatus(session.id, 'completed');
-    Object.assign(session, updated);
-  } catch (err) {
-    console.error('Failed to complete study session:', err);
-  }
-}
-
-const relatedResources = computed<Resource[]>(() => {
-  if (!selectedTask.value) return [];
-  return studentStore.recommendations.filter(resource => {
-    const matchesSubject = resource.subjects?.some(subject => subject.id === selectedTask.value?.subject_id);
-    const matchesTopic = resource.topics?.some(topic => topic.id === selectedTask.value?.topic_id);
-    return matchesSubject || matchesTopic;
-  });
-});
-
-const relatedQuiz = computed<Quiz | null>(() => {
-  if (!selectedTask.value) return null;
-  return studentStore.quizzes.find(quiz => quiz.topic_id === selectedTask.value?.topic_id) ?? null;
-});
-
-const timerStatusClass = computed(() => {
-  const state = selectedTaskTimer.value;
-  if (!state) return 'text-text-secondary';
-  return state.status === 'paused' ? 'text-status-warning' : state.status === 'completed' ? 'text-status-success' : 'text-text-primary';
-});
 </script>

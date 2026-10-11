@@ -2,10 +2,14 @@
     "$schema": "https://www.schemastore.org/package.json",
     "private": true,
     "type": "module",
+    "engines": {
+        "node": "22.x"
+    },
     "scripts": {
         "build": "npm run build:mobile && npm run build:web",
-        "build:mobile": "vite build",
+        "build:mobile": "vite build --mode mobile",
         "build:web": "vite build --mode web",
+        "vercel-build": "npm run build:web",
         "dev": "vite --mode web",
         "mobile:build": "npm run build:mobile && npx cap sync android",
         "mobile:open": "npx cap open android",
@@ -29,13 +33,16 @@
     },
     "dependencies": {
         "@capacitor/android": "^8.5.2",
+        "@capacitor/app": "^8.1.2",
         "@capacitor/cli": "^8.5.2",
         "@capacitor/core": "^8.5.2",
         "@capacitor/haptics": "^8.0.2",
         "@capacitor/ios": "^8.5.2",
         "@capacitor/keyboard": "^8.0.5",
+        "@capacitor/local-notifications": "^8.3.1",
         "@capacitor/splash-screen": "^8.0.2",
         "@capacitor/status-bar": "^8.0.3",
+        "@heroicons/vue": "^2.2.0",
         "axios": "^1.20.0",
         "pinia": "^4.0.3",
         "vue": "^3.5.42",

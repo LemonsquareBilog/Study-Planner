@@ -22,12 +22,12 @@ import type {
   AdminDashboardData,
 } from '@/types';
 
-const API_BASE_URL = import.meta.env.MODE === 'web'
+const API_BASE_URL = ['web', 'development'].includes(import.meta.env.MODE)
   ? '/api'
   : import.meta.env.VITE_API_BASE_URL || '/api';
 
 export function isLocalPlatform(): boolean {
-  if (Capacitor.isNativePlatform()) return true;
+  if (Capacitor.isNativePlatform()) return !import.meta.env.VITE_API_BASE_URL;
   if (typeof window !== 'undefined') {
     if (window.location.protocol === 'file:') return true;
     if (localStorage.getItem('sp_demo_mode') === 'true') return true;
@@ -72,8 +72,13 @@ class ApiService {
       (error: AxiosError) => {
         if (error.response?.status === 401 && !isLocalPlatform()) {
           apiService.clearToken();
-          if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-            window.location.href = '/login';
+          if (typeof window !== 'undefined') {
+            void import('@/stores/auth').then(({ useAuthStore }) => {
+              const authStore = useAuthStore();
+              authStore.user = null;
+              authStore.isAuthenticated = false;
+              return import('@/router');
+            }).then(({ default: router }) => router.replace('/login'));
           }
         }
         return Promise.reject(error);
@@ -108,21 +113,9 @@ class ApiService {
       this.token = response.data.token;
       return response.data;
     }
-    try {
-      const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/login', { email, password });
-      this.setToken(response.data.data.token);
-      return response.data.data;
-    } catch (err: any) {
-      // Fallback to localApi if backend is unreachable
-      if (!err.response && typeof window !== 'undefined') {
-        console.warn('[API] Backend unreachable, falling back to local demo mode');
-        localStorage.setItem('sp_demo_mode', 'true');
-        const response = await localApi.login(email, password);
-        this.token = response.data.token;
-        return response.data;
-      }
-      throw err;
-    }
+    const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/login', { email, password });
+    this.setToken(response.data.data.token);
+    return response.data.data;
   }
 
   async register(name: string, email: string, password: string, password_confirmation: string) {
@@ -131,19 +124,9 @@ class ApiService {
       this.token = response.data.token;
       return response.data;
     }
-    try {
-      const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/register', { name, email, password, password_confirmation });
-      this.setToken(response.data.data.token);
-      return response.data.data;
-    } catch (err: any) {
-      if (!err.response && typeof window !== 'undefined') {
-        localStorage.setItem('sp_demo_mode', 'true');
-        const response = await localApi.register(name, email, password);
-        this.token = response.data.token;
-        return response.data;
-      }
-      throw err;
-    }
+    const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/register', { name, email, password, password_confirmation });
+    this.setToken(response.data.data.token);
+    return response.data.data;
   }
 
   async logout() {

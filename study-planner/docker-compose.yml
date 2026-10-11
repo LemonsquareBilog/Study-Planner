@@ -1,0 +1,75 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: study_planner_postgres
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-study_planner}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "${POSTGRES_PORT:-15432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - study-planner-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: study_planner_app
+    env_file:
+      - .env
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      SESSION_DRIVER: file
+      CACHE_STORE: file
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-study_planner}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      APP_URL: http://localhost:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/html
+      - vendor_data:/var/www/html/vendor
+      - bootstrap_cache:/var/www/html/bootstrap/cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+      vite:
+        condition: service_completed_successfully
+    command: >-
+      sh -c "php artisan config:clear && php artisan migrate --force --no-interaction &&
+      php artisan serve --host=0.0.0.0 --port=8000"
+    networks:
+      - study-planner-network
+
+  vite:
+    build:
+      context: .
+      dockerfile: Dockerfile.vite
+    container_name: study_planner_vite
+    volumes:
+      - .:/var/www/html
+      - /var/www/html/node_modules
+    networks:
+      - study-planner-network
+
+networks:
+  study-planner-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  vendor_data:
+  bootstrap_cache:

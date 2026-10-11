@@ -1,11 +1,16 @@
 import type { CapacitorConfig } from '@capacitor/cli';
+import { loadEnv } from 'vite';
+
+const mobileEnv = loadEnv('mobile', process.cwd(), 'VITE_');
+const usesHttpApi = mobileEnv.VITE_API_BASE_URL?.startsWith('http://') ?? false;
 
 const config: CapacitorConfig = {
   appId: 'com.studyplanner.app',
   appName: 'Study Planner',
   webDir: 'www',
   server: {
-    androidScheme: 'https'
+    androidScheme: usesHttpApi ? 'http' : 'https',
+    cleartext: usesHttpApi,
   },
   plugins: {
     SplashScreen: {
@@ -25,6 +30,11 @@ const config: CapacitorConfig = {
     },
     Haptics: {
       enabled: true,
+    },
+    LocalNotifications: {
+      smallIcon: 'ic_stat_notification',
+      iconColor: '#B33F62',
+      sound: 'default',
     },
   },
 };

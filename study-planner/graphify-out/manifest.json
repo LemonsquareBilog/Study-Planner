@@ -1,0 +1,192 @@
+{
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\app.js": {
+    "mtime": 1787621218.0,
+    "ast_hash": "b519d08ef66fd54910edbedba6181ec2",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\app.ts": {
+    "mtime": 1789475352.0280967,
+    "ast_hash": "261f286e7389b27e23a04c0fc4c3e2aa",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\App.vue": {
+    "mtime": 1789472917.13621,
+    "ast_hash": "7ad98b8b11163e95577688dc3f435b8c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\components\\MobileBottomNav.vue": {
+    "mtime": 1791529293.022486,
+    "ast_hash": "e091d6d78f4309392400b78381a6843a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\components\\ResourceCard.vue": {
+    "mtime": 1791524498.8461242,
+    "ast_hash": "6e758b3a4472b05de4933dc37d9843b9",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\components\\SettingInput.vue": {
+    "mtime": 1790312094.3236625,
+    "ast_hash": "53fad2832d44b6a2eb13d8f35c51b2c2",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\components\\StatCard.vue": {
+    "mtime": 1790655393.2727401,
+    "ast_hash": "ba0f18dd9d7e1206e7f9e0d96857f5cc",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\components\\UserCard.vue": {
+    "mtime": 1791524913.7720659,
+    "ast_hash": "800e52a5d43a5711d82388050dfb45ab",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\components\\ui\\MetricCard.vue": {
+    "mtime": 1791012526.9307208,
+    "ast_hash": "85b084e60702633b0fa777126b06f7d4",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\components\\ui\\SelectInput.vue": {
+    "mtime": 1791524858.8725853,
+    "ast_hash": "fcc4a4c003a8a5e0d4f724de9c27e83e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\layouts\\AdminLayout.vue": {
+    "mtime": 1791524714.1240034,
+    "ast_hash": "fc3182a330cc9ca26acd848d8700e6bb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\layouts\\StudentLayout.vue": {
+    "mtime": 1791528879.5665996,
+    "ast_hash": "a2c5b4cba1d7f4bf83b8eec669a8a7db",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\router\\index.ts": {
+    "mtime": 1791350583.7771218,
+    "ast_hash": "b18209e01e192743a19ca958970081ba",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\services\\api.ts": {
+    "mtime": 1791350510.271213,
+    "ast_hash": "017ea6f7007d139ffbd074e1a96596a1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\services\\localApi.ts": {
+    "mtime": 1791350462.177007,
+    "ast_hash": "468c6a8747d0937d28c7bce833981b5f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\services\\notificationService.ts": {
+    "mtime": 1791528968.3498871,
+    "ast_hash": "5a08396e4c02c158444d091f6413e8e2",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\services\\studyTimerService.ts": {
+    "mtime": 1791529526.3519287,
+    "ast_hash": "2a828cdb915674cbc1537e76b6b8b714",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\stores\\admin.ts": {
+    "mtime": 1790941750.917145,
+    "ast_hash": "3eb183facff7e10b47c7c220f78bbda7",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\stores\\auth.ts": {
+    "mtime": 1790264072.1542814,
+    "ast_hash": "c3c66f04bafa45cc541a37864f7c8489",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\stores\\student.ts": {
+    "mtime": 1791012526.9383662,
+    "ast_hash": "1e98a43772ac4853e5634e5df7f610f1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\types\\index.ts": {
+    "mtime": 1791348489.8298893,
+    "ast_hash": "69cf948d93db11fc7b1d13c9c2398618",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\views\\admin\\DashboardView.vue": {
+    "mtime": 1790971844.6079478,
+    "ast_hash": "0e8210b6b26b8c01879f72f91cc95a94",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\views\\admin\\ResourcesView.vue": {
+    "mtime": 1791375301.1727161,
+    "ast_hash": "9bd072127b14f40843a3bc4da40e385e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\views\\admin\\SettingsView.vue": {
+    "mtime": 1790926051.631649,
+    "ast_hash": "f53461c6f24658e883dadc49d95b6fa2",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\views\\admin\\SubjectsView.vue": {
+    "mtime": 1790926127.2281327,
+    "ast_hash": "f70606ce0a0c0fff06bc8538e3394ffb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\views\\admin\\UsersView.vue": {
+    "mtime": 1791375021.9572353,
+    "ast_hash": "e2f3f71a526bda5d6b69fa164e567d78",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\views\\auth\\LoginView.vue": {
+    "mtime": 1791351447.173872,
+    "ast_hash": "1381df296c5c4f7057dac620f1d0840d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\views\\auth\\RegisterView.vue": {
+    "mtime": 1790312174.3026786,
+    "ast_hash": "4855b3938a15e40246cb3200c6838a62",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\views\\student\\DashboardView.vue": {
+    "mtime": 1791011289.6515598,
+    "ast_hash": "3c83936fa9cd628984a1d243961ed1ac",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\views\\student\\NotificationsView.vue": {
+    "mtime": 1790311939.574523,
+    "ast_hash": "c14ce3051a2c9a69c543412e10d800f4",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\views\\student\\ProgressView.vue": {
+    "mtime": 1790311923.6051133,
+    "ast_hash": "8bd8ac5618f5bab47a64c012d8a67d03",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\views\\student\\QuizDetailView.vue": {
+    "mtime": 1791014033.0327613,
+    "ast_hash": "036ffd1a4658f7bfb38750a064aea313",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\views\\student\\QuizzesView.vue": {
+    "mtime": 1791011289.6167512,
+    "ast_hash": "061838a31f5812db70435abcfc276fea",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\views\\student\\RecommendationsView.vue": {
+    "mtime": 1791012526.9383662,
+    "ast_hash": "48007180ee534b946e551bf256554590",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\views\\student\\StudyPlanView.vue": {
+    "mtime": 1791525554.131272,
+    "ast_hash": "11d5794538b4bf17858883f895111ff3",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\views\\student\\SubjectDetailView.vue": {
+    "mtime": 1790311810.4398043,
+    "ast_hash": "11ca22cbe2c44edf51a1ca1febbbffad",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\views\\student\\SubjectsView.vue": {
+    "mtime": 1790311745.5558531,
+    "ast_hash": "d76800cf1ad30bb80245bebe0f252231",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\Acer\\OneDrive\\Documents\\PROJECT\\study-planner\\resources\\js\\views\\student\\TasksView.vue": {
+    "mtime": 1791012526.9337194,
+    "ast_hash": "5c676212c906d3dda9c0ffc68da43808",
+    "semantic_hash": ""
+  }
+}

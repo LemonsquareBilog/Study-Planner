@@ -8,12 +8,15 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = ref(false);
   const loading = ref(false);
   const error = ref<string | null>(null);
+  let initialized = false;
 
   const userRole = computed(() => user.value?.role);
   const isStudent = computed(() => user.value?.role === 'student');
   const isAdmin = computed(() => user.value?.role === 'admin');
 
   async function initialize() {
+    if (initialized) return;
+    initialized = true;
     api.loadToken();
     if (api.token) {
       try {

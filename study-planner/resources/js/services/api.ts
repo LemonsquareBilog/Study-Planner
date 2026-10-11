@@ -120,27 +120,9 @@ class ApiService {
       this.setToken(response.data.token);
       return response.data;
     }
-<<<<<<< HEAD
     const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/login', { email, password });
     this.setToken(response.data.data.token);
     return response.data.data;
-=======
-    try {
-      const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/login', { email, password });
-      this.setToken(response.data.data.token);
-      return response.data.data;
-    } catch (err: any) {
-      // Fallback to localApi if backend is unreachable (no response, 502/503/504 proxy error, or 404)
-      if (isBackendUnavailable(err) && typeof window !== 'undefined') {
-        console.warn('[API] Backend unreachable, falling back to local demo mode');
-        localStorage.setItem('sp_demo_mode', 'true');
-        const response = await localApi.login(email, password);
-        this.setToken(response.data.token);
-        return response.data;
-      }
-      throw err;
-    }
->>>>>>> 4d79286ed13a9ba0e37eb7bd18e6be79301d8a22
   }
 
   async register(name: string, email: string, password: string, password_confirmation: string) {
@@ -149,25 +131,9 @@ class ApiService {
       this.setToken(response.data.token);
       return response.data;
     }
-<<<<<<< HEAD
     const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/register', { name, email, password, password_confirmation });
     this.setToken(response.data.data.token);
     return response.data.data;
-=======
-    try {
-      const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/register', { name, email, password, password_confirmation });
-      this.setToken(response.data.data.token);
-      return response.data.data;
-    } catch (err: any) {
-      if (isBackendUnavailable(err) && typeof window !== 'undefined') {
-        localStorage.setItem('sp_demo_mode', 'true');
-        const response = await localApi.register(name, email, password);
-        this.setToken(response.data.token);
-        return response.data;
-      }
-      throw err;
-    }
->>>>>>> 4d79286ed13a9ba0e37eb7bd18e6be79301d8a22
   }
 
   async logout() {

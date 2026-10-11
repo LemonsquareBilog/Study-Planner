@@ -11,6 +11,7 @@
         "build:web": "vite build --mode web",
         "vercel-build": "npm run build:web",
         "dev": "vite --mode web",
+        "preview": "vite preview --outDir www --port 5173 --host",
         "mobile:build": "npm run build:mobile && npx cap sync android",
         "mobile:open": "npx cap open android",
         "mobile:run": "npx cap run android"

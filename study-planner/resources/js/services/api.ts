@@ -36,6 +36,13 @@ export function isLocalPlatform(): boolean {
   return false;
 }
 
+export function isBackendUnavailable(err: any): boolean {
+  if (!err) return false;
+  if (!err.response) return true;
+  const status = err.response.status;
+  return status === 502 || status === 503 || status === 504 || status === 404;
+}
+
 class ApiService {
   private httpClient: AxiosInstance | null = null;
   public token: string | null = null;
@@ -110,23 +117,57 @@ class ApiService {
   async login(email: string, password: string) {
     if (this.isLocal) {
       const response = await localApi.login(email, password);
-      this.token = response.data.token;
+      this.setToken(response.data.token);
       return response.data;
     }
+<<<<<<< HEAD
     const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/login', { email, password });
     this.setToken(response.data.data.token);
     return response.data.data;
+=======
+    try {
+      const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/login', { email, password });
+      this.setToken(response.data.data.token);
+      return response.data.data;
+    } catch (err: any) {
+      // Fallback to localApi if backend is unreachable (no response, 502/503/504 proxy error, or 404)
+      if (isBackendUnavailable(err) && typeof window !== 'undefined') {
+        console.warn('[API] Backend unreachable, falling back to local demo mode');
+        localStorage.setItem('sp_demo_mode', 'true');
+        const response = await localApi.login(email, password);
+        this.setToken(response.data.token);
+        return response.data;
+      }
+      throw err;
+    }
+>>>>>>> 4d79286ed13a9ba0e37eb7bd18e6be79301d8a22
   }
 
   async register(name: string, email: string, password: string, password_confirmation: string) {
     if (this.isLocal) {
       const response = await localApi.register(name, email, password);
-      this.token = response.data.token;
+      this.setToken(response.data.token);
       return response.data;
     }
+<<<<<<< HEAD
     const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/register', { name, email, password, password_confirmation });
     this.setToken(response.data.data.token);
     return response.data.data;
+=======
+    try {
+      const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/register', { name, email, password, password_confirmation });
+      this.setToken(response.data.data.token);
+      return response.data.data;
+    } catch (err: any) {
+      if (isBackendUnavailable(err) && typeof window !== 'undefined') {
+        localStorage.setItem('sp_demo_mode', 'true');
+        const response = await localApi.register(name, email, password);
+        this.setToken(response.data.token);
+        return response.data;
+      }
+      throw err;
+    }
+>>>>>>> 4d79286ed13a9ba0e37eb7bd18e6be79301d8a22
   }
 
   async logout() {
@@ -151,7 +192,7 @@ class ApiService {
       const response = await this.httpClient!.get<ApiResponse<User>>('/auth/me');
       return response.data.data;
     } catch (err: any) {
-      if (!err.response && this.token?.startsWith('local-token-')) {
+      if ((isBackendUnavailable(err) || !err.response) && (this.token?.startsWith('local-token-') || isLocalPlatform())) {
         const response = await localApi.me();
         return response.data;
       }

@@ -11,10 +11,16 @@
         "build:web": "vite build --mode web",
         "vercel-build": "npm run build:web",
         "dev": "vite --mode web",
+        "dev:local": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/serve.ps1",
+        "local:check": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/serve.ps1 -CheckOnly",
         "preview": "vite preview --outDir www --port 5173 --host",
         "mobile:build": "npm run build:mobile && npx cap sync android",
         "mobile:open": "npx cap open android",
-        "mobile:run": "npx cap run android"
+        "mobile:run": "npx cap run android",
+        "build:preview": "vite build --mode preview",
+        "test:mobile-config": "node --test tests/mobile-config.test.mjs",
+        "mobile:check-backend": "node scripts/check-production-api.mjs",
+        "test:production-api": "node --test tests/production-api.test.mjs"
     },
     "devDependencies": {
         "@playwright/test": "^1.63.0",
@@ -44,6 +50,9 @@
         "@capacitor/splash-screen": "^8.0.2",
         "@capacitor/status-bar": "^8.0.3",
         "@heroicons/vue": "^2.2.0",
+        "@zxcvbn-ts/core": "^4.2.0",
+        "@zxcvbn-ts/language-common": "^4.1.3",
+        "@zxcvbn-ts/language-en": "^4.1.1",
         "axios": "^1.20.0",
         "pinia": "^4.0.3",
         "vue": "^3.5.42",

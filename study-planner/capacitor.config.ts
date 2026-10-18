@@ -1,16 +1,12 @@
 import type { CapacitorConfig } from '@capacitor/cli';
-import { loadEnv } from 'vite';
-
-const mobileEnv = loadEnv('mobile', process.cwd(), 'VITE_');
-const usesHttpApi = mobileEnv.VITE_API_BASE_URL?.startsWith('http://') ?? false;
 
 const config: CapacitorConfig = {
   appId: 'com.studyplanner.app',
   appName: 'Study Planner',
   webDir: 'www',
   server: {
-    androidScheme: usesHttpApi ? 'http' : 'https',
-    cleartext: usesHttpApi,
+    androidScheme: 'https',
+    cleartext: false,
   },
   plugins: {
     SplashScreen: {

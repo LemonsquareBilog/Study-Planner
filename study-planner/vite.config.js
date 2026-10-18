@@ -1,4 +1,5 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
+import { validateMobileApiUrl } from './scripts/mobile-config.mjs';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
@@ -7,6 +8,10 @@ import fs from 'fs';
 
 export default defineConfig(({ mode }) => {
     const isWebBuild = mode === 'web' || mode === 'development';
+    if (!isWebBuild && mode !== 'preview') {
+        const env = { ...loadEnv(mode, process.cwd(), 'VITE_'), ...process.env };
+        validateMobileApiUrl(env.VITE_API_BASE_URL, mode === 'mobile-dev');
+    }
     const publicDirectory = isWebBuild ? 'public' : 'www';
     const buildDirectory = isWebBuild ? 'build' : 'assets';
     const outputDirectory = isWebBuild ? 'public/build' : 'www';
@@ -19,10 +24,10 @@ export default defineConfig(({ mode }) => {
                 name: 'generate-index-html',
                 apply: 'build',
                 enforce: 'post',
-                writeBundle() {
+                writeBundle(outputOptions) {
                     if (isWebBuild) return;
 
-                    const wwwDir = path.resolve(__dirname, 'www');
+                    const wwwDir = path.resolve(outputOptions.dir || 'www');
                     const manifestPath = path.join(wwwDir, '.vite', 'manifest.json');
                     if (!fs.existsSync(manifestPath)) {
                         throw new Error('Mobile build manifest is missing.');
@@ -78,6 +83,9 @@ export default defineConfig(({ mode }) => {
                 '@': path.resolve(__dirname, './resources/js'),
             },
         },
+        optimizeDeps: {
+            entries: ['resources/js/app.ts'],
+        },
         build: {
             outDir: outputDirectory,
             assetsDir: 'assets',
@@ -87,12 +95,21 @@ export default defineConfig(({ mode }) => {
         server: {
             host: '127.0.0.1',
             watch: {
-                ignored: ['**/storage/framework/views/**'],
+                ignored: ['**/storage/**', '**/vendor/**', '**/.verification/**', '**/agentic-awesome-skills/**'],
             },
             proxy: {
                 '/api': {
                     target: 'http://127.0.0.1:8000',
                     changeOrigin: true,
+                    configure(proxy) {
+                        proxy.on('proxyReq', (request, incoming) => {
+                            // Preserve the backend's same-origin CSRF check for
+                            // the two explicit loopback Vite origins only.
+                            if (['http://localhost:5173', 'http://127.0.0.1:5173'].includes(incoming.headers.origin)) {
+                                request.setHeader('Origin', 'http://127.0.0.1:8000');
+                            }
+                        });
+                    },
                 },
                 '/sanctum': {
                     target: 'http://127.0.0.1:8000',

@@ -5,15 +5,22 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Http::fake(['api.pwnedpasswords.com/*' => Http::response(str_repeat('A', 35).':0')]);
+    }
+
     public function test_registration_creates_an_account_that_can_sign_in_and_restore_its_session(): void
     {
-        $credentials = ['email' => 'new-student@example.test', 'password' => 'Password123!'];
+        $credentials = ['email' => 'new-student@example.test', 'password' => 'Unique dusk violet lantern 842!'];
         $registration = $this->postJson('/api/auth/register', [
             ...$credentials,
             'name' => 'New Student',

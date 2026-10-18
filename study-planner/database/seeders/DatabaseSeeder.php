@@ -25,6 +25,13 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        if (! app()->environment(['local', 'testing'])) {
+            throw new \RuntimeException('Sample data seeding is restricted to local and testing environments.');
+        }
+        if (User::exists()) {
+            $this->command?->warn('Existing users preserved. Use DevelopmentAccountsSeeder to restore missing test accounts.');
+            return;
+        }
         $this->createSystemSettings();
         $admin = $this->createAdmin();
         $students = $this->createStudents();

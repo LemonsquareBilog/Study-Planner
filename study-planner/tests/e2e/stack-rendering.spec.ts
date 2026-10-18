@@ -15,7 +15,7 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 393, height: 851 
 test('shows a loading message while restoring a session', async ({ page }) => {
   let release!: () => void;
   const pending = new Promise<void>(resolve => { release = resolve; });
-  await page.addInitScript(() => localStorage.setItem('token', 'expired-session-test'));
+  await page.addInitScript(() => localStorage.setItem('token', JSON.stringify({ token: 'cookie-session', refreshToken: null })));
   await page.route('**/api/auth/me', async route => {
     await pending;
     await route.fulfill({ status: 401, json: { message: 'Unauthenticated' } });
@@ -45,7 +45,10 @@ test('an expired native session returns to login instead of the dashboard', asyn
     Object.assign(window, {
       androidBridge: {},
       Capacitor: {
-        PluginHeaders: [{ name: 'App', methods: [{ name: 'addListener', rtype: 'callback' }, { name: 'removeListener', rtype: 'promise' }] }],
+        PluginHeaders: [
+          { name: 'App', methods: [{ name: 'addListener', rtype: 'callback' }, { name: 'removeListener', rtype: 'promise' }] },
+          { name: 'AuthTokenStorage', methods: ['get', 'set', 'remove'].map(name => ({ name, rtype: 'promise' })) },
+        ],
         nativeCallback: () => 'browser-test',
         nativePromise: () => Promise.resolve({}),
       },

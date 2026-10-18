@@ -1,21 +1,21 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Student\DashboardController;
-use App\Http\Controllers\Student\SubjectController;
-use App\Http\Controllers\Student\TopicController;
-use App\Http\Controllers\Student\TaskController;
-use App\Http\Controllers\Student\StudyPlanController;
-use App\Http\Controllers\Student\QuizController;
-use App\Http\Controllers\Student\RecommendationController;
-use App\Http\Controllers\Student\ProgressController;
-use App\Http\Controllers\Student\NotificationController;
-use App\Http\Controllers\Student\StudyPreferenceController;
 use App\Http\Controllers\Admin\ResourceController;
 use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
-use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\SystemSettingController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Student\DashboardController;
+use App\Http\Controllers\Student\NotificationController;
+use App\Http\Controllers\Student\ProgressController;
+use App\Http\Controllers\Student\QuizController;
+use App\Http\Controllers\Student\RecommendationController;
+use App\Http\Controllers\Student\StudyPlanController;
+use App\Http\Controllers\Student\StudyPreferenceController;
+use App\Http\Controllers\Student\SubjectController;
+use App\Http\Controllers\Student\TaskController;
+use App\Http\Controllers\Student\TopicController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,14 +24,15 @@ use App\Http\Controllers\Admin\SystemSettingController;
 */
 
 // Public Authentication Routes
-Route::prefix('auth')->group(function () {
+Route::prefix('auth')->middleware('throttle:10,1')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/refresh', [AuthController::class, 'refresh']);
 });
 
 // Authenticated Routes
-Route::middleware('auth:sanctum')->group(function () {
-    
+Route::middleware(['auth:sanctum', 'access-token'])->group(function () {
+
     // Auth profile & logout
     Route::prefix('auth')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
@@ -43,7 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Student Endpoints
     Route::middleware('role:student')->prefix('student')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index']);
-        
+
         // Study Preferences (Upsert)
         Route::get('/study-preference', [StudyPreferenceController::class, 'show']);
         Route::post('/study-preference', [StudyPreferenceController::class, 'upsert']);
@@ -85,7 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Admin Endpoints
     Route::middleware('role:admin')->prefix('admin')->group(function () {
-        Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index']);
+        Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index']);
         Route::get('/subjects/options', [AdminSubjectController::class, 'options']);
         Route::apiResource('/subjects', AdminSubjectController::class)->except(['show']);
         Route::post('/subjects/{subject}/topics', [AdminSubjectController::class, 'storeTopic']);

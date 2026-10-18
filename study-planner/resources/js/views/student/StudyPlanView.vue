@@ -25,6 +25,7 @@
       </div>
     </div>
 
+    <p v-if="loadError" role="alert" class="text-status-urgent">{{ loadError }}</p>
     <div v-if="loading" class="flex justify-center py-12" role="status" aria-label="Loading study plan">
       <svg class="h-8 w-8 animate-spin text-primary" fill="none" viewBox="0 0 24 24" aria-hidden="true">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
@@ -270,21 +271,82 @@ const planTo = ref(new Date(Date.now() + 14 * 86400000).toISOString().split('T')
 const selectedTask = ref<Task | null>(null);
 const inAppNotification = ref<{ title: string; message: string } | null>(null);
 
-const timerUnsubscribe: (() => void) | null = null;
+let timerUnsubscribe: (() => void) | null = null;
+
+const loadError = ref('');
+const tasksInPlan = computed(() => studentStore.tasks.filter(task => {
+  const date = (task.start_date || task.deadline).slice(0, 10);
+  return date >= planFrom.value && date <= planTo.value;
+}));
+const groupedSessions = computed(() => {
+  const groups = new Map<string, StudySession[]>();
+  for (const session of sessions.value) {
+    const date = session.scheduled_date.slice(0, 10);
+    groups.set(date, [...(groups.get(date) || []), session]);
+  }
+  return [...groups].sort(([a], [b]) => a.localeCompare(b)).map(([date, items]) => ({
+    date, sessions: items.sort((a, b) => a.start_time.localeCompare(b.start_time)),
+    totalMinutes: items.reduce((sum, session) => sum + session.duration_minutes, 0),
+  }));
+});
+const relatedResources = computed(() => studentStore.recommendations.filter(resource =>
+  resource.topics?.some(topic => topic.id === selectedTask.value?.topic_id) ||
+  resource.subjects?.some(subject => subject.id === selectedTask.value?.subject_id)));
+const relatedQuiz = computed(() => studentStore.quizzes.find(quiz => quiz.topic_id === selectedTask.value?.topic_id));
+async function fetchSessions() {
+  loading.value = true;
+  loadError.value = '';
+  try { sessions.value = await studentStore.fetchStudySessions({ from: planFrom.value, to: planTo.value }); }
+  catch { loadError.value = 'Unable to load your study plan. Please try again.'; }
+  finally { loading.value = false; }
+}
+async function onDateChange() {
+  if (planFrom.value > planTo.value) { loadError.value = 'Choose an end date after the start date.'; return; }
+  await Promise.all([fetchSessions(), studentStore.fetchTasks().catch(() => { loadError.value = 'Unable to load tasks.'; })]);
+}
+async function generatePlan() {
+  if (planFrom.value > planTo.value) { loadError.value = 'Choose an end date after the start date.'; return; }
+  generating.value = true;
+  try { await studentStore.generateStudyPlan(planFrom.value, planTo.value); await fetchSessions(); }
+  catch { loadError.value = 'Unable to generate a study plan. Check your preferences and try again.'; }
+  finally { generating.value = false; }
+}
+async function startSession(session: StudySession) {
+  try { await studentStore.updateStudySessionStatus(session.id, 'in_progress'); await fetchSessions(); }
+  catch { loadError.value = 'Unable to start this session.'; }
+}
+async function completeSession(session: StudySession) {
+  try { await studentStore.updateStudySessionStatus(session.id, 'completed'); await fetchSessions(); }
+  catch { loadError.value = 'Unable to complete this session.'; }
+}
+function formatShortDate(value?: string) { return value ? new Date(value).toLocaleDateString() : 'Not scheduled'; }
+const formatTaskDate = formatShortDate;
+function formatDayHeader(value: string) { return new Date(value + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }); }
+function formatDateTime(value?: string) { return value ? new Date(value).toLocaleString() : 'Not scheduled'; }
+function formatTime(value: string) { return value.slice(0, 5); }
+function priorityClass(priority: string) { return ['urgent', 'high'].includes(priority) ? 'bg-status-urgent-light text-status-urgent' : 'bg-primary-light text-primary'; }
+function statusClass(status: string) { return status === 'completed' ? 'bg-status-success-light text-status-success' : 'bg-primary-light text-primary'; }
+function subjectColor(color?: string) { return ({ blue: 'bg-blue-500', green: 'bg-green-500', red: 'bg-red-500', purple: 'bg-purple-500', orange: 'bg-orange-500' } as Record<string, string>)[color || ''] || 'bg-primary'; }
+function getTaskProgress(task: Task) {
+  if (task.status === 'completed') return 100;
+  const linked = sessions.value.filter(session => session.task_id === task.id);
+  const total = linked.reduce((sum, session) => sum + session.duration_minutes, 0);
+  const completed = linked.filter(session => session.status === 'completed').reduce((sum, session) => sum + session.duration_minutes, 0);
+  return total ? Math.round(completed / total * 100) : 0;
+}
 
 onMounted(async () => {
   // Initialize services
-  await studyTimerService.initialize();
-  await notificationService.initialize();
+  void studyTimerService.initialize().catch(error => console.warn('Timer initialization unavailable', error));
+  void notificationService.initialize().catch(error => console.warn('Notifications unavailable', error));
   
   // Subscribe to timer updates
-  studyTimerService.subscribe(handleTimerUpdate);
+  timerUnsubscribe = studyTimerService.subscribe(handleTimerUpdate);
   
   // Listen for timer completion events
   window.addEventListener('study-timer-complete', handleTimerComplete);
   
-  // Request notification permissions on user interaction
-  await notificationService.requestPermissions();
+  // Optional notification permissions must never block loading the study plan.
 
   await Promise.all([
     fetchSessions(),

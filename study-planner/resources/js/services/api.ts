@@ -1,6 +1,8 @@
 import { Capacitor } from '@capacitor/core';
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { localApi } from './localApi';
+// Compile demo accounts out of every real backend build.
+const localApi = import.meta.env.MODE === 'preview' ? (await import('./localApi')).localApi : undefined!;
+import { tokenStorage } from './tokenStorage';
 import type {
   ApiResponse,
   PaginatedResponse,
@@ -27,13 +29,7 @@ const API_BASE_URL = ['web', 'development'].includes(import.meta.env.MODE)
   : import.meta.env.VITE_API_BASE_URL || '/api';
 
 export function isLocalPlatform(): boolean {
-  if (Capacitor.isNativePlatform()) return !import.meta.env.VITE_API_BASE_URL;
-  if (typeof window !== 'undefined') {
-    if (window.location.protocol === 'file:') return true;
-    if (localStorage.getItem('sp_demo_mode') === 'true') return true;
-    if (window.location.pathname.includes('study-planner-preview')) return true;
-  }
-  return false;
+  return import.meta.env.MODE === 'preview' && !Capacitor.isNativePlatform();
 }
 
 export function isBackendUnavailable(err: any): boolean {
@@ -46,18 +42,22 @@ export function isBackendUnavailable(err: any): boolean {
 class ApiService {
   private httpClient: AxiosInstance | null = null;
   public token: string | null = null;
+  private refreshToken: string | null = null;
+  private refreshing: Promise<void> | null = null;
+  private sessionVersion = 0;
 
   constructor() {
-    this.token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    this.token = null;
 
     this.httpClient = axios.create({
       baseURL: API_BASE_URL,
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
+        ...(!Capacitor.isNativePlatform() ? { 'X-Study-Planner-Web': '1' } : {}),
       },
       timeout: 15000,
-      withCredentials: true,
+      withCredentials: false,
     });
 
     const apiService = this;
@@ -76,20 +76,29 @@ class ApiService {
 
     this.httpClient.interceptors.response.use(
       (response) => response,
-      (error: AxiosError) => {
-        if (error.response?.status === 401 && !isLocalPlatform()) {
-          apiService.clearToken();
-          if (typeof window !== 'undefined') {
-            void import('@/stores/auth').then(({ useAuthStore }) => {
-              const authStore = useAuthStore();
-              authStore.user = null;
-              authStore.isAuthenticated = false;
-              return import('@/router');
-            }).then(({ default: router }) => router.replace('/login'));
+      async (error: AxiosError) => {
+        const config = error.config as (InternalAxiosRequestConfig & { retried?: boolean }) | undefined;
+        const authenticated = config?.headers.Authorization != null;
+        if (error.response?.status === 401 && authenticated && !isLocalPlatform() && config) {
+          if (!config.retried && apiService.refreshToken) {
+            config.retried = true;
+            // A late response from the previous token reuses the already renewed session.
+            if (config.headers.Authorization === `Bearer ${apiService.token}`) await apiService.refreshSession();
+            config.headers.Authorization = `Bearer ${apiService.token}`;
+            return apiService.httpClient!.request(config);
+          }
+          if (config.headers.Authorization === `Bearer ${apiService.token}`) {
+            await apiService.clearToken();
+            const { useAuthStore } = await import('@/stores/auth');
+            const authStore = useAuthStore();
+            authStore.user = null;
+            authStore.isAuthenticated = false;
+            void import('@/router').then(({ default: router }) => router.replace('/login'));
           }
         }
         return Promise.reject(error);
       }
+
     );
   }
 
@@ -97,89 +106,92 @@ class ApiService {
     return isLocalPlatform();
   }
 
-  setToken(token: string) {
+  async setToken(token: string, refreshToken: string | null = null) {
+    await tokenStorage.set(JSON.stringify({ token, refreshToken }));
+    this.refreshToken = refreshToken;
     this.token = token;
-    localStorage.setItem('token', token);
-    localApi.setToken(token);
+    if (this.isLocal) localApi.setToken(token);
   }
 
-  clearToken() {
+  async clearToken() {
+    this.sessionVersion++;
+    this.refreshToken = null;
     this.token = null;
-    localStorage.removeItem('token');
-    localApi.clearToken();
+    await tokenStorage.remove();
+    if (this.isLocal) localApi.clearToken();
   }
 
-  loadToken() {
-    this.token = localStorage.getItem('token');
-    localApi.loadToken();
+  async loadToken() {
+    const stored = await tokenStorage.get();
+    if (stored?.startsWith('{')) {
+      const session = JSON.parse(stored);
+      this.token = session.token;
+      this.refreshToken = session.refreshToken;
+    } else this.token = stored;
+    if (this.token?.startsWith('local-token-') && !this.isLocal) await this.clearToken();
+    if (this.isLocal) localApi.loadToken();
+  }
+
+  private async refreshSession() {
+    if (!this.refreshing) {
+      const version = this.sessionVersion;
+      this.refreshing = (async () => {
+        try {
+          const response = await axios.post(`${API_BASE_URL}/auth/refresh`,
+            { refresh_token: this.refreshToken }, { timeout: 15000, headers: { Accept: 'application/json', ...(!Capacitor.isNativePlatform() ? { 'X-Study-Planner-Web': '1' } : {}) } });
+          if (version !== this.sessionVersion) throw new Error('Session changed during renewal.');
+          await this.setToken(response.data.data.token, response.data.data.refresh_token);
+        } catch (error: any) {
+          if (error.response?.status === 401 && version === this.sessionVersion) {
+            await this.clearToken();
+            const { useAuthStore } = await import('@/stores/auth');
+            const authStore = useAuthStore();
+            authStore.user = null;
+            authStore.isAuthenticated = false;
+            void import('@/router').then(({ default: router }) => router.replace('/login'));
+          }
+          throw error;
+        }
+      })().finally(() => { this.refreshing = null; });
+    }
+    await this.refreshing;
   }
 
   async login(email: string, password: string) {
+    this.sessionVersion++;
     if (this.isLocal) {
       const response = await localApi.login(email, password);
-      this.setToken(response.data.token);
+      await this.setToken(response.data.token);
       return response.data;
     }
-<<<<<<< HEAD
-    const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/login', { email, password });
-    this.setToken(response.data.data.token);
+    const response = await this.httpClient!.post<ApiResponse<{ token: string; refresh_token: string; user: User }>>('/auth/login', { email, password });
+    await this.setToken(response.data.data.token, response.data.data.refresh_token);
     return response.data.data;
-=======
-    try {
-      const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/login', { email, password });
-      this.setToken(response.data.data.token);
-      return response.data.data;
-    } catch (err: any) {
-      // Fallback to localApi if backend is unreachable (no response, 502/503/504 proxy error, or 404)
-      if (isBackendUnavailable(err) && typeof window !== 'undefined') {
-        console.warn('[API] Backend unreachable, falling back to local demo mode');
-        localStorage.setItem('sp_demo_mode', 'true');
-        const response = await localApi.login(email, password);
-        this.setToken(response.data.token);
-        return response.data;
-      }
-      throw err;
-    }
->>>>>>> 4d79286ed13a9ba0e37eb7bd18e6be79301d8a22
   }
 
   async register(name: string, email: string, password: string, password_confirmation: string) {
+    this.sessionVersion++;
     if (this.isLocal) {
       const response = await localApi.register(name, email, password);
-      this.setToken(response.data.token);
+      await this.setToken(response.data.token);
       return response.data;
     }
-<<<<<<< HEAD
-    const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/register', { name, email, password, password_confirmation });
-    this.setToken(response.data.data.token);
+    const response = await this.httpClient!.post<ApiResponse<{ token: string; refresh_token: string; user: User }>>('/auth/register', { name, email, password, password_confirmation });
+    await this.setToken(response.data.data.token, response.data.data.refresh_token);
     return response.data.data;
-=======
-    try {
-      const response = await this.httpClient!.post<ApiResponse<{ token: string; user: User }>>('/auth/register', { name, email, password, password_confirmation });
-      this.setToken(response.data.data.token);
-      return response.data.data;
-    } catch (err: any) {
-      if (isBackendUnavailable(err) && typeof window !== 'undefined') {
-        localStorage.setItem('sp_demo_mode', 'true');
-        const response = await localApi.register(name, email, password);
-        this.setToken(response.data.token);
-        return response.data;
-      }
-      throw err;
-    }
->>>>>>> 4d79286ed13a9ba0e37eb7bd18e6be79301d8a22
   }
 
   async logout() {
     if (this.isLocal) {
       await localApi.logout();
-      this.token = null;
+      await this.clearToken();
       return;
     }
+    this.sessionVersion++;
     try {
       await this.httpClient!.post('/auth/logout');
     } finally {
-      this.clearToken();
+      await this.clearToken();
     }
   }
 
@@ -188,16 +200,8 @@ class ApiService {
       const response = await localApi.me();
       return response.data;
     }
-    try {
-      const response = await this.httpClient!.get<ApiResponse<User>>('/auth/me');
-      return response.data.data;
-    } catch (err: any) {
-      if ((isBackendUnavailable(err) || !err.response) && (this.token?.startsWith('local-token-') || isLocalPlatform())) {
-        const response = await localApi.me();
-        return response.data;
-      }
-      throw err;
-    }
+    const response = await this.httpClient!.get<ApiResponse<User>>('/auth/me');
+    return response.data.data;
   }
 
   async updateProfile(data: { name: string; course?: string; year_level?: number }) {

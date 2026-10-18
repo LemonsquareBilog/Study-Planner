@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { api } from '@/services/api';
+import { authErrorMessage } from '@/services/authError';
 import type { User } from '@/types';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -14,25 +15,33 @@ export const useAuthStore = defineStore('auth', () => {
   const isStudent = computed(() => user.value?.role === 'student');
   const isAdmin = computed(() => user.value?.role === 'admin');
 
+  let initialization: Promise<void> | null = null;
   async function initialize() {
+    if (initialization) return initialization;
     if (initialized) return;
-    initialized = true;
-    api.loadToken();
-    if (api.token) {
+    initialization = (async () => {
+      loading.value = true;
       try {
-        loading.value = true;
-        const userData = await api.me();
-        user.value = userData;
-        isAuthenticated.value = true;
-      } catch (err: any) {
-        // Only clear token on explicit 401 Unauthorized, not on network/CORS errors
-        if (err.response?.status === 401) {
-          api.clearToken();
+        await api.loadToken();
+        if (api.token) {
+          user.value = await api.me();
+          isAuthenticated.value = true;
         }
+        initialized = true;
+        error.value = null;
+      } catch (err: any) {
+        initialized = err.response?.status === 401 || err.response?.status === 403;
+        if (initialized) {
+          await api.clearToken();
+          user.value = null;
+          isAuthenticated.value = false;
+        }
+        error.value = authErrorMessage(err);
       } finally {
         loading.value = false;
       }
-    }
+    })().finally(() => { initialization = null; });
+    return initialization;
   }
 
   async function login(email: string, password: string) {
@@ -44,7 +53,7 @@ export const useAuthStore = defineStore('auth', () => {
       isAuthenticated.value = true;
       return data;
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Login failed';
+      error.value = authErrorMessage(err);
       throw err;
     } finally {
       loading.value = false;
@@ -60,7 +69,7 @@ export const useAuthStore = defineStore('auth', () => {
       isAuthenticated.value = true;
       return data;
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Registration failed';
+      error.value = authErrorMessage(err);
       throw err;
     } finally {
       loading.value = false;

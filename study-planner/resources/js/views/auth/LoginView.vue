@@ -107,6 +107,7 @@
 import { ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { authErrorMessage } from '@/services/authError';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -132,13 +133,9 @@ async function handleSubmit() {
     router.push(redirect);
   } catch (err: any) {
     if (err.response?.data?.errors) {
-      errors.value = err.response.data.errors;
+      errors.value = Object.fromEntries(Object.entries(err.response.data.errors).map(([key, value]) => [key, Array.isArray(value) ? value.join(' ') : String(value)]));
     } else {
-      error.value = err.response?.data?.message || (
-        !err.response
-          ? 'Unable to reach the server. Check your connection and try again.'
-          : 'Login failed. Please try again.'
-      );
+      error.value = authErrorMessage(err);
     }
   } finally {
     loading.value = false;

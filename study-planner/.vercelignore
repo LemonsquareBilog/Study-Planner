@@ -13,6 +13,8 @@ vendor/
 .agents/
 .claude/
 .codex/
+.verification/
+docs/
 agentic-awesome-skills/
 graphify-out/
 resources/js/graphify-out/

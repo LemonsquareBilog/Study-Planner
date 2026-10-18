@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Middleware\AccessTokenOnly;
+use App\Http\Middleware\BrowserSession;
 use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Foundation\Application;
@@ -21,8 +24,11 @@ return Application::configure(basePath: dirname(__DIR__))
         if (getenv('VERCEL') === '1') {
             $middleware->trustProxies(at: '*');
         }
+        $middleware->append(SecurityHeaders::class);
+        $middleware->api(prepend: [BrowserSession::class]);
         $middleware->alias([
             'role' => RoleMiddleware::class,
+            'access-token' => AccessTokenOnly::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -55,15 +61,6 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        $exceptions->render(function (Throwable $e, Request $request) {
-            Log::info('Throwable caught', [
-                'class' => get_class($e),
-                'message' => $e->getMessage(),
-                'is_api' => $request->is('api/*'),
-                'expects_json' => $request->expectsJson(),
-                'url' => $request->url(),
-            ]);
-        });
     })
     ->create();
 

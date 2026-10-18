@@ -57,7 +57,7 @@ const router = createRouter({
 router.beforeEach(async (to, from) => {
   const authStore = useAuthStore();
   
-  if (!authStore.isAuthenticated && !authStore.loading) {
+  if (!authStore.isAuthenticated) {
     await authStore.initialize();
   }
 
@@ -74,6 +74,14 @@ router.beforeEach(async (to, from) => {
   }
 
   return true;
+});
+
+window.addEventListener('online', async () => {
+  const authStore = useAuthStore();
+  await authStore.initialize();
+  if (authStore.isAuthenticated && router.currentRoute.value.meta.guest) {
+    await router.replace(authStore.isAdmin ? '/admin' : '/dashboard');
+  }
 });
 
 export default router;

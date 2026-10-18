@@ -3,14 +3,12 @@
 return [
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
     'allowed_methods' => ['*'],
-    'allowed_origins' => ['*'],
-    'allowed_origins_patterns' => [
-        '/^https?:\/\/localhost(:\d+)?$/',
-        '/^capacitor:\/\/localhost$/',
-        '/^http:\/\/localhost(:\d+)?$/',
-    ],
+    'allowed_origins' => array_values(array_filter(array_map('trim', explode(',', env(
+        'CORS_ALLOWED_ORIGINS', 'https://localhost,capacitor://localhost'
+    ))))),
+    'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],
-    'max_age' => 0,
-    'supports_credentials' => true,
+    'max_age' => 600,
+    'supports_credentials' => false,
 ];

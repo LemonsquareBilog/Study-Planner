@@ -6,7 +6,7 @@
       "src": "api/index.php",
       "use": "vercel-php@0.9.0",
       "config": {
-        "excludeFiles": "{node_modules/**,android/**,ios/**,www/**,www_backup/**,tests/**,scripts/**,.git/**,.agents/**,.claude/**,agentic-awesome-skills/**,graphify-out/**,resources/js/graphify-out/**,playwright-report/**,test-results/**,.env,.env.*,storage/logs/**,storage/framework/testing/**,database/*.sqlite,public/hot}"
+        "excludeFiles": "{node_modules/**,android/**,ios/**,www/**,www_backup/**,tests/**,scripts/**,docs/**,.verification/**,.git/**,.agents/**,.claude/**,agentic-awesome-skills/**,graphify-out/**,resources/js/graphify-out/**,playwright-report/**,test-results/**,.env,.env.*,storage/logs/**,storage/framework/testing/**,database/*.sqlite,public/hot}"
       }
     },
     {
@@ -28,7 +28,9 @@
     "DB_SSLMODE": "require",
     "SESSION_DRIVER": "cookie",
     "SESSION_SECURE_COOKIE": "true",
-    "CACHE_STORE": "array",
+    "CACHE_STORE": "database",
+    "CORS_ALLOWED_ORIGINS": "https://localhost,capacitor://localhost",
+    "SANCTUM_EXPIRATION": "43200",
     "QUEUE_CONNECTION": "sync",
     "LOG_CHANNEL": "stderr"
   }

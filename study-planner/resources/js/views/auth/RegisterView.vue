@@ -55,32 +55,26 @@
             </div>
             <div>
               <label for="password" class="input-label">Password</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autocomplete="new-password"
-                required
-                v-model="form.password"
-                :class="['input-field-glass', { 'input-error': errors.password }]"
-                placeholder="Password (min 8 characters)"
-                aria-describedby="password-error"
-              />
+              <PasswordField id="password" label="password" v-model="form.password"
+                :invalid="!!errors.password" describedby="password-guidance password-error"
+                placeholder="Password (15?128 characters)" />
+              <div id="password-guidance" class="mt-2 text-sm" aria-live="polite" aria-atomic="true">
+                <div role="meter" aria-label="Password strength" :aria-valuenow="strength.percent"
+                  aria-valuemin="0" aria-valuemax="100" :aria-valuetext="strength.label"
+                  class="h-2 rounded bg-gray-200 overflow-hidden">
+                  <div :style="{ width: strength.percent + '%', backgroundColor: strength.color }" class="h-full transition-all"></div>
+                </div>
+                <p class="mt-1 font-medium" :style="{ color: strength.color }">{{ strength.label }}</p>
+                <p class="text-text-secondary">{{ strength.suggestion }}</p>
+                <p class="text-text-secondary">15?128 characters. Known breached passwords are rejected when you submit.</p>
+              </div>
               <p v-if="errors.password" id="password-error" class="input-error-message">{{ errors.password }}</p>
             </div>
             <div>
               <label for="password_confirmation" class="input-label">Confirm password</label>
-              <input
-                id="password_confirmation"
-                name="password_confirmation"
-                type="password"
-                autocomplete="new-password"
-                required
-                v-model="form.password_confirmation"
-                :class="['input-field-glass', { 'input-error': errors.password_confirmation }]"
-                placeholder="Confirm password"
-                aria-describedby="password-confirmation-error"
-              />
+              <PasswordField id="password_confirmation" label="confirm password" v-model="form.password_confirmation"
+                :invalid="!!errors.password_confirmation" describedby="password-confirmation-error"
+                placeholder="Confirm password" />
               <p v-if="errors.password_confirmation" id="password-confirmation-error" class="input-error-message">{{ errors.password_confirmation }}</p>
             </div>
           </div>
@@ -106,7 +100,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import PasswordField from '@/components/PasswordField.vue';
+import { passwordStrength } from '@/services/passwordStrength';
+import { authErrorMessage } from '@/services/authError';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
@@ -114,6 +111,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 
 const form = ref({ name: '', email: '', password: '', password_confirmation: '' });
+const strength = computed(() => passwordStrength(form.value.password, [form.value.name, form.value.email, 'Study Planner']));
 const errors = ref<Record<string, string>>({});
 const error = ref<string | null>(null);
 const loading = ref(false);
@@ -128,9 +126,9 @@ async function handleSubmit() {
     router.push('/dashboard');
   } catch (err: any) {
     if (err.response?.data?.errors) {
-      errors.value = err.response.data.errors;
+      errors.value = Object.fromEntries(Object.entries(err.response.data.errors).map(([key, value]) => [key, Array.isArray(value) ? value.join(' ') : String(value)]));
     } else {
-      error.value = err.response?.data?.message || 'Registration failed. Please try again.';
+      error.value = authErrorMessage(err);
     }
   } finally {
     loading.value = false;

@@ -4,9 +4,13 @@
 .env.backup
 .env.production
 .env.mobile
+.env.mobile-dev
+.env.mobile.local
+.env.mobile-dev.local
 .env.docker
 .env.vercel
 /.vercel/
+/.verification/
 /storage/framework/testing/
 .phpactor.json
 .phpunit.result.cache
@@ -32,3 +36,6 @@ Homestead.yaml
 Thumbs.db
 /playwright-report/
 /test-results/
+
+.env.development
+/database/development.sqlite*

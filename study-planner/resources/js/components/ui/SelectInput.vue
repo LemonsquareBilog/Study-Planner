@@ -3,6 +3,7 @@
     <label v-if="label" :for="id" class="input-label">{{ label }}</label>
     <div class="relative">
       <select
+        v-bind="$attrs"
         :id="id"
         :value="modelValue"
         @change="onChange"
@@ -34,6 +35,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+defineOptions({ inheritAttrs: false });
 
 interface Option {
   value: string | number;

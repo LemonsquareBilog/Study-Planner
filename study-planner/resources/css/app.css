@@ -1,9 +1,10 @@
-@import 'tailwindcss';
+@import 'tailwindcss' source(none);
 @reference "tailwindcss";
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../js/**/*.vue';
+/* Generated assets/views must not change the scan between Vercel builders. */
+@source '../views/**/*.blade.php';
+@source '../js/**/*.{vue,ts,js}';
 
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',

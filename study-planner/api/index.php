@@ -31,4 +31,9 @@ require __DIR__.'/../vendor/autoload.php';
 $app = require __DIR__.'/../bootstrap/app.php';
 $app->useStoragePath($runtimeStorage);
 $app->addAbsoluteCachePathPrefix($runtimeStorage);
+
+// Vercel invokes /api/index.php, but Laravel must retain /api in route paths.
+$_SERVER['SCRIPT_NAME'] = '/index.php';
+$_SERVER['PHP_SELF'] = '/index.php';
+
 $app->handleRequest(Request::capture());

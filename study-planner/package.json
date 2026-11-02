@@ -18,6 +18,8 @@
         "mobile:open": "npx cap open android",
         "mobile:run": "npx cap run android",
         "build:preview": "vite build --mode preview",
+        "test:client": "node --experimental-strip-types --test tests/client-recovery.test.mjs",
+        "test:qa": "playwright test --config playwright.qa.config.ts",
         "test:mobile-config": "node --test tests/mobile-config.test.mjs",
         "mobile:check-backend": "node scripts/check-production-api.mjs",
         "test:production-api": "node --test tests/production-api.test.mjs"

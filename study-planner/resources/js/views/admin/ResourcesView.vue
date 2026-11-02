@@ -16,15 +16,15 @@
     <div class="glass-card p-4 mb-6">
       <div class="flex flex-wrap gap-4">
         <input type="text" v-model="filters.search" @input="debouncedFetch" placeholder="Search resources..." class="input-field-glass flex-1 min-w-[200px]" aria-label="Search resources" />
-        <select v-model="filters.resource_type" @change="fetchResources" class="input-field-glass w-auto" aria-label="Filter by type">
+        <select v-model="filters.resource_type" @change="fetchResources()" class="input-field-glass w-auto" aria-label="Filter by type">
           <option value="">All Types</option>
           <option value="tutorial">Tutorial</option>
           <option value="article">Article</option>
           <option value="video">Video</option>
-          <option value="book">Book</option>
+          <option value="ebook">Book</option>
           <option value="documentation">Documentation</option>
         </select>
-        <select v-model="filters.difficulty" @change="fetchResources" class="input-field-glass w-auto" aria-label="Filter by difficulty">
+        <select v-model="filters.difficulty" @change="fetchResources()" class="input-field-glass w-auto" aria-label="Filter by difficulty">
           <option value="">All Difficulties</option>
           <option value="beginner">Beginner</option>
           <option value="intermediate">Intermediate</option>
@@ -163,7 +163,7 @@
                   <option value="tutorial">Tutorial</option>
                   <option value="article">Article</option>
                   <option value="video">Video</option>
-                  <option value="book">Book</option>
+                  <option value="ebook">Book</option>
                   <option value="documentation">Documentation</option>
                 </select>
               </div>
@@ -346,7 +346,7 @@ function typeClass(type: string) {
     tutorial: 'bg-primary-light text-primary',
     article: 'bg-status-success-light text-status-success',
     video: 'bg-status-info-light text-status-info',
-    book: 'bg-status-warning-light text-status-warning',
+    ebook: 'bg-status-warning-light text-status-warning',
     documentation: 'bg-brand-borders text-text-secondary',
   };
   return classes[type] || 'bg-brand-borders text-text-secondary';

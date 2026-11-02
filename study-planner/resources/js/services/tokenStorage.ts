@@ -1,3 +1,4 @@
+import { decodeSession } from './sessionDecoder';
 import { Capacitor, registerPlugin } from '@capacitor/core';
 
 const nativeStorage = registerPlugin<{
@@ -11,7 +12,7 @@ export const tokenStorage = {
   async get(): Promise<string | null> {
     if (!Capacitor.isNativePlatform()) {
       const stored = localStorage.getItem('token');
-      if (stored && import.meta.env.MODE !== 'preview' && !stored.includes('cookie-session')) { localStorage.removeItem('token'); return null; }
+      if (stored && import.meta.env.MODE !== 'preview' && decodeSession(stored)?.token !== 'cookie-session') { localStorage.removeItem('token'); return null; }
       return stored;
     }
     const { value } = await nativeStorage.get();

@@ -229,7 +229,7 @@ async function submitQuiz() {
   isSubmitting.value = true;
   submissionError.value = '';
   try {
-    attempt.value = await studentStore.submitQuiz(quiz.value!.id, answers.value, startedAt.value);
+    attempt.value = await studentStore.submitQuiz(quiz.value!.id, answers.value, startedAt.value, quiz.value?.submission_id);
     quizSubmitted.value = true;
     warningOpen.value = false;
   } catch (err) {
@@ -273,7 +273,8 @@ function formatAnswer(answer: QuizAnswer, letter: string | null) {
   return `${letter}. ${question?.[optionKey] || ''}`.trim();
 }
 
-function retakeQuiz() {
+async function retakeQuiz() {
+  await loadQuiz();
   quizStarted.value = false;
   quizSubmitted.value = false;
   currentQuestionIndex.value = 0;

@@ -7,6 +7,19 @@
       </div>
     </div>
 
+    <p v-if="refreshing && !loading" role="status" class="text-sm text-text-secondary">Updating dashboard…</p>
+    <div v-if="loadError" role="alert" class="glass-card p-4">
+      <p>{{ loadError }}</p>
+      <button type="button" class="btn-secondary mt-2" @click="loadDashboard">Retry</button>
+    </div>
+    <div v-if="loading" class="flex justify-center py-12" role="status" aria-label="Loading dashboard">
+      <svg class="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+      </svg>
+    </div>
+
+    <template v-if="!loading && (!loadError || hasData)">
     <section class="glass-card p-6" aria-labelledby="level-status-heading">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -28,14 +41,7 @@
       </div>
     </section>
 
-    <div v-if="loading" class="flex justify-center py-12" role="status" aria-label="Loading dashboard">
-      <svg class="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-      </svg>
-    </div>
-
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <StatCard title="Tasks Completed" :value="progress?.tasks?.completed || 0" :total="progress?.tasks?.total || 0" :label="`of ${progress?.tasks?.total || 0} total`" icon="check-circle" color="green" class="glass-stat-card" />
       <StatCard title="Study Minutes" :value="progress?.study_sessions?.minutes_completed || 0" label="completed" icon="clock" color="blue" class="glass-stat-card" />
       <StatCard title="Quiz Attempts" :value="progress?.quizzes?.attempts || 0" :label="`average ${progress?.quizzes?.average_percentage || 0}%`" icon="academic-cap" color="purple" class="glass-stat-card" />
@@ -91,11 +97,12 @@
         <ResourceCard v-for="resource in recommendations.slice(0, 3)" :key="resource.id" :resource="resource" @view="recordView" />
       </div>
     </section>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useStudentStore } from '@/stores/student';
 import StatCard from '@/components/StatCard.vue';
@@ -104,12 +111,17 @@ import ResourceCard from '@/components/ResourceCard.vue';
 const authStore = useAuthStore();
 const studentStore = useStudentStore();
 
-const loading = ref(true);
-const progress = ref(studentStore.progress);
-const upcomingTasks = ref(studentStore.upcomingTasks);
-const upcomingSessions = ref(studentStore.upcomingSessionsList);
-const unreadNotifications = ref(studentStore.unreadNotificationsCount);
-const recommendations = ref(studentStore.recommendations);
+const ownerId = authStore.user?.id;
+const sessionRevision = authStore.sessionRevision;
+const hasData = ref(!!ownerId && studentStore.dashboardUserId === ownerId && studentStore.dashboardSessionRevision === sessionRevision && !!studentStore.progress);
+const loading = ref(!hasData.value);
+const refreshing = ref(false);
+const loadError = ref('');
+const progress = ref(hasData.value ? studentStore.progress : null);
+const upcomingTasks = ref(hasData.value ? studentStore.upcomingTasks : []);
+const upcomingSessions = ref(hasData.value ? studentStore.upcomingSessionsList : []);
+const unreadNotifications = ref(hasData.value ? studentStore.unreadNotificationsCount : 0);
+const recommendations = ref(hasData.value ? studentStore.recommendations : []);
 const levelStatus = computed(() => {
   const quizScore = Number(progress.value?.quizzes?.average_percentage || 0);
   const taskRate = Number(progress.value?.tasks?.completion_rate || 0);
@@ -120,22 +132,41 @@ const levelStatus = computed(() => {
   };
 });
 
-onMounted(async () => {
-    console.log('[DashboardView] onMounted - fetching dashboard');
-    try {
-      await studentStore.fetchDashboard();
-      console.log('[DashboardView] fetchDashboard completed');
-      progress.value = studentStore.progress;
-      upcomingTasks.value = studentStore.upcomingTasks;
-      upcomingSessions.value = studentStore.upcomingSessionsList;
-      unreadNotifications.value = studentStore.unreadNotificationsCount;
-      recommendations.value = studentStore.recommendations;
-    } catch (err) {
-      console.error('[DashboardView] Failed to load dashboard:', err);
-    } finally {
-      loading.value = false;
+watch(() => authStore.sessionRevision, () => {
+  hasData.value = false;
+  progress.value = null;
+  upcomingTasks.value = [];
+  upcomingSessions.value = [];
+  unreadNotifications.value = 0;
+  recommendations.value = [];
+  loadError.value = '';
+  loading.value = true;
+});
+
+onMounted(loadDashboard);
+
+async function loadDashboard() {
+  refreshing.value = true;
+  loading.value = !hasData.value;
+  loadError.value = '';
+  try {
+    await studentStore.fetchDashboard();
+    if (authStore.user?.id !== ownerId || authStore.sessionRevision !== sessionRevision || studentStore.dashboardUserId !== ownerId || studentStore.dashboardSessionRevision !== sessionRevision) return;
+    progress.value = studentStore.progress;
+    upcomingTasks.value = studentStore.upcomingTasks;
+    upcomingSessions.value = studentStore.upcomingSessionsList;
+    unreadNotifications.value = studentStore.unreadNotificationsCount;
+    recommendations.value = studentStore.recommendations;
+    hasData.value = true;
+  } catch {
+    if (authStore.user?.id === ownerId && authStore.sessionRevision === sessionRevision) {
+      loadError.value = hasData.value ? 'Could not refresh the dashboard. Showing the last loaded information.' : 'Could not load the dashboard. Please try again.';
     }
-  });
+  } finally {
+    loading.value = false;
+    refreshing.value = false;
+  }
+}
 
 function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });

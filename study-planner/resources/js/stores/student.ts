@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import type { TaskQuery, QuizQuery } from '@/types';
+import { useAuthStore } from '@/stores/auth';
 import { api } from '@/services/api';
 import type { Subject, Topic, Task, StudySession, Quiz, QuizAttempt, Resource, Notification, ProgressSummary, TopicPerformance, StudyPreference } from '@/types';
 
@@ -31,24 +33,46 @@ export const useStudentStore = defineStore('student', () => {
   );
   const unreadNotifications = computed(() => notifications.value.filter(n => !n.read_at).length);
 
+  const dashboardUserId = ref<number | null>(null);
+  const dashboardSessionRevision = ref<number | null>(null);
+  let dashboardRequestVersion = 0;
+
+  function clearDashboard() {
+    dashboardRequestVersion++;
+    dashboardUserId.value = null;
+    dashboardSessionRevision.value = null;
+    progress.value = null;
+    recommendations.value = [];
+    upcomingTasks.value = [];
+    upcomingSessionsList.value = [];
+    unreadNotificationsCount.value = 0;
+  }
+
   async function fetchDashboard() {
-    console.log('[StudentStore] fetchDashboard() called');
+    const auth = useAuthStore();
+    const userId = auth.user?.id;
+    const revision = auth.sessionRevision;
+    const requestVersion = ++dashboardRequestVersion;
     loading.value = true;
     try {
       const data = await api.getDashboard();
-      console.log('[StudentStore] Dashboard data received:', data);
-      progress.value = data.progress;
-      recommendations.value = data.recommendations;
-      upcomingTasks.value = data.upcoming_tasks || [];
-      upcomingSessionsList.value = data.upcoming_sessions || [];
-      unreadNotificationsCount.value = data.unread_notifications || 0;
+      if (userId && auth.user?.id === userId && auth.sessionRevision === revision && requestVersion === dashboardRequestVersion) {
+        progress.value = data.progress;
+        recommendations.value = data.recommendations;
+        upcomingTasks.value = data.upcoming_tasks || [];
+        upcomingSessionsList.value = data.upcoming_sessions || [];
+        unreadNotificationsCount.value = data.unread_notifications || 0;
+        dashboardUserId.value = userId;
+        dashboardSessionRevision.value = revision;
+      }
       return data;
     } catch (err: any) {
-      console.error('[StudentStore] fetchDashboard failed:', err);
-      error.value = err.response?.data?.message || 'Failed to load dashboard';
+      if (auth.sessionRevision === revision && requestVersion === dashboardRequestVersion) {
+        error.value = err.response?.data?.message || 'Failed to load dashboard';
+      }
       throw err;
     } finally {
-      loading.value = false;
+      if (requestVersion === dashboardRequestVersion) loading.value = false;
     }
   }
 
@@ -172,7 +196,7 @@ export const useStudentStore = defineStore('student', () => {
     }
   }
 
-  async function fetchTasks(params?: { status?: string; priority?: string; subject_id?: number }) {
+  async function fetchTasks(params?: TaskQuery) {
     loading.value = true;
     try {
       const response = await api.getTasks(params);
@@ -287,11 +311,12 @@ export const useStudentStore = defineStore('student', () => {
     }
   }
 
-  async function fetchQuizzes() {
+  async function fetchQuizzes(params?: QuizQuery) {
     loading.value = true;
     try {
-      quizzes.value = await api.getQuizzes();
-      return quizzes.value;
+      const page = await api.getQuizzesPage(params);
+      quizzes.value = page.data;
+      return page;
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to load quizzes';
       throw err;
@@ -309,10 +334,10 @@ export const useStudentStore = defineStore('student', () => {
     }
   }
 
-  async function submitQuiz(id: number, answers: Record<number, string>, started_at: string) {
+  async function submitQuiz(id: number, answers: Record<number, string>, started_at: string, submission_id?: string) {
     loading.value = true;
     try {
-      const attempt = await api.submitQuiz(id, answers, started_at);
+      const attempt = await api.submitQuiz(id, answers, started_at, submission_id);
       quizAttempts.value.unshift(attempt);
       return attempt;
     } catch (err: any) {
@@ -323,11 +348,12 @@ export const useStudentStore = defineStore('student', () => {
     }
   }
 
-  async function fetchQuizHistory() {
+  async function fetchQuizHistory(params?: { page?: number }) {
     loading.value = true;
     try {
-      quizAttempts.value = await api.getQuizHistory();
-      return quizAttempts.value;
+      const page = await api.getQuizHistoryPage(params);
+      quizAttempts.value = page.data;
+      return page;
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to load quiz history';
       throw err;
@@ -459,6 +485,9 @@ export const useStudentStore = defineStore('student', () => {
     completedTasks,
     upcomingSessions,
     unreadNotifications,
+    dashboardUserId,
+    dashboardSessionRevision,
+    clearDashboard,
     fetchDashboard,
     fetchSubjects,
     fetchSubject,

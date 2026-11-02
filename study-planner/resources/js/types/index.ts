@@ -85,6 +85,10 @@ export interface StudySession {
 }
 
 export interface Quiz {
+  submission_id?: string;
+  attempts_count?: number;
+  best_score?: number | string | null;
+  latest_attempt?: QuizAttempt | null;
   id: number;
   topic_id: number;
   title: string;
@@ -237,3 +241,15 @@ export interface PaginatedResponse<T> {
   to: number;
   total: number;
 }
+export interface TaskQuery {
+  page?: number;
+  search?: string;
+  sort?: 'deadline_asc' | 'deadline_desc' | 'priority' | 'created';
+  status?: string;
+  priority?: string;
+  subject_id?: number | string;
+  from?: string;
+  to?: string;
+}
+
+export interface QuizQuery { page?: number; search?: string; topic_id?: number }

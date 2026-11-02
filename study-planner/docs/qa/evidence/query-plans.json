@@ -1,0 +1,18 @@
+{
+  "history": [
+    [
+      5,
+      0,
+      61,
+      "SEARCH quiz_attempts USING INDEX quiz_attempts_user_id_completed_at_index (user_id=?)"
+    ]
+  ],
+  "latest_attempt": [
+    [
+      5,
+      0,
+      61,
+      "SEARCH quiz_attempts USING INDEX quiz_attempts_quiz_id_completed_at_index (quiz_id=?)"
+    ]
+  ]
+}

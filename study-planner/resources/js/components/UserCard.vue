@@ -22,7 +22,7 @@
           </span>
         </div>
       </div>
-      <span class="user-role-badge" :class="roleClass(user.role)">{{ user.role }}</span>
+      <span class="user-role-badge" :class="roleClass">{{ user.role }}</span>
     </div>
 
     <div class="user-stats">

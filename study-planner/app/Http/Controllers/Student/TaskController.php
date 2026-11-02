@@ -19,13 +19,20 @@ class TaskController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $request->validate([
+            'page' => ['sometimes', 'integer', 'min:1'],
+            'search' => ['sometimes', 'nullable', 'string', 'max:200'],
+            'sort' => ['sometimes', 'in:deadline_asc,deadline_desc,priority,created'],
+            'from' => ['sometimes', 'date'],
+            'to' => ['sometimes', 'date', ...($request->filled('from') ? ['after_or_equal:from'] : [])],
+        ]);
         $query = $request->user()->tasks()->with(['subject:id,name,color', 'topic:id,name']);
 
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -45,7 +52,7 @@ class TaskController extends Controller
             $from = $request->input('from');
             $query->where(function ($q) use ($from) {
                 $q->where('start_date', '>=', $from)
-                  ->orWhere('deadline', '>=', $from);
+                    ->orWhere('deadline', '>=', $from);
             });
         }
 
@@ -53,7 +60,7 @@ class TaskController extends Controller
             $to = $request->input('to');
             $query->where(function ($q) use ($to) {
                 $q->where('start_date', '<=', $to)
-                  ->orWhere('deadline', '<=', $to);
+                    ->orWhere('deadline', '<=', $to);
             });
         }
 
@@ -66,7 +73,7 @@ class TaskController extends Controller
             default => $query->orderBy('deadline', 'asc'),
         };
 
-        $tasks = $query->paginate(20);
+        $tasks = $query->orderBy('id')->paginate(20);
 
         return response()->json($tasks);
     }
@@ -84,13 +91,13 @@ class TaskController extends Controller
             ->where('user_id', $user->id)
             ->first();
 
-        if (!$subject) {
+        if (! $subject) {
             throw ValidationException::withMessages([
                 'subject_id' => 'The selected subject does not belong to the current student.',
             ]);
         }
 
-        if (!empty($data['topic_id']) && !$subject->topics()->whereKey($data['topic_id'])->exists()) {
+        if (! empty($data['topic_id']) && ! $subject->topics()->whereKey($data['topic_id'])->exists()) {
             throw ValidationException::withMessages([
                 'topic_id' => 'The selected topic does not belong to the selected subject.',
             ]);
@@ -114,9 +121,9 @@ class TaskController extends Controller
         $data = $request->validated();
 
         // If topic_id is being changed, verify it belongs to the task's subject
-        if (!empty($data['topic_id'])) {
+        if (! empty($data['topic_id'])) {
             $subject = $task->subject;
-            if (!$subject->topics()->whereKey($data['topic_id'])->exists()) {
+            if (! $subject->topics()->whereKey($data['topic_id'])->exists()) {
                 throw ValidationException::withMessages([
                     'topic_id' => 'The selected topic does not belong to the task\'s subject.',
                 ]);
@@ -150,7 +157,7 @@ class TaskController extends Controller
 
         return response()->json([
             'data' => $task->fresh(['subject:id,name,color', 'topic:id,name']),
-            'message' => "Task status updated to " . ucfirst(str_replace('_', ' ', $status)) . ".",
+            'message' => 'Task status updated to '.ucfirst(str_replace('_', ' ', $status)).'.',
         ]);
     }
 

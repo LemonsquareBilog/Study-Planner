@@ -2,6 +2,9 @@ import { Capacitor } from '@capacitor/core';
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 // Compile demo accounts out of every real backend build.
 const localApi = import.meta.env.MODE === 'preview' ? (await import('./localApi')).localApi : undefined!;
+import { normalizePage, paginateItems } from './pagination';
+import type { TaskQuery, QuizQuery } from '@/types';
+import { decodeSession } from './sessionDecoder';
 import { tokenStorage } from './tokenStorage';
 import type {
   ApiResponse,
@@ -32,12 +35,7 @@ export function isLocalPlatform(): boolean {
   return import.meta.env.MODE === 'preview' && !Capacitor.isNativePlatform();
 }
 
-export function isBackendUnavailable(err: any): boolean {
-  if (!err) return false;
-  if (!err.response) return true;
-  const status = err.response.status;
-  return status === 502 || status === 503 || status === 504 || status === 404;
-}
+export { isBackendUnavailable } from './httpError';
 
 class ApiService {
   private httpClient: AxiosInstance | null = null;
@@ -107,7 +105,7 @@ class ApiService {
   }
 
   async setToken(token: string, refreshToken: string | null = null) {
-    await tokenStorage.set(JSON.stringify({ token, refreshToken }));
+    await tokenStorage.set(JSON.stringify({ version: 1, token, refreshToken }));
     this.refreshToken = refreshToken;
     this.token = token;
     if (this.isLocal) localApi.setToken(token);
@@ -123,11 +121,10 @@ class ApiService {
 
   async loadToken() {
     const stored = await tokenStorage.get();
-    if (stored?.startsWith('{')) {
-      const session = JSON.parse(stored);
-      this.token = session.token;
-      this.refreshToken = session.refreshToken;
-    } else this.token = stored;
+    const session = decodeSession(stored);
+    this.token = session?.token ?? null;
+    this.refreshToken = session?.refreshToken ?? null;
+    if (stored && !session) await this.clearToken();
     if (this.token?.startsWith('local-token-') && !this.isLocal) await this.clearToken();
     if (this.isLocal) localApi.loadToken();
   }
@@ -319,7 +316,7 @@ class ApiService {
     await this.httpClient!.delete(`/student/subjects/${subjectId}/topics/${topicId}`);
   }
 
-  async getTasks(params?: { status?: string; priority?: string; subject_id?: number; from?: string; to?: string }) {
+  async getTasks(params?: TaskQuery) {
     if (this.isLocal) {
       return await localApi.getTasks(params);
     }
@@ -398,13 +395,19 @@ class ApiService {
     return response.data.data;
   }
 
-  async getQuizzes() {
+  async getQuizzes(params?: QuizQuery) {
+    return (await this.getQuizzesPage(params)).data;
+  }
+
+  async getQuizzesPage(params?: QuizQuery): Promise<PaginatedResponse<Quiz>> {
     if (this.isLocal) {
       const response = await localApi.getQuizzes();
-      return response.data;
+      const items = response.data.filter(quiz => (!params?.topic_id || quiz.topic_id === params.topic_id)
+        && (!params?.search || `${quiz.title} ${quiz.description || ''}`.toLowerCase().includes(params.search.toLowerCase())));
+      return paginateItems(items, params?.page);
     }
-    const response = await this.httpClient!.get<ApiResponse<Quiz[]>>('/student/quizzes');
-    return response.data.data;
+    const response = await this.httpClient!.get<PaginatedResponse<Quiz>>('/student/quizzes', { params });
+    return normalizePage(response.data, params?.page);
   }
 
   async getQuiz(id: number) {
@@ -416,22 +419,26 @@ class ApiService {
     return response.data.data;
   }
 
-  async submitQuiz(id: number, answers: Record<number, string>, started_at: string) {
+  async submitQuiz(id: number, answers: Record<number, string>, started_at: string, submission_id?: string) {
     if (this.isLocal) {
       const response = await localApi.submitQuiz(id, answers, started_at);
       return response.data;
     }
-    const response = await this.httpClient!.post<ApiResponse<QuizAttempt>>(`/student/quizzes/${id}/submit`, { answers, started_at });
+    const response = await this.httpClient!.post<ApiResponse<QuizAttempt>>(`/student/quizzes/${id}/submit`, { answers, started_at, submission_id });
     return response.data.data;
   }
 
-  async getQuizHistory() {
+  async getQuizHistory(params?: { page?: number }) {
+    return (await this.getQuizHistoryPage(params)).data;
+  }
+
+  async getQuizHistoryPage(params?: { page?: number }): Promise<PaginatedResponse<QuizAttempt>> {
     if (this.isLocal) {
       const response = await localApi.getQuizHistory();
-      return response.data;
+      return paginateItems(response.data, params?.page);
     }
-    const response = await this.httpClient!.get<ApiResponse<QuizAttempt[]>>('/student/quiz-attempts');
-    return response.data.data;
+    const response = await this.httpClient!.get<PaginatedResponse<QuizAttempt>>('/student/quiz-attempts', { params });
+    return normalizePage(response.data, params?.page);
   }
 
   async getQuizAttempt(id: number) {

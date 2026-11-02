@@ -1,0 +1,23 @@
+{
+    "fixture": {
+        "quiz_attempts": 1000,
+        "samples": 20
+    },
+    "results": {
+        "baseline": {
+            "queries": 13,
+            "median_ms": 24.9,
+            "p95_ms": 31.63,
+            "query_time_median_ms": 2.5,
+            "peak_incremental_bytes": 2314064
+        },
+        "updated": {
+            "queries": 10,
+            "median_ms": 2.09,
+            "p95_ms": 2.51,
+            "query_time_median_ms": 0.82,
+            "peak_incremental_bytes": 22640
+        }
+    },
+    "same_response_except_timestamp": true
+}

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { api } from '@/services/api';
+import { useStudentStore } from '@/stores/student';
 import { authErrorMessage } from '@/services/authError';
 import type { User } from '@/types';
 
@@ -10,6 +11,12 @@ export const useAuthStore = defineStore('auth', () => {
   const loading = ref(false);
   const error = ref<string | null>(null);
   let initialized = false;
+  const sessionRevision = ref(0);
+
+  function beginSessionChange() {
+    sessionRevision.value++;
+    useStudentStore().clearDashboard();
+  }
 
   const userRole = computed(() => user.value?.role);
   const isStudent = computed(() => user.value?.role === 'student');
@@ -32,6 +39,7 @@ export const useAuthStore = defineStore('auth', () => {
       } catch (err: any) {
         initialized = err.response?.status === 401 || err.response?.status === 403;
         if (initialized) {
+          beginSessionChange();
           await api.clearToken();
           user.value = null;
           isAuthenticated.value = false;
@@ -45,6 +53,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function login(email: string, password: string) {
+    beginSessionChange();
     loading.value = true;
     error.value = null;
     try {
@@ -61,6 +70,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function register(name: string, email: string, password: string, password_confirmation: string) {
+    beginSessionChange();
     loading.value = true;
     error.value = null;
     try {
@@ -77,6 +87,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout() {
+    beginSessionChange();
     try {
       await api.logout();
     } finally {
@@ -110,6 +121,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     loading,
     error,
+    sessionRevision,
     userRole,
     isStudent,
     isAdmin,

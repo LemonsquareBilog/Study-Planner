@@ -12,6 +12,10 @@
       </svg>
     </div>
 
+    <div v-else-if="loadError" role="alert" class="glass-card p-6">
+      <p>{{ loadError }}</p><button @click="fetchSettings" class="btn-secondary mt-3">Retry</button>
+    </div>
+    <p v-else-if="settings.length === 0" role="status" class="glass-card p-6">No system settings are configured.</p>
     <div v-else class="glass-card overflow-hidden">
       <div class="divide-y divide-brand-borders/50">
         <div v-for="setting in settings" :key="setting.id" class="px-6 py-6 hover:bg-white/30 transition-colors">
@@ -22,7 +26,11 @@
               <p class="mt-1 text-xs text-text-secondary font-mono">Key: {{ setting.key }} · Type: {{ setting.type }}</p>
             </div>
             <div class="ml-4 flex items-center space-x-4">
-              <SettingInput :setting="setting" @update="updateSetting" />
+              <div>
+                <SettingInput :setting="setting" :busy="!!updating[setting.id]" @update="updateSetting" />
+                <p v-if="saveErrors[setting.id]" role="alert" class="text-sm text-status-urgent">{{ saveErrors[setting.id] }}</p>
+                <p v-else-if="saved[setting.id]" role="status" class="text-sm text-status-success">Saved</p>
+              </div>
             </div>
           </div>
         </div>
@@ -33,6 +41,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import SettingInput from '@/components/SettingInput.vue';
 import { useAdminStore } from '@/stores/admin';
 import type { SystemSetting } from '@/types';
 
@@ -40,6 +49,9 @@ const adminStore = useAdminStore();
 
 const settings = ref<SystemSetting[]>([]);
 const loading = ref(true);
+const loadError = ref('');
+const saveErrors = ref<Record<number, string>>({});
+const saved = ref<Record<number, boolean>>({});
 const updating = ref<Record<number, boolean>>({});
 
 onMounted(async () => {
@@ -48,10 +60,11 @@ onMounted(async () => {
 
 async function fetchSettings() {
   loading.value = true;
+  loadError.value = '';
   try {
     settings.value = await adminStore.fetchSystemSettings();
   } catch (err) {
-    console.error('Failed to load settings:', err);
+    loadError.value = 'Could not load settings. Please try again.';
   } finally {
     loading.value = false;
   }
@@ -59,12 +72,15 @@ async function fetchSettings() {
 
 async function updateSetting(setting: SystemSetting, value: string | number | boolean) {
   updating.value[setting.id] = true;
+  saveErrors.value[setting.id] = '';
+  saved.value[setting.id] = false;
   try {
     await adminStore.updateSystemSetting(setting.id, { value: String(value) });
-    setting.value = value;
+    setting.value = String(value);
+    saved.value[setting.id] = true;
     setting.typed_value = parseTypedValue(value, setting.type);
   } catch (err) {
-    console.error('Failed to update setting:', err);
+    saveErrors.value[setting.id] = 'Could not save this setting. Your input is preserved; please retry.';
   } finally {
     updating.value[setting.id] = false;
   }

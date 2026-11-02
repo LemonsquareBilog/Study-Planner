@@ -1,0 +1,12 @@
+id,priority,local_status,change,remaining_gate
+QA-001,P2,Implemented and locally tested,Bound history summaries to 20; private detail endpoint,Production-engine acceptance
+QA-002,P2,Implemented and locally tested,Paginate quiz list; SQL aggregates and bounded latest attempts,Production-engine plans
+QA-003,P2,Implemented and locally tested,Typed task filters/search/sort/page and stable ordering,Physical device regression
+QA-004,P2,Implemented and locally tested,Guarded session decoder; invalid storage removal,Physical native secure storage
+QA-005,P3,Implemented and locally tested,404/cancellation/network categories separated,Deployed error-path acceptance
+QA-006,P2,Implemented and locally tested,Book maps to ebook contract,Deployed retest
+QA-007,P1,Implemented and locally tested,UserCard computed CSS binding repaired,Deployed build match and retest
+QA-008,P2,Resolved by removing unsupported action,No privileged create endpoint added,Product decision if creation is later required
+QA-009,P3,Implemented and locally tested,Settings input import and recovery/save states,Deployed populated settings
+QA-010,P2,Implemented and locally tested for updated clients,Issued identity and unique transactional submission,Production-engine concurrency; upgrade legacy clients
+BLOCK-001,Blocker,External verification outstanding,Local auth tests pass,Secure deployed student account verification

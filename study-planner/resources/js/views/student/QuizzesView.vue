@@ -9,10 +9,16 @@
 
     <div class="flex gap-2 border-b border-brand-borders" role="tablist" aria-label="Quiz views">
       <button role="tab" :aria-selected="activeTab === 'available'" @click="selectTab('available')" :class="tabClass('available')">Available Quizzes</button>
-      <button role="tab" :aria-selected="activeTab === 'history'" @click="selectTab('history')" :class="tabClass('history')">Completed Quizzes <span class="ml-1 text-xs">({{ quizAttempts.length }})</span></button>
+      <button role="tab" :aria-selected="activeTab === 'history'" @click="selectTab('history')" :class="tabClass('history')">Completed Quizzes <span class="ml-1 text-xs">({{ historyTotal }})</span></button>
     </div>
 
-    <div v-if="loading" class="flex justify-center py-12" role="status" aria-label="Loading quizzes">
+    <form v-if="activeTab === 'available'" @submit.prevent="loadPage(1)">
+      <input v-model="search" type="search" class="input-field-glass" aria-label="Search quizzes" placeholder="Search quizzes, then press Enter" @change="loadPage(1)" />
+    </form>
+    <div v-if="loadError" role="alert" class="glass-card p-4">
+      <p>{{ loadError }}</p><button class="btn-secondary mt-2" @click="loadPage(currentPage)">Retry</button>
+    </div>
+    <div v-else-if="loading" class="flex justify-center py-12" role="status" aria-label="Loading quizzes">
       <svg class="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" aria-hidden="true">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
@@ -107,6 +113,11 @@
         </div>
       </article>
     </div>
+    <nav v-if="!loading && !selectedAttempt && lastPage > 1" aria-label="Quiz pagination" class="flex items-center justify-between gap-4">
+      <button class="btn-secondary" :disabled="currentPage <= 1" @click="loadPage(currentPage - 1)">Previous</button>
+      <p role="status">Page {{ currentPage }} of {{ lastPage }}</p>
+      <button class="btn-secondary" :disabled="currentPage >= lastPage" @click="loadPage(currentPage + 1)">Next</button>
+    </nav>
   </div>
 </template>
 
@@ -125,21 +136,43 @@ const activeTab = ref<'available' | 'history'>('available');
 const selectedAttempt = ref<QuizAttempt | null>(null);
 const quizAttempts = ref<QuizAttempt[]>([]);
 
-onMounted(async () => {
+const currentPage = ref(1);
+const lastPage = ref(1);
+const historyTotal = ref(0);
+const search = ref('');
+const loadError = ref('');
+let requestVersion = 0;
+
+onMounted(() => loadPage(1));
+
+async function loadPage(page: number) {
+  const version = ++requestVersion;
+  const tab = activeTab.value;
+  loading.value = true;
+  loadError.value = '';
   try {
-    await Promise.all([studentStore.fetchQuizzes(), studentStore.fetchQuizHistory()]);
-    quizzes.value = studentStore.quizzes;
-    quizAttempts.value = studentStore.quizAttempts;
-  } catch (err) {
-    console.error('Failed to load quizzes:', err);
+    const response = tab === 'available'
+      ? await studentStore.fetchQuizzes({ page, search: search.value })
+      : await studentStore.fetchQuizHistory({ page });
+    if (version !== requestVersion) return;
+    currentPage.value = response.current_page;
+    lastPage.value = response.last_page;
+    if (tab === 'available') quizzes.value = response.data as Quiz[];
+    else {
+      quizAttempts.value = response.data as QuizAttempt[];
+      historyTotal.value = response.total;
+    }
+  } catch {
+    if (version === requestVersion) loadError.value = 'Could not load quizzes. Please try again.';
   } finally {
-    loading.value = false;
+    if (version === requestVersion) loading.value = false;
   }
-});
+}
 
 function selectTab(tab: 'available' | 'history') {
   activeTab.value = tab;
   selectedAttempt.value = null;
+  void loadPage(1);
 }
 
 function tabClass(tab: 'available' | 'history') {
@@ -154,7 +187,7 @@ async function reviewAttempt(id: number) {
   try {
     selectedAttempt.value = await studentStore.fetchQuizAttempt(id);
   } catch (err) {
-    console.error('Failed to load quiz review:', err);
+    loadError.value = 'Could not load this result. Please try again.';
   } finally {
     loadingAttempt.value = false;
   }

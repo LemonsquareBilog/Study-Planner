@@ -22,21 +22,26 @@
 
     <div v-else class="bg-brand-navbar-cards-alt border border-brand-borders rounded-xl overflow-hidden">
       <div class="px-6 py-4 border-b border-brand-borders flex flex-wrap gap-4">
-        <select v-model="filters.status" @change="fetchTasks" class="form-select" aria-label="Filter by status">
+        <input v-model="filters.search" type="search" class="input-field-glass w-auto" aria-label="Search tasks" placeholder="Search tasks" @input="debouncedFetch" />
+        <select v-model="filters.sort" @change="fetchTasks()" class="form-select" aria-label="Sort tasks">
+          <option value="deadline_asc">Soonest deadline</option><option value="deadline_desc">Latest deadline</option>
+          <option value="priority">Priority</option><option value="created">Newest created</option>
+        </select>
+        <select v-model="filters.status" @change="fetchTasks()" class="form-select" aria-label="Filter by status">
           <option value="">All Statuses</option>
           <option value="pending">Pending</option>
           <option value="in_progress">In Progress</option>
           <option value="completed">Completed</option>
           <option value="cancelled">Cancelled</option>
         </select>
-        <select v-model="filters.priority" @change="fetchTasks" class="form-select" aria-label="Filter by priority">
+        <select v-model="filters.priority" @change="fetchTasks()" class="form-select" aria-label="Filter by priority">
           <option value="">All Priorities</option>
           <option value="urgent">Urgent</option>
           <option value="high">High</option>
           <option value="medium">Medium</option>
           <option value="low">Low</option>
         </select>
-        <select v-model="filters.subject_id" @change="fetchTasks" class="form-select" aria-label="Filter by subject">
+        <select v-model="filters.subject_id" @change="fetchTasks()" class="form-select" aria-label="Filter by subject">
           <option value="">All Subjects</option>
           <option v-for="subject in studentStore.subjects" :key="subject.id" :value="subject.id">{{ subject.name }}</option>
         </select>
@@ -218,9 +223,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, onBeforeUnmount } from 'vue';
 import { useStudentStore } from '@/stores/student';
-import type { Task } from '@/types';
+import type { Task, TaskQuery } from '@/types';
 
 const studentStore = useStudentStore();
 
@@ -232,7 +237,14 @@ const deletingTask = ref<Task | null>(null);
 const submitting = ref(false);
 const deleting = ref(false);
 const errors = ref<Record<string, string>>({});
-const filters = ref({ status: '', priority: '', subject_id: '' });
+const filters = ref({ status: '', priority: '', subject_id: '', search: '', sort: 'deadline_asc' as TaskQuery['sort'] });
+let searchTimer: ReturnType<typeof setTimeout>;
+let requestVersion = 0;
+onBeforeUnmount(() => clearTimeout(searchTimer));
+function debouncedFetch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => fetchTasks(), 300);
+}
 const currentTopics = ref([]);
 
 function createEmptyTaskForm() {
@@ -267,17 +279,18 @@ watch(() => studentStore.subjects, (newSubjects) => {
   }
 });
 
-async function fetchTasks(params = {}) {
+async function fetchTasks(params: { page?: number } = {}) {
+  const version = ++requestVersion;
   loading.value = true;
   try {
     const query = { ...filters.value, ...params };
     Object.keys(query).forEach(key => query[key] === '' && delete query[key]);
     const response = await studentStore.fetchTasks(query);
-    tasks.value = response;
+    if (version === requestVersion) tasks.value = response;
   } catch (err) {
     console.error('Failed to load tasks:', err);
   } finally {
-    loading.value = false;
+    if (version === requestVersion) loading.value = false;
   }
 }
 

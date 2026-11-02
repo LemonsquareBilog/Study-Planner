@@ -5,12 +5,7 @@
         <h1 class="text-2xl font-bold text-text-primary">Users</h1>
         <p class="mt-1 text-sm text-text-secondary">Manage user accounts and roles.</p>
       </div>
-      <button @click="openAddModal" class="btn-primary" aria-label="Add new user">
-        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        Add User
-      </button>
+
     </div>
 
     <div class="glass-card p-4 mb-6">
@@ -20,14 +15,14 @@
           v-model="filters.role"
           :options="roleOptions"
           placeholder="All Roles"
-          @change="fetchUsers"
+          @change="fetchUsers()"
           aria-label="Filter by role"
         />
         <SelectInput
           v-model="filters.is_active"
           :options="statusOptions"
           placeholder="All Statuses"
-          @change="fetchUsers"
+          @change="fetchUsers()"
           aria-label="Filter by status"
         />
       </div>
@@ -40,6 +35,10 @@
       </svg>
     </div>
 
+    <div v-else-if="loadError" role="alert" class="glass-card p-6">
+      <p>{{ loadError }}</p>
+      <button @click="fetchUsers()" class="btn-secondary mt-3">Retry</button>
+    </div>
     <div v-else class="space-y-4">
       <!-- Desktop Table View -->
       <div class="hidden lg:block glass-card overflow-hidden">
@@ -107,7 +106,7 @@
           />
           <div v-if="users.data.length === 0" class="rounded-xl border border-dashed border-brand-borders bg-brand-navbar-cards-alt p-10 text-center" role="listitem">
             <p class="text-text-secondary">No users found.</p>
-            <button @click="openAddModal" class="mt-4 btn-primary">Add User</button>
+
           </div>
         </div>
 
@@ -140,13 +139,14 @@
           </div>
 
           <form @submit.prevent="submitEdit" class="space-y-4" novalidate>
+            <p v-if="saveError" role="alert" class="text-status-urgent">{{ saveError }}</p>
             <div>
               <label for="edit-name" class="input-label">Name</label>
               <input id="edit-name" v-model="editForm.name" type="text" class="input-field-glass" />
             </div>
             <div>
               <label for="edit-email" class="input-label">Email</label>
-              <input id="edit-email" v-model="editForm.email" type="email" class="input-field-glass" />
+              <input id="edit-email" v-model="editForm.email" type="email" readonly aria-readonly="true" class="input-field-glass" />
             </div>
             <div>
               <label for="edit-role" class="input-label">Role</label>
@@ -162,7 +162,7 @@
             </div>
             <div>
               <label for="edit-year_level" class="input-label">Year Level</label>
-              <input id="edit-year_level" v-model.number="editForm.year_level" type="number" min="1" max="10" class="input-field-glass" />
+              <input id="edit-year_level" v-model.number="editForm.year_level" type="number" min="1" max="8" class="input-field-glass" />
             </div>
             <div>
               <label class="flex items-center space-x-2">
@@ -189,7 +189,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useAdminStore } from '@/stores/admin';
 import type { User } from '@/types';
 import SelectInput from '@/components/ui/SelectInput.vue';
@@ -200,7 +200,8 @@ const adminStore = useAdminStore();
 const users = ref({ data: [] as User[], current_page: 1, last_page: 1, from: 0, to: 0, total: 0 });
 const loading = ref(true);
 const showEditModal = ref(false);
-const showAddModal = ref(false);
+const loadError = ref('');
+const saveError = ref('');
 const editingUser = ref<User | null>(null);
 const editing = ref(false);
 const filters = ref({ search: '', role: '', is_active: '' });
@@ -228,15 +229,11 @@ const statusOptions = [
 ];
 
 const debounceTimer = ref<ReturnType<typeof setTimeout> | null>(null);
+onBeforeUnmount(() => { if (debounceTimer.value) clearTimeout(debounceTimer.value); });
+let requestVersion = 0;
 
 onMounted(async () => {
   await fetchUsers();
-});
-
-watch(() => adminStore.users, (newUsers) => {
-  if (newUsers.length > 0) {
-    users.value.data = newUsers;
-  }
 });
 
 function debouncedFetch() {
@@ -246,19 +243,21 @@ function debouncedFetch() {
   }, 300);
 }
 
-async function fetchUsers(params = {}) {
+async function fetchUsers(params: { page?: number } = {}) {
+  const version = ++requestVersion;
   loading.value = true;
+  loadError.value = '';
   try {
     const query = { ...filters.value, ...params };
     Object.keys(query).forEach(key => {
       if (query[key] === '' || query[key] === null) delete query[key];
     });
     const response = await adminStore.fetchUsers(query);
-    users.value = response;
+    if (version === requestVersion) users.value = response;
   } catch (err) {
-    console.error('Failed to load users:', err);
+    if (version === requestVersion) loadError.value = 'Could not load users. Please try again.';
   } finally {
-    loading.value = false;
+    if (version === requestVersion) loading.value = false;
   }
 }
 
@@ -272,15 +271,10 @@ function roleClass(role: string) {
 }
 
 function editUser(user: User) {
+  saveError.value = '';
   editingUser.value = user;
   editForm.value = { name: user.name, email: user.email, password: '', password_confirmation: '', role: user.role, course: user.course || '', year_level: user.year_level || 1, is_active: user.is_active };
   showEditModal.value = true;
-}
-
-function openAddModal() {
-  editForm.value = { name: '', email: '', password: '', password_confirmation: '', role: 'student', course: '', year_level: 1, is_active: true };
-  editingUser.value = null;
-  showAddModal.value = true;
 }
 
 function closeEditModal() {
@@ -288,37 +282,21 @@ function closeEditModal() {
   editingUser.value = null;
 }
 
-function closeAddModal() {
-  showAddModal.value = false;
-  editForm.value = { name: '', email: '', password: '', password_confirmation: '', role: 'student', course: '', year_level: 1, is_active: true };
-}
-
 async function submitEdit() {
   if (!editingUser.value) return;
   editing.value = true;
+  saveError.value = '';
   try {
-    const { password, password_confirmation, ...updateData } = editForm.value;
-    const payload = password ? { ...updateData, password, password_confirmation } : updateData;
+    const { name, role, course, year_level, is_active } = editForm.value;
+    const payload = { name, role, course, year_level, is_active };
     await adminStore.updateUser(editingUser.value.id, payload);
     closeEditModal();
     await fetchUsers();
-  } catch (err) {
-    console.error('Failed to update user:', err);
+  } catch (err: any) {
+    saveError.value = Object.values(err.response?.data?.errors || {}).flat().join(' ') || 'Could not save changes. Please try again.';
   } finally {
     editing.value = false;
   }
 }
 
-async function submitAdd() {
-  editing.value = true;
-  try {
-    await adminStore.createUser(editForm.value);
-    closeAddModal();
-    await fetchUsers();
-  } catch (err) {
-    console.error('Failed to create user:', err);
-  } finally {
-    editing.value = false;
-  }
-}
 </script>

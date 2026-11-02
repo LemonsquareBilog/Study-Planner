@@ -19,8 +19,7 @@ class RecommendationService
      */
     public function forStudent(User $user): Collection
     {
-        $weakThreshold = (int) (SystemSetting::where('key', 'weak_topic_threshold')->value('value') ?? 60);
-        $reviewThreshold = (int) (SystemSetting::where('key', 'review_topic_threshold')->value('value') ?? 79);
+        [$weakThreshold, $reviewThreshold] = $this->thresholds();
 
         // Database-level aggregation: O(1) memory instead of loading all attempts
         $topicPerformance = DB::table('quiz_attempts')
@@ -47,7 +46,8 @@ class RecommendationService
             return collect();
         }
 
-        $targetSubjectIds = Topic::whereIn('id', $targetTopics)->pluck('subject_id');
+        $topics = Topic::whereIn('id', $targetTopics)->get(['id', 'subject_id']);
+        $targetSubjectIds = $topics->pluck('subject_id');
 
         $resources = Resource::query()
             ->where('is_active', true)
@@ -60,8 +60,8 @@ class RecommendationService
             ->get();
 
         // Annotate each resource with the classification of topics it addresses
-        $weakSubjectIds = Topic::whereIn('id', $weakTopics)->pluck('subject_id');
-        $reviewSubjectIds = Topic::whereIn('id', $reviewTopics)->pluck('subject_id');
+        $weakSubjectIds = $topics->whereIn('id', $weakTopics)->pluck('subject_id');
+        $reviewSubjectIds = $topics->whereIn('id', $reviewTopics)->pluck('subject_id');
 
         return $resources->map(function ($resource) use ($weakTopics, $reviewTopics, $weakSubjectIds, $reviewSubjectIds) {
             $resourceTopicIds = $resource->topics->pluck('id');
@@ -83,8 +83,7 @@ class RecommendationService
      */
     public function topicPerformance(User $user): Collection
     {
-        $weakThreshold = (int) (SystemSetting::where('key', 'weak_topic_threshold')->value('value') ?? 60);
-        $reviewThreshold = (int) (SystemSetting::where('key', 'review_topic_threshold')->value('value') ?? 79);
+        [$weakThreshold, $reviewThreshold] = $this->thresholds();
 
         return DB::table('quiz_attempts')
             ->join('quizzes', 'quiz_attempts.quiz_id', '=', 'quizzes.id')
@@ -109,7 +108,20 @@ class RecommendationService
                     $row->avg_percentage <= $reviewThreshold => 'needs_review',
                     default => 'strong',
                 };
+
                 return $row;
             });
+    }
+
+    /** @return array{int, int} */
+    private function thresholds(): array
+    {
+        $settings = SystemSetting::whereIn('key', ['weak_topic_threshold', 'review_topic_threshold'])
+            ->pluck('value', 'key');
+
+        return [
+            (int) ($settings['weak_topic_threshold'] ?? 60),
+            (int) ($settings['review_topic_threshold'] ?? 79),
+        ];
     }
 }

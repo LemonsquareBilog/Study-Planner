@@ -1,3 +1,5 @@
+import { paginateItems } from './pagination';
+import type { TaskQuery } from '@/types';
 import type {
   User, Subject, Topic, Task, StudySession, Quiz, Question, QuizAttempt,
   Resource, Notification, SystemSetting, StudyPreference, ProgressSummary, TopicPerformance, QuizAnswer,
@@ -1151,7 +1153,7 @@ export const localApi = {
     setStored(STORAGE_KEYS.TOPICS, topics.filter(t => t.id !== topicId));
   },
 
-  async getTasks(params?: { status?: string; priority?: string; subject_id?: number; from?: string; to?: string }) {
+  async getTasks(params?: TaskQuery) {
     await delay();
     ensureDemoDataSeeded();
     const allTasks = getStored<Task[]>(STORAGE_KEYS.TASKS, []);
@@ -1169,13 +1171,24 @@ export const localApi = {
     if (params?.from) tasks = tasks.filter(task => (task.start_date || task.deadline || '').slice(0, 10) >= params.from!);
     if (params?.to) tasks = tasks.filter(task => (task.start_date || task.deadline || '').slice(0, 10) <= params.to!);
 
+    if (params?.search) {
+      const search = params.search.toLowerCase();
+      tasks = tasks.filter(task => `${task.title} ${task.description || ''}`.toLowerCase().includes(search));
+    }
+    const priorities = { urgent: 0, high: 1, medium: 2, low: 3 };
+    tasks.sort((a, b) => {
+      const deadline = new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+      if (params?.sort === 'created') return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime() || a.id - b.id;
+      if (params?.sort === 'priority') return priorities[a.priority] - priorities[b.priority] || deadline || a.id - b.id;
+      return (params?.sort === 'deadline_desc' ? -deadline : deadline) || a.id - b.id;
+    });
     const enriched = tasks.map(task => ({
       ...task,
       subject: subjects.find(s => s.id === task.subject_id),
       topic: topics.find(t => t.id === task.topic_id),
     }));
 
-    return paginatedResponse(enriched);
+    return paginateItems(enriched, params?.page);
   },
 
   async createTask(data: Partial<Task>) {

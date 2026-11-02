@@ -1,5 +1,7 @@
 # Study Planner — Consolidated QA, Security, Database and Refactoring Audit
 
+Local implementation follow-up (3 November 2026): see [implementation and test evidence](study-planner/docs/qa/README.md). The audit below remains the historical deployed assessment.
+
 Assessment date: 2 November 2026 (Asia/Manila)
 
 ## Executive assessment

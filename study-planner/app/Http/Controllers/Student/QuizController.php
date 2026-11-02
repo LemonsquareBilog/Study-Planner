@@ -9,6 +9,8 @@ use App\Models\QuizAttempt;
 use App\Services\QuizService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Str;
 
 class QuizController extends Controller
 {
@@ -20,6 +22,10 @@ class QuizController extends Controller
     public function show(Request $request, Quiz $quiz): JsonResponse
     {
         $this->ensureStudentOwnsQuiz($request, $quiz);
+
+        $quiz->setAttribute('submission_id', Crypt::encryptString(json_encode([
+            'id' => (string) Str::uuid(), 'user_id' => $request->user()->id, 'quiz_id' => $quiz->id,
+        ], JSON_THROW_ON_ERROR)));
 
         return response()->json([
             'data' => $quiz->load('topic.subject', 'questions'),
@@ -39,6 +45,7 @@ class QuizController extends Controller
             $quiz,
             $request->input('answers'),
             $request->input('started_at'),
+            $request->input('submission_id'),
         );
 
         // Include question options and revealed correct answers post-grading (UX-011)
@@ -51,7 +58,7 @@ class QuizController extends Controller
         return response()->json([
             'data' => $attempt,
             'message' => 'Quiz submitted and graded successfully.',
-        ], 201);
+        ], $attempt->wasRecentlyCreated ? 201 : 200);
     }
 
     /**
@@ -61,59 +68,54 @@ class QuizController extends Controller
     {
         $user = $request->user();
 
-        $topicIds = $user->subjects()
-            ->with('topics')
-            ->get()
-            ->pluck('topics')
-            ->flatten()
-            ->pluck('id');
+        $request->validate(['page' => ['sometimes', 'integer', 'min:1'], 'search' => ['sometimes', 'nullable', 'string', 'max:200'], 'topic_id' => ['sometimes', 'integer', 'min:1']]);
 
-        $query = Quiz::whereIn('topic_id', $topicIds)
+        $query = Quiz::whereHas('topic.subject', fn ($query) => $query->where('user_id', $user->id))
             ->where('is_active', true)
-            ->with(['topic:id,name,subject_id', 'topic.subject:id,name'])
-            ->withCount('questions');
+            ->with(['topic:id,name,subject_id,difficulty', 'topic.subject:id,name'])
+            ->withCount('questions')
+            ->withCount(['attempts' => fn ($query) => $query->where('user_id', $user->id)])
+            ->withMax(['attempts as best_score' => fn ($query) => $query->where('user_id', $user->id)], 'percentage')
+            ->addSelect(['latest_attempt_id' => QuizAttempt::select('id')
+                ->whereColumn('quiz_id', 'quizzes.id')->where('user_id', $user->id)
+                ->orderByDesc('completed_at')->orderByDesc('id')->limit(1)]);
+
+        if ($request->filled('topic_id')) {
+            $query->where('topic_id', $request->integer('topic_id'));
+        }
 
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
-        $quizzes = $query->orderBy('title')->get();
-
-        // Attach student's previous attempt history (UX-022)
-        $attemptsByQuiz = $user->quizAttempts()
-            ->whereIn('quiz_id', $quizzes->pluck('id'))
-            ->latest('completed_at')
-            ->get()
-            ->groupBy('quiz_id');
-
-        $quizzes->each(function ($quiz) use ($attemptsByQuiz) {
-            $attempts = $attemptsByQuiz->get($quiz->id);
-            $quiz->latest_attempt = $attempts?->first();
-            $quiz->attempts_count = $attempts?->count() ?? 0;
-            $quiz->best_score = $attempts ? $attempts->max('percentage') : null;
+        $quizzes = $query->orderBy('title')->orderBy('id')->paginate(20);
+        $latest = $user->quizAttempts()->whereIn('id', $quizzes->getCollection()->pluck('latest_attempt_id')->filter())->get()->keyBy('id');
+        $quizzes->getCollection()->each(function ($quiz) use ($latest) {
+            $quiz->setAttribute('latest_attempt', $latest->get($quiz->latest_attempt_id));
+            $quiz->offsetUnset('latest_attempt_id');
         });
 
         return response()->json([
-            'data' => $quizzes,
+            ...$quizzes->toArray(),
             'message' => 'Available quizzes retrieved successfully.',
         ]);
     }
 
     public function history(Request $request): JsonResponse
     {
+        $request->validate(['page' => ['sometimes', 'integer', 'min:1']]);
         $attempts = $request->user()->quizAttempts()
-            ->with(['quiz.topic.subject', 'answers.question'])
+            ->with(['quiz.topic.subject'])
             ->latest('completed_at')
-            ->get();
-
-        $attempts->each(fn (QuizAttempt $attempt) => $this->revealCorrectAnswers($attempt));
+            ->orderByDesc('id')
+            ->paginate(20);
 
         return response()->json([
-            'data' => $attempts,
+            ...$attempts->toArray(),
             'message' => 'Quiz history retrieved successfully.',
         ]);
     }

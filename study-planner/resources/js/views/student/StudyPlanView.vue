@@ -256,6 +256,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
+import { api } from '@/services/api';
 import { useStudentStore } from '@/stores/student';
 import { studyTimerService, type TimerState, type TimerMode, type TimerStatus } from '@/services/studyTimerService';
 import { notificationService } from '@/services/notificationService';
@@ -292,7 +293,15 @@ const groupedSessions = computed(() => {
 const relatedResources = computed(() => studentStore.recommendations.filter(resource =>
   resource.topics?.some(topic => topic.id === selectedTask.value?.topic_id) ||
   resource.subjects?.some(subject => subject.id === selectedTask.value?.subject_id)));
-const relatedQuiz = computed(() => studentStore.quizzes.find(quiz => quiz.topic_id === selectedTask.value?.topic_id));
+const relatedQuiz = ref<Awaited<ReturnType<typeof api.getQuizzes>>[number] | null>(null);
+watch(() => selectedTask.value?.topic_id, async (topicId) => {
+  relatedQuiz.value = null;
+  if (!topicId) return;
+  try {
+    const page = await api.getQuizzesPage({ topic_id: topicId });
+    if (selectedTask.value?.topic_id === topicId) relatedQuiz.value = page.data[0] ?? null;
+  } catch { /* The task remains usable when its optional quiz cannot load. */ }
+});
 async function fetchSessions() {
   loading.value = true;
   loadError.value = '';
@@ -351,7 +360,6 @@ onMounted(async () => {
   await Promise.all([
     fetchSessions(),
     studentStore.fetchTasks({ from: planFrom.value, to: planTo.value }).catch(err => console.error('Failed to load study plan tasks:', err)),
-    studentStore.fetchQuizzes().catch(err => console.error('Failed to load quizzes:', err)),
     studentStore.fetchRecommendations().catch(err => console.error('Failed to load recommendations:', err)),
   ]);
 });

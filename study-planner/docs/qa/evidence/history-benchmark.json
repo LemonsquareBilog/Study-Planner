@@ -1,0 +1,20 @@
+{
+    "baseline": {
+        "samples": 20,
+        "returned_rows": 1000,
+        "response_bytes": 1337059,
+        "query_count": 6,
+        "median_ms": 472.09,
+        "p95_ms": 573.58,
+        "max_incremental_peak_bytes": 11122896
+    },
+    "updated": {
+        "samples": 20,
+        "returned_rows": 20,
+        "response_bytes": 20045,
+        "query_count": 5,
+        "median_ms": 7.87,
+        "p95_ms": 10.25,
+        "max_incremental_peak_bytes": 160384
+    }
+}

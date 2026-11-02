@@ -6,10 +6,10 @@ Implemented the audit's reversible repository changes: Users rendering, removal 
 
 ## Execution
 
-- PHPUnit: 39 passed, 322 assertions. In-memory SQLite; includes auth, role/ownership, task and quiz flows, pagination, ebook contracts, retry conflicts and migration preservation.
+- PHPUnit: 42 passed, 344 assertions. In-memory SQLite; includes auth, role/ownership, task and quiz flows, pagination, ebook contracts, retry conflicts and migration preservation.
 - Client recovery: 22 passed. Legacy/versioned/malformed sessions, error classification, preview pagination.
 - Mobile configuration: 15 passed. Build-time endpoint rules, not physical device tests.
-- Browser: 18 passed. System Chromium 154.0.8037.57, desktop and 390px mobile viewport, built web assets with intercepted API fixtures. Includes existing login/session recovery tests.
+- Browser: 19 passed. System Chromium 154.0.8037.57, desktop and 390px mobile viewport, built web assets with intercepted API fixtures. Includes existing login/session recovery tests.
 - Web and mobile frontend asset builds passed. Mobile assets were emitted to ignored .verification/mobile-build using the audited HTTPS API URL; backend reachability and native binary compilation are not established by this build. Existing large-chunk and mixed static/dynamic import warnings remain.
 - Two concurrent PHP service processes against disposable SQLite returned one attempt ID; database contained one attempt and one answer. Production-engine contention remains untested.
 - Development database backup/restore copy, migration up/down/up, integrity, foreign keys and row counts passed. Development schema updated after rehearsal.
@@ -21,3 +21,5 @@ A read-only request to the live URL failed with TLS connection error and HTTP st
 Release remains gated by PRODUCTION_READINESS_CHECKLIST.md. See BUG_TRACKER.csv for finding-by-finding disposition.
 
 The dashboard follow-up added database-side progress aggregation, fewer student/admin queries, and same-session display during refresh. For benchmark method and current results see [PERFORMANCE_OPTIMIZATION_REPORT.md](PERFORMANCE_OPTIMIZATION_REPORT.md).
+
+The schema compatibility follow-up verified pre-migration and incomplete-index quiz submission behavior, safe rejection of retry tokens when protection is unavailable, and the user-facing retry warning. PostgreSQL 17.11 focused suite: 14 tests and 144 assertions; local synthetic data only.

@@ -8,10 +8,46 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 class QuizService
 {
+    public function supportsRetry(): bool
+    {
+        if (! Schema::hasColumns('quiz_attempts', ['submission_id', 'submission_hash'])) {
+            return false;
+        }
+
+        $indexes = collect(Schema::getIndexes('quiz_attempts'))
+            ->filter(fn ($index) => $index['unique'] && $index['columns'] === ['user_id', 'submission_id'])
+            ->pluck('name');
+        if ($indexes->isEmpty()) {
+            return false;
+        }
+
+        // Laravel's index metadata does not identify partial or invalid indexes.
+        // Neither can safely guarantee uniqueness for every submission identity.
+        $connection = DB::connection();
+        if ($connection->getDriverName() === 'sqlite') {
+            $table = $connection->getQueryGrammar()->wrapTable('quiz_attempts');
+
+            return collect($connection->select("PRAGMA index_list($table)"))
+                ->contains(fn ($index) => $indexes->contains($index->name) && (int) $index->partial === 0);
+        }
+        if ($connection->getDriverName() === 'pgsql') {
+            $table = $connection->getTablePrefix().'quiz_attempts';
+            $validIndexes = $connection->select(
+                'select c.relname as name from pg_index i join pg_class c on c.oid = i.indexrelid where i.indrelid = to_regclass(?) and i.indisunique and i.indisvalid and i.indpred is null and i.indexprs is null',
+                [$table],
+            );
+
+            return collect($validIndexes)->contains(fn ($index) => $indexes->contains($index->name));
+        }
+
+        return in_array($connection->getDriverName(), ['mysql', 'mariadb'], true);
+    }
+
     public function submit(User $user, Quiz $quiz, array $answers, string $startedAt, ?string $submissionToken = null): QuizAttempt
     {
         $questions = $quiz->questions()->get()->keyBy('id');
@@ -31,6 +67,7 @@ class QuizService
             } catch (\Throwable) {
                 throw ValidationException::withMessages(['submission_id' => 'Start this quiz again to obtain a valid submission identifier.']);
             }
+            abort_unless($this->supportsRetry(), 503, 'Quiz retry protection is temporarily unavailable. Please try again later.');
         }
         $normalized = [];
         foreach ($questions as $question) {
@@ -53,16 +90,19 @@ class QuizService
                 }
             }
             $score = 0;
-            $attempt = $user->quizAttempts()->create([
+            $attributes = [
                 'quiz_id' => $quiz->id,
-                'submission_id' => $submissionId,
-                'submission_hash' => $submissionId !== null ? $submissionHash : null,
                 'score' => 0,
                 'total_questions' => $questions->count(),
                 'percentage' => 0,
                 'started_at' => $startedAt,
                 'completed_at' => now(),
-            ]);
+            ];
+            if ($submissionId !== null) {
+                $attributes['submission_id'] = $submissionId;
+                $attributes['submission_hash'] = $submissionHash;
+            }
+            $attempt = $user->quizAttempts()->create($attributes);
 
             foreach ($questions as $question) {
                 $selected = $normalized[$question->id];

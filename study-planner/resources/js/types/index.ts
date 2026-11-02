@@ -86,6 +86,7 @@ export interface StudySession {
 
 export interface Quiz {
   submission_id?: string;
+  submission_retry_safe?: boolean;
   attempts_count?: number;
   best_score?: number | string | null;
   latest_attempt?: QuizAttempt | null;

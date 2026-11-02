@@ -23,9 +23,13 @@ class QuizController extends Controller
     {
         $this->ensureStudentOwnsQuiz($request, $quiz);
 
-        $quiz->setAttribute('submission_id', Crypt::encryptString(json_encode([
-            'id' => (string) Str::uuid(), 'user_id' => $request->user()->id, 'quiz_id' => $quiz->id,
-        ], JSON_THROW_ON_ERROR)));
+        $supportsRetry = $this->service->supportsRetry();
+        $quiz->setAttribute('submission_retry_safe', $supportsRetry);
+        if ($supportsRetry) {
+            $quiz->setAttribute('submission_id', Crypt::encryptString(json_encode([
+                'id' => (string) Str::uuid(), 'user_id' => $request->user()->id, 'quiz_id' => $quiz->id,
+            ], JSON_THROW_ON_ERROR)));
+        }
 
         return response()->json([
             'data' => $quiz->load('topic.subject', 'questions'),

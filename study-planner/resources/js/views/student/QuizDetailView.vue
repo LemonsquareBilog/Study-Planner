@@ -23,6 +23,9 @@
         </div>
         <h1 class="text-2xl font-bold text-text-primary">{{ quiz.title }}</h1>
         <p class="mt-2 text-text-secondary">{{ quiz.description }}</p>
+        <p v-if="quiz.submission_retry_safe === false" class="mt-4 text-sm text-text-secondary" role="status">
+          If submission fails, check quiz history before retrying to avoid a duplicate result.
+        </p>
         <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div class="bg-brand-navbar-cards rounded-lg p-4">
             <p class="text-2xl font-bold text-text-primary">{{ quiz.questions_count || 0 }}</p>
@@ -234,7 +237,9 @@ async function submitQuiz() {
     warningOpen.value = false;
   } catch (err) {
     console.error('Failed to submit quiz:', err);
-    submissionError.value = 'Your quiz could not be submitted. Check your connection and try again.';
+    submissionError.value = quiz.value?.submission_retry_safe === false
+      ? 'Your quiz could not be submitted. Check quiz history before retrying to avoid a duplicate result.'
+      : 'Your quiz could not be submitted. Check your connection and try again.';
   } finally {
     isSubmitting.value = false;
   }

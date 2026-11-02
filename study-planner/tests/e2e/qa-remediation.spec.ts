@@ -168,3 +168,17 @@ test('quiz retry keeps its issued identity and a retake obtains a new one', asyn
   await expect(page.getByText('Quiz Passed!', { exact: true })).toBeVisible();
   expect(submissions[2].submission_id).toBe('issued-2');
 });
+
+test('unprotected quiz submission failure advises checking history', async ({ page }) => {
+  await session(page, 'student');
+  await page.route('**/api/student/quizzes/1', route => route.fulfill({ json: { data: {
+    id: 1, title: 'Legacy quiz', passing_score: 70, submission_retry_safe: false,
+    questions: [{ id: 1, question: 'Choose A', option_a: 'A', option_b: 'B', option_c: 'C', option_d: 'D' }],
+  } } }));
+  await page.route('**/api/student/quizzes/1/submit', route => route.abort('failed'));
+  await page.goto('/quizzes/1');
+  await expect(page.getByRole('status').filter({ hasText: 'check quiz history' })).toBeVisible();
+  await page.getByRole('button', { name: 'Start quiz', exact: true }).click();
+  await page.getByRole('button', { name: 'Submit quiz', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('Check quiz history before retrying');
+});

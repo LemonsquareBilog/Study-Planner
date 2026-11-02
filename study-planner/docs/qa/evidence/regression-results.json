@@ -4,10 +4,10 @@
   "backend": {
     "tool": "phpunit",
     "result": "passed",
-    "tests": 39,
-    "passed": 39,
-    "assertions": 322,
-    "duration_ms": 11171
+    "tests": 42,
+    "passed": 42,
+    "assertions": 344,
+    "duration_ms": 10807
   },
   "client_recovery": {
     "passed": 22,
@@ -18,12 +18,17 @@
     "failed": 0
   },
   "chromium_browser": {
-    "passed": 18,
+    "passed": 19,
     "failed": 0,
-    "duration": "19.7s"
+    "duration": "20.6s"
   },
   "web_asset_build": "passed",
   "mobile_frontend_asset_build": "passed",
   "production_deployment": "not performed",
-  "physical_device_tests": "not performed"
+  "physical_device_tests": "not performed",
+  "postgresql_17_focused": {
+    "passed": 14,
+    "assertions": 144,
+    "failed": 0
+  }
 }

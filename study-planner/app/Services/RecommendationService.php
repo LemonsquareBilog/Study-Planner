@@ -103,6 +103,11 @@ class RecommendationService
             ->orderBy('avg_percentage')
             ->get()
             ->map(function ($row) use ($weakThreshold, $reviewThreshold) {
+                // PostgreSQL returns NUMERIC aggregates as strings; keep the API numeric.
+                $row->avg_percentage = (float) $row->avg_percentage;
+                $row->best_score = (float) $row->best_score;
+                $row->worst_score = (float) $row->worst_score;
+                $row->attempt_count = (int) $row->attempt_count;
                 $row->classification = match (true) {
                     $row->avg_percentage < $weakThreshold => 'weak',
                     $row->avg_percentage <= $reviewThreshold => 'needs_review',

@@ -78,6 +78,34 @@ class DashboardPerformanceTest extends TestCase
         $this->assertLessThanOrEqual(9, count($queries), 'Empty dashboard query budget exceeded.');
     }
 
+    public function test_progress_returns_numeric_topic_scores_and_only_the_students_attempts(): void
+    {
+        $user = User::factory()->create(['role' => 'student', 'is_active' => true]);
+        $other = User::factory()->create();
+        $subject = Subject::create(['user_id' => $user->id, 'name' => 'Math']);
+        $topic = $subject->topics()->create(['name' => 'Algebra']);
+        $quiz = Quiz::create(['topic_id' => $topic->id, 'title' => 'Practice']);
+        foreach ([50.5, 80.5] as $percentage) {
+            $user->quizAttempts()->create([
+                'quiz_id' => $quiz->id, 'score' => 1, 'total_questions' => 2,
+                'percentage' => $percentage, 'started_at' => now(), 'completed_at' => now(),
+            ]);
+        }
+        $other->quizAttempts()->create([
+            'quiz_id' => $quiz->id, 'score' => 0, 'total_questions' => 2,
+            'percentage' => 0, 'started_at' => now(), 'completed_at' => now(),
+        ]);
+
+        $response = $this->actingAs($user, 'sanctum')->getJson('/api/student/progress');
+        $response->assertOk()
+            ->assertJsonCount(1, 'data.topic_performance')
+            ->assertJsonPath('data.topic_performance.0.avg_percentage', 65.5)
+            ->assertJsonPath('data.topic_performance.0.best_score', 80.5)
+            ->assertJsonPath('data.topic_performance.0.worst_score', 50.5)
+            ->assertJsonPath('data.topic_performance.0.attempt_count', 2)
+            ->assertJsonPath('data.topic_performance.0.classification', 'needs_review');
+    }
+
     public function test_admin_aggregates_preserve_student_status_counts_and_empty_quiz_metrics(): void
     {
         $admin = User::factory()->create(['role' => 'admin', 'is_active' => true]);

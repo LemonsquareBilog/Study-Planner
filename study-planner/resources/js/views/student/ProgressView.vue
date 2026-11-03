@@ -20,7 +20,12 @@
       </svg>
     </div>
 
-    <div v-else class="space-y-8">
+    <div v-else-if="error" role="alert" class="rounded-xl border border-brand-borders bg-brand-navbar-cards-alt p-6">
+      <p class="text-text-primary">{{ error }}</p>
+      <button @click="fetchProgress(true)" class="btn-primary mt-4">Try again</button>
+    </div>
+
+    <div v-else-if="progress" class="space-y-8">
       <section aria-labelledby="summary-heading">
         <h2 id="summary-heading" class="text-lg font-semibold text-text-primary mb-4">Overview</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -79,12 +84,14 @@ import { onMounted, ref } from 'vue';
 import { useStudentStore } from '@/stores/student';
 import { api } from '@/services/api';
 import StatCard from '@/components/StatCard.vue';
+import type { ProgressSummary, TopicPerformance } from '@/types';
 
 const studentStore = useStudentStore();
 
-const progress = ref({});
-const topicPerformance = ref([]);
+const progress = ref<ProgressSummary | null>(null);
+const topicPerformance = ref<TopicPerformance[]>([]);
 const loading = ref(true);
+const error = ref<string | null>(null);
 
 onMounted(async () => {
   await fetchProgress();
@@ -93,11 +100,13 @@ onMounted(async () => {
 async function fetchProgress(force = false) {
   if (force) api.invalidateReadCache();
   loading.value = true;
+  error.value = null;
   try {
     const data = await studentStore.fetchProgress();
     progress.value = data.summary;
     topicPerformance.value = data.topic_performance;
   } catch (err) {
+    error.value = 'Unable to load your progress. Please try again.';
     console.error('Failed to load progress:', err);
   } finally {
     loading.value = false;

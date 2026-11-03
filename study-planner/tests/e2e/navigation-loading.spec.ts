@@ -22,6 +22,35 @@ function nav(page: Page, name: string) {
   return page.getByRole('navigation', { name: 'Student navigation', exact: true }).getByRole('link', { name, exact: true });
 }
 
+test('progress shows a retryable failure and renders topic scores after recovery', async ({ page }) => {
+  await restoreSession(page);
+  let fail = true;
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.route('**/api/**', async route => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith('/auth/me')) return route.fulfill({ json: { data: user } });
+    if (path.endsWith('/student/progress')) {
+      if (fail) return route.fulfill({ status: 500, json: { message: 'Unavailable' } });
+      return route.fulfill({ json: { data: { summary, topic_performance: [{
+        topic_id: 1, topic_name: 'Algebra', subject_name: 'Math', avg_percentage: 65.5,
+        best_score: 80.5, worst_score: 50.5, attempt_count: 2, classification: 'needs_review',
+      }] } } });
+    }
+    return route.fulfill({ json: { data: [] } });
+  });
+  await page.goto('/progress');
+  await expect(page.getByRole('alert')).toContainText('Unable to load your progress');
+  await expect(page.getByRole('heading', { name: 'Overview', exact: true })).not.toBeVisible();
+  fail = false;
+  await page.getByRole('button', { name: 'Try again', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Overview', exact: true })).toBeVisible();
+  await expect(page.getByRole('cell', { name: '65.5%', exact: true })).toBeVisible();
+  await expect(page.getByRole('cell', { name: '80.5% / 50.5%', exact: true })).toBeVisible();
+  await expect(page.getByRole('alert')).not.toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test('recent dashboard, subjects, and progress reopen without another API wait; refresh bypasses reuse', async ({ page }, testInfo) => {
   await restoreSession(page);
   const counts: Record<string, number> = {};

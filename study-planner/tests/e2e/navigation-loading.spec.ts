@@ -22,6 +22,37 @@ function nav(page: Page, name: string) {
   return page.getByRole('navigation', { name: 'Student navigation', exact: true }).getByRole('link', { name, exact: true });
 }
 
+test('notifications distinguish past due, upcoming, completed and historical notices', async ({ page }) => {
+  await restoreSession(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.clock.install({ time: new Date('2030-01-10T10:00:00Z') });
+  const notice = (id: number, title: string, task: unknown) => ({ id: String(id), title, task,
+    type: 'task_reminder', message: 'Task reminder', delivery_status: 'sent',
+    created_at: '2030-01-09T09:00:00Z', read_at: null });
+  const notices = [
+    notice(1, 'Overdue assignment', { id: 1, deadline: '2030-01-10T17:59:00+08:00', status: 'pending' }),
+    notice(2, 'Upcoming assignment', { id: 2, deadline: '2030-01-10T18:00:20+08:00', status: 'in_progress' }),
+    notice(3, 'Completed assignment', { id: 3, deadline: '2030-01-09T10:00:00Z', status: 'completed' }),
+    notice(4, 'Cancelled assignment', { id: 4, deadline: '2030-01-09T10:00:00Z', status: 'cancelled' }),
+    notice(5, 'Old notice', null),
+  ];
+  await page.route('**/api/**', route => {
+    const path = new URL(route.request().url()).pathname;
+    return route.fulfill({ json: { data: path.endsWith('/auth/me') ? user
+      : path.endsWith('/student/notifications') ? { ...pagination(notices), upcoming_deadlines: [] } : [] } });
+  });
+  await page.goto('/notifications');
+  const badge = (title: string, label: string) => page.getByRole('heading', { name: title, exact: true }).locator('..').getByText(label, { exact: true });
+  await expect(badge('Overdue assignment', 'Past due')).toBeVisible();
+  await expect(badge('Upcoming assignment', 'Upcoming')).toBeVisible();
+  await expect(badge('Completed assignment', 'Completed')).toBeVisible();
+  await expect(badge('Cancelled assignment', 'Cancelled')).toBeVisible();
+  await expect(badge('Old notice', 'Past notification')).toBeVisible();
+  await page.clock.fastForward(31_000);
+  await expect(badge('Upcoming assignment', 'Past due')).toBeVisible();
+  await expect(page.getByText('Past due', { exact: true })).toHaveCount(2);
+});
+
 test('progress shows a retryable failure and renders topic scores after recovery', async ({ page }) => {
   await restoreSession(page);
   let fail = true;

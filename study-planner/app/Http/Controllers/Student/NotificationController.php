@@ -38,7 +38,9 @@ class NotificationController extends Controller
             $query->whereNull('read_at');
         }
 
-        $notifications = $query->latest()->paginate(30);
+        $notifications = $query->with(['task' => fn ($tasks) => $tasks
+            ->where('user_id', $request->user()->id)
+            ->select(['id', 'deadline', 'status'])])->latest()->paginate(30);
         $upcoming = $request->user()->tasks()
             ->whereIn('status', ['pending', 'in_progress'])
             ->where('deadline', '>', now())

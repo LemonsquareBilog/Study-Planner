@@ -25,7 +25,7 @@
           <div class="min-w-0">
             <h3 class="font-semibold text-text-primary break-words">{{ task.title }}</h3>
             <p class="text-sm text-text-secondary">Deadline: <time :datetime="task.deadline">{{ formatDate(task.deadline) }}</time></p>
-            <p class="text-sm font-medium text-primary">{{ timeRemaining(task.deadline) }}</p>
+            <p class="text-sm font-medium" :class="new Date(task.deadline).getTime() <= now ? 'text-status-urgent' : 'text-primary'">{{ timeRemaining(task.deadline) }}</p>
           </div>
           <RouterLink :to="{ path: '/tasks', query: { task_id: task.id } }" class="btn-secondary text-sm">View task</RouterLink>
         </li>
@@ -52,15 +52,20 @@
         <div v-for="notification in notifications.data" :key="notification.id" class="p-6 hover:bg-brand-navbar-cards" :class="{ 'bg-primary-light/30': !notification.read_at }">
           <div class="flex items-start justify-between">
             <div class="flex-1 min-w-0">
-              <div class="flex items-center space-x-3 mb-2">
+              <div class="flex flex-wrap items-center gap-2 mb-2">
                 <h3 class="text-lg font-semibold text-text-primary">{{ notification.title }}</h3>
                 <span v-if="!notification.read_at" class="px-2 py-1 text-xs font-medium bg-primary-light text-primary rounded-full">New</span>
                 <span class="px-2 py-1 text-xs font-medium rounded-full" :class="typeClass(notification.type)">{{ formatType(notification.type) }}</span>
+                <span v-if="deadlineLabel(notification)" class="px-2 py-1 text-xs font-semibold rounded-full"
+                  :class="deadlineLabel(notification) === 'Past due' ? 'bg-status-urgent-light text-status-urgent' : 'bg-brand-borders text-text-secondary'">
+                  {{ deadlineLabel(notification) }}
+                </span>
               </div>
               <p class="text-text-secondary">{{ notification.message }}</p>
+              <p v-if="notification.task" class="mt-1 text-sm text-text-secondary">Deadline: <time :datetime="notification.task.deadline">{{ formatDate(notification.task.deadline) }}</time></p>
               <RouterLink v-if="notification.task_id" :to="{ path: '/tasks', query: { task_id: notification.task_id } }" class="text-primary underline">View task</RouterLink>
               <p class="text-sm text-text-secondary">{{ notification.delivery_status }}</p>
-              <p class="mt-2 text-sm text-text-secondary">{{ formatDate(notification.created_at) }}</p>
+              <p class="mt-2 text-sm text-text-secondary">Received: {{ formatDate(notification.scheduled_at || notification.created_at) }}</p>
             </div>
             <div class="flex items-center space-x-2 ml-4">
               <button v-if="!notification.read_at" @click="markRead(notification)" class="btn-secondary text-sm py-1 px-2" aria-label="Mark as read">Mark read</button>
@@ -85,10 +90,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useStudentStore } from '@/stores/student';
+import type { Notification } from '@/types';
 
 const studentStore = useStudentStore();
 
-const notifications = ref({ data: [], current_page: 1, last_page: 1, from: 0, to: 0, total: 0 });
+const notifications = ref({ data: [] as Notification[], current_page: 1, last_page: 1, from: 0, to: 0, total: 0 });
 const loading = ref(true);
 const filterUnread = ref('false');
 const upcomingDeadlines = ref<Array<{ id: number; title: string; deadline: string }>>([]);
@@ -97,9 +103,24 @@ const now = ref(Date.now());
 const clock = window.setInterval(() => { now.value = Date.now(); }, 30000);
 onUnmounted(() => window.clearInterval(clock));
 
+function deadlineLabel(notification: Notification): string | null {
+  const task = notification.task;
+  if (task) {
+    if (task.status === 'completed') return 'Completed';
+    if (task.status === 'cancelled') return 'Cancelled';
+    const deadline = new Date(task.deadline).getTime();
+    if (!Number.isFinite(deadline)) return null;
+    return deadline <= now.value ? 'Past due' : 'Upcoming';
+  }
+  const received = new Date(notification.scheduled_at || notification.created_at).getTime();
+  const today = new Date(now.value);
+  today.setHours(0, 0, 0, 0);
+  return received < today.getTime() ? 'Past notification' : null;
+}
+
 function timeRemaining(deadline: string) {
   const minutes = Math.ceil((new Date(deadline).getTime() - now.value) / 60000);
-  if (minutes <= 0) return 'Deadline reached';
+  if (minutes <= 0) return 'Past due';
   if (minutes < 60) return `Due in ${minutes} minute${minutes === 1 ? '' : 's'}`;
   const hours = Math.ceil(minutes / 60);
   if (hours < 24) return `Due in ${hours} hour${hours === 1 ? '' : 's'}`;

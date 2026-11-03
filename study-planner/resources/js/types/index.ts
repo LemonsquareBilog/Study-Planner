@@ -167,6 +167,8 @@ export interface Resource {
 }
 
 export interface Notification {
+  task_id?: number | null;
+  task?: { id: number; deadline: string; status: Task['status'] } | null;
   id: string;
   user_id: number;
   type: string;

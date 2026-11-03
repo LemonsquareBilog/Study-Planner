@@ -22,6 +22,28 @@ class TaskNotificationTest extends TestCase
         $this->withToken(str_repeat('s', 32))->getJson('/api/internal/task-reminders')->assertOk();
     }
 
+    public function test_notification_deadline_tracks_the_current_owned_task(): void
+    {
+        $user = User::factory()->create(['role' => 'student', 'is_active' => true]);
+        $subject = Subject::create(['user_id' => $user->id, 'name' => 'Math']);
+        $task = $user->tasks()->create(['subject_id' => $subject->id, 'title' => 'Read', 'deadline' => now()->subHour(), 'estimated_minutes' => 30]);
+        $notification = $user->notifications()->create(['task_id' => $task->id, 'type' => 'task_reminder', 'title' => 'Read', 'message' => 'Reminder', 'delivery_status' => 'sent']);
+        $this->actingAs($user, 'sanctum')->getJson('/api/student/notifications')
+            ->assertOk()->assertJsonPath('data.data.0.task.deadline', $task->deadline->toJSON())
+            ->assertJsonPath('data.data.0.task.status', 'pending');
+
+        $task->update(['deadline' => now()->addDay(), 'status' => 'completed']);
+        $this->getJson('/api/student/notifications')->assertOk()
+            ->assertJsonPath('data.data.0.task.deadline', $task->deadline->toJSON())
+            ->assertJsonPath('data.data.0.task.status', 'completed');
+
+        $other = User::factory()->create();
+        $task->update(['user_id' => $other->id]);
+        $this->getJson('/api/student/notifications')->assertOk()->assertJsonPath('data.data.0.task', null);
+        $notification->update(['task_id' => null]);
+        $this->getJson('/api/student/notifications')->assertOk()->assertJsonPath('data.data.0.task', null);
+    }
+
     public function test_schedule_is_persistent_idempotent_and_rescheduled(): void
     {
         $user = User::factory()->create(['role' => 'student', 'is_active' => true]);

@@ -97,7 +97,9 @@ function navigate(routePath: string): void {
   right: 0;
   z-index: 50;
   display: none;
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: var(--app-safe-bottom);
+  padding-left: var(--app-safe-left);
+  padding-right: var(--app-safe-right);
 }
 
 @media (max-width: 1023px) {
@@ -234,10 +236,4 @@ function navigate(routePath: string): void {
   background: rgba(179, 63, 98, 0.08);
 }
 
-/* Safe area handling for notched devices */
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .mobile-bottom-nav {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-}
 </style>

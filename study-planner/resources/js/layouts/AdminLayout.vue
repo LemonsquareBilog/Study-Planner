@@ -12,7 +12,7 @@
       aria-hidden="true"
     ></div>
     
-    <header class="glass-header sticky top-0 z-50 relative">
+    <header class="app-header glass-header sticky top-0 z-50">
       <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Admin navigation">
         <div class="flex justify-between h-16">
           <div class="flex items-center">
@@ -61,7 +61,7 @@
         <nav
           id="admin-mobile-menu"
           v-if="mobileMenuOpen"
-          class="lg:hidden fixed inset-y-0 right-0 z-50 w-64 glass-header shadow-xl transform transition-transform duration-300 ease-in-out"
+          class="app-safe-drawer lg:hidden fixed inset-y-0 right-0 z-50 w-64 glass-header shadow-xl transform transition-transform duration-300 ease-in-out"
           aria-label="Mobile admin navigation"
         >
           <div class="flex flex-col h-full">

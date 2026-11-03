@@ -22,6 +22,53 @@ function nav(page: Page, name: string) {
   return page.getByRole('navigation', { name: 'Student navigation', exact: true }).getByRole('link', { name, exact: true });
 }
 
+test.describe('Study Plan dates and phone layout', () => {
+  test.use({ timezoneId: 'Asia/Manila' });
+
+  test('uses the entered local deadline and keeps navigation below system bars', async ({ page }) => {
+    await restoreSession(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.clock.install({ time: new Date('2030-01-09T16:30:00Z') });
+    const plannedTask = { ...task, title: 'Midnight assignment', deadline: '2030-01-09T17:15:00Z',
+      start_date: null, created_at: '2029-12-01T10:00:00Z' };
+    const session = { id: 1, task_id: 1, task: plannedTask, subject: plannedTask.subject,
+      scheduled_date: '2030-01-10T00:00:00.000000Z', start_time: '00:45:00', end_time: '01:15:00',
+      duration_minutes: 30, status: 'scheduled' };
+    await page.route('**/api/**', route => {
+      const path = new URL(route.request().url()).pathname;
+      if (path.endsWith('/student/tasks')) return route.fulfill({ json: pagination([plannedTask]) });
+      const data = path.endsWith('/auth/me') ? user
+        : path.endsWith('/student/dashboard') ? dashboard
+        : path.endsWith('/student/study-plan') ? [session] : [];
+      return route.fulfill({ json: { data } });
+    });
+    await page.goto('/dashboard');
+    await page.evaluate(() => {
+      document.documentElement.style.setProperty('--safe-area-inset-top', '45px');
+      document.documentElement.style.setProperty('--safe-area-inset-bottom', '24px');
+    });
+    const menu = page.getByRole('button', { name: 'Toggle navigation menu' });
+    await expect(menu).toBeVisible();
+    expect((await menu.boundingBox())!.y).toBeGreaterThanOrEqual(45);
+    await menu.click();
+    const drawer = page.locator('#mobile-menu');
+    expect((await drawer.getByRole('heading', { name: 'Navigation', exact: true }).boundingBox())!.y).toBeGreaterThanOrEqual(45);
+    await drawer.getByRole('link', { name: 'Study Plan', exact: true }).click();
+    await expect(page.getByLabel('Schedule from')).toHaveValue('2030-01-10');
+    const card = page.locator('article').filter({ hasText: 'Midnight assignment' });
+    await expect(card).toBeVisible();
+    await expect(card).toContainText('1/10/2030, 1:15:00 AM');
+    await expect(page.getByText('Task deadline:', { exact: false })).toContainText('1/10/2030, 1:15:00 AM');
+    await expect(page.getByRole('heading', { name: /Study sessions:/ })).toContainText('January 10');
+    await card.click();
+    const dialog = page.getByRole('dialog', { name: 'Study task details' });
+    await expect(dialog).toContainText('1/10/2030, 1:15:00 AM');
+    await expect(dialog.getByText('Scheduled', { exact: true })).not.toBeVisible();
+    await expect(dialog.getByText('Start date:', { exact: false })).not.toBeVisible();
+    expect((await dialog.boundingBox())!.y).toBeGreaterThanOrEqual(45);
+  });
+});
+
 test('notifications distinguish past due, upcoming, completed and historical notices', async ({ page }) => {
   await restoreSession(page);
   await page.setViewportSize({ width: 390, height: 844 });

@@ -12,7 +12,7 @@
       aria-hidden="true"
     ></div>
     
-    <header class="glass-header sticky top-0 z-50 relative">
+    <header class="app-header glass-header sticky top-0 z-50">
       <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
         <div class="flex justify-between h-16">
           <div class="flex items-center">
@@ -69,7 +69,7 @@
         <nav
           id="mobile-menu"
           v-if="mobileMenuOpen"
-          class="lg:hidden fixed inset-y-0 right-0 z-50 w-64 glass-header shadow-xl transform transition-transform duration-300 ease-in-out"
+          class="app-safe-drawer lg:hidden fixed inset-y-0 right-0 z-50 w-64 glass-header shadow-xl transform transition-transform duration-300 ease-in-out"
           aria-label="Mobile navigation"
         >
           <div class="flex flex-col h-full">
@@ -112,7 +112,7 @@
     <!-- Mobile Bottom Navigation -->
     <MobileBottomNav />
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative pb-24 lg:pb-8" role="main">
+    <main class="app-main max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative pb-24 lg:pb-8" role="main">
       <div class="glass-card p-4 sm:p-6">
         <router-view />
       </div>

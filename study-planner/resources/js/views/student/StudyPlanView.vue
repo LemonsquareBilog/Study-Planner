@@ -7,10 +7,11 @@
       </div>
 
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div class="flex items-center gap-2 rounded-xl border border-brand-borders bg-brand-navbar-cards-alt px-3 py-2">
-          <input type="date" v-model="planFrom" class="input-field-glass w-auto min-w-[132px]" @change="onDateChange" />
+        <div class="flex flex-wrap items-center gap-2 rounded-xl border border-brand-borders bg-brand-navbar-cards-alt px-3 py-2">
+          <span class="w-full text-xs text-text-secondary">Show schedule for this date range</span>
+          <input type="date" v-model="planFrom" aria-label="Schedule from" class="input-field-glass w-auto min-w-[132px]" @change="onDateChange" />
           <span class="text-sm text-text-secondary">to</span>
-          <input type="date" v-model="planTo" class="input-field-glass w-auto min-w-[132px]" @change="onDateChange" />
+          <input type="date" v-model="planTo" aria-label="Schedule to" class="input-field-glass w-auto min-w-[132px]" @change="onDateChange" />
         </div>
         <button @click="generatePlan" :disabled="generating" class="btn-primary" aria-label="Generate study plan">
           <span v-if="generating" class="flex items-center">
@@ -63,8 +64,8 @@
 
             <div class="mt-4 grid grid-cols-2 gap-2 text-xs text-text-secondary sm:grid-cols-3">
               <div class="rounded-lg bg-brand-navbar-cards px-2 py-1.5">
-                <span class="block text-[10px] uppercase tracking-wide text-text-secondary/80">Date</span>
-                <span class="mt-1 block font-medium text-text-primary">{{ formatShortDate(task.start_date || task.deadline) }}</span>
+                <span class="block text-[10px] uppercase tracking-wide text-text-secondary/80">Deadline</span>
+                <span class="mt-1 block font-medium text-text-primary">{{ formatDateTime(task.deadline) }}</span>
               </div>
               <div class="rounded-lg bg-brand-navbar-cards px-2 py-1.5">
                 <span class="block text-[10px] uppercase tracking-wide text-text-secondary/80">Duration</span>
@@ -113,7 +114,7 @@
       <div v-else class="space-y-6" role="list">
         <div v-for="group in groupedSessions" :key="group.date" class="overflow-hidden rounded-2xl border border-brand-borders bg-brand-navbar-cards-alt" role="listitem">
           <div class="flex items-center justify-between border-b border-brand-borders bg-brand-navbar-cards px-5 py-4">
-            <h3 class="text-lg font-semibold text-text-primary">{{ formatDayHeader(group.date) }}</h3>
+            <h3 class="text-lg font-semibold text-text-primary">Study sessions: {{ formatDayHeader(group.date) }}</h3>
             <span class="text-sm text-text-secondary">{{ group.sessions.length }} sessions · {{ group.totalMinutes }} min</span>
           </div>
 
@@ -131,7 +132,7 @@
                   <p class="text-sm text-text-secondary">{{ session.topic?.name || 'General review' }}</p>
                   <p v-if="session.task?.description" class="mt-1 text-xs text-text-secondary">{{ session.task.description }}</p>
                   <p v-if="session.task" class="mt-1 text-xs text-text-secondary">
-                    {{ formatTaskDate(session.task.start_date || session.task.created_at || session.task.deadline) }} · {{ session.task.priority }} priority · {{ session.task.estimated_minutes }} min
+                    Task deadline: {{ formatDateTime(session.task.deadline) }} · {{ session.task.priority }} priority · {{ session.task.estimated_minutes }} min
                   </p>
                 </div>
               </div>
@@ -151,7 +152,7 @@
   </div>
 
   <Teleport to="body">
-    <div v-if="selectedTask" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div v-if="selectedTask" class="app-safe-modal fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-label="Study task details">
       <div class="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-brand-borders bg-brand-navbar-cards-alt p-6 shadow-2xl">
         <div class="flex items-start justify-between gap-4">
           <div>
@@ -171,8 +172,9 @@
             <p class="mt-2 text-base font-semibold text-text-primary">{{ selectedTask.topic?.name || 'General review' }}</p>
           </div>
           <div class="rounded-2xl border border-brand-borders bg-brand-navbar-cards p-4">
-            <p class="text-xs uppercase tracking-wide text-text-secondary">Scheduled</p>
-            <p class="mt-2 text-base font-semibold text-text-primary">{{ formatDateTime(selectedTask.start_date || selectedTask.deadline) }}</p>
+            <p class="text-xs uppercase tracking-wide text-text-secondary">Deadline</p>
+            <p class="mt-2 text-base font-semibold text-text-primary">{{ formatDateTime(selectedTask.deadline) }}</p>
+            <p v-if="selectedTask.start_date" class="mt-1 text-sm text-text-secondary">Start date: {{ formatCalendarDate(selectedTask.start_date) }}</p>
           </div>
           <div class="rounded-2xl border border-brand-borders bg-brand-navbar-cards p-4">
             <p class="text-xs uppercase tracking-wide text-text-secondary">Priority</p>
@@ -260,14 +262,15 @@ import { useStudentStore } from '@/stores/student';
 import { studyTimerService, type TimerState, type TimerMode, type TimerStatus } from '@/services/studyTimerService';
 import { notificationService } from '@/services/notificationService';
 import type { StudySession, Task, Resource, Quiz } from '@/types';
+import { localDeadline } from '@/services/taskDeadline';
 
 const studentStore = useStudentStore();
 
 const sessions = ref<StudySession[]>([]);
 const loading = ref(true);
 const generating = ref(false);
-const planFrom = ref(new Date().toISOString().split('T')[0]);
-const planTo = ref(new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]);
+const planFrom = ref(localDeadline(new Date()).slice(0, 10));
+const planTo = ref(localDeadline(new Date(Date.now() + 14 * 86400000)).slice(0, 10));
 const selectedTask = ref<Task | null>(null);
 const inAppNotification = ref<{ title: string; message: string } | null>(null);
 
@@ -275,7 +278,7 @@ let timerUnsubscribe: (() => void) | null = null;
 
 const loadError = ref('');
 const tasksInPlan = computed(() => studentStore.tasks.filter(task => {
-  const date = (task.start_date || task.deadline).slice(0, 10);
+  const date = localDeadline(task.deadline).slice(0, 10);
   return date >= planFrom.value && date <= planTo.value;
 }));
 const groupedSessions = computed(() => {
@@ -319,8 +322,7 @@ async function completeSession(session: StudySession) {
   try { await studentStore.updateStudySessionStatus(session.id, 'completed'); await fetchSessions(); }
   catch { loadError.value = 'Unable to complete this session.'; }
 }
-function formatShortDate(value?: string) { return value ? new Date(value).toLocaleDateString() : 'Not scheduled'; }
-const formatTaskDate = formatShortDate;
+function formatCalendarDate(value: string) { return new Date(value.slice(0, 10) + 'T00:00:00').toLocaleDateString(); }
 function formatDayHeader(value: string) { return new Date(value + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }); }
 function formatDateTime(value?: string) { return value ? new Date(value).toLocaleString() : 'Not scheduled'; }
 function formatTime(value: string) { return value.slice(0, 5); }

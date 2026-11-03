@@ -34,7 +34,7 @@
             </nav>
 
             <div class="flex items-center space-x-3">
-              <span class="hidden sm:block text-sm font-medium text-text-secondary">{{ authStore.user?.name }}</span>
+              <strong class="hidden sm:block text-sm font-bold text-text-primary">{{ authStore.user?.name }}</strong>
               <router-link to="/dashboard" class="hidden sm:btn-secondary text-sm" aria-label="Switch to student view">
                 Student View
               </router-link>

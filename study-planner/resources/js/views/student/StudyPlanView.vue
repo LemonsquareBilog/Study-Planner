@@ -7,11 +7,15 @@
       </div>
 
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div class="flex flex-wrap items-center gap-2 rounded-xl border border-brand-borders bg-brand-navbar-cards-alt px-3 py-2">
-          <span class="w-full text-xs text-text-secondary">Show schedule for this date range</span>
-          <input type="date" v-model="planFrom" aria-label="Schedule from" class="input-field-glass w-auto min-w-[132px]" @change="onDateChange" />
-          <span class="text-sm text-text-secondary">to</span>
-          <input type="date" v-model="planTo" aria-label="Schedule to" class="input-field-glass w-auto min-w-[132px]" @change="onDateChange" />
+        <div role="group" aria-label="Schedule date range" class="grid min-w-0 grid-cols-2 divide-x divide-brand-borders rounded-xl border border-brand-borders sm:w-80">
+          <label class="min-w-0 px-3 py-2">
+            <span class="block text-xs text-text-secondary">From</span>
+            <input type="date" v-model="planFrom" aria-label="Schedule from" class="min-h-9 w-full min-w-0 rounded bg-transparent text-sm text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-primary" @change="onDateChange" />
+          </label>
+          <label class="min-w-0 px-3 py-2">
+            <span class="block text-xs text-text-secondary">To</span>
+            <input type="date" v-model="planTo" aria-label="Schedule to" class="min-h-9 w-full min-w-0 rounded bg-transparent text-sm text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-primary" @change="onDateChange" />
+          </label>
         </div>
         <button @click="generatePlan" :disabled="generating" class="btn-primary" aria-label="Generate study plan">
           <span v-if="generating" class="flex items-center">

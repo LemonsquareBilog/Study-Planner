@@ -40,7 +40,7 @@
             </nav>
 
             <div class="flex items-center space-x-3">
-              <span class="hidden sm:block text-sm font-medium text-text-secondary">{{ authStore.user?.name }}</span>
+              <strong class="hidden sm:block text-sm font-bold text-text-primary">{{ authStore.user?.name }}</strong>
               <router-link v-if="authStore.isAdmin" to="/admin" class="btn-secondary text-sm text-secondary hidden sm:inline-flex" aria-label="Return to admin panel">
                 Admin Panel
               </router-link>

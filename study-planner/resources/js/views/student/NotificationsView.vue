@@ -16,6 +16,22 @@
       </div>
     </div>
 
+    <section v-if="!loading" aria-labelledby="upcoming-deadlines-heading" class="p-6 bg-brand-navbar-cards-alt border border-brand-borders rounded-xl">
+      <h2 id="upcoming-deadlines-heading" class="text-lg font-semibold text-text-primary">Upcoming deadlines</h2>
+      <p class="mt-1 text-sm text-text-secondary">Your next five unfinished tasks, nearest deadline first. Times are shown in {{ timezone }}.</p>
+      <p v-if="!upcomingDeadlines.length" class="mt-4 text-text-secondary">No upcoming task deadlines.</p>
+      <ul v-else class="mt-4 space-y-4">
+        <li v-for="task in upcomingDeadlines" :key="task.id" class="flex flex-wrap items-center justify-between gap-3 border-t border-brand-borders pt-3">
+          <div class="min-w-0">
+            <h3 class="font-semibold text-text-primary break-words">{{ task.title }}</h3>
+            <p class="text-sm text-text-secondary">Deadline: <time :datetime="task.deadline">{{ formatDate(task.deadline) }}</time></p>
+            <p class="text-sm font-medium text-primary">{{ timeRemaining(task.deadline) }}</p>
+          </div>
+          <RouterLink :to="{ path: '/tasks', query: { task_id: task.id } }" class="btn-secondary text-sm">View task</RouterLink>
+        </li>
+      </ul>
+    </section>
+
     <div v-if="loading" class="flex justify-center py-12" role="status" aria-label="Loading notifications">
       <svg class="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" aria-hidden="true">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
@@ -42,6 +58,8 @@
                 <span class="px-2 py-1 text-xs font-medium rounded-full" :class="typeClass(notification.type)">{{ formatType(notification.type) }}</span>
               </div>
               <p class="text-text-secondary">{{ notification.message }}</p>
+              <RouterLink v-if="notification.task_id" :to="{ path: '/tasks', query: { task_id: notification.task_id } }" class="text-primary underline">View task</RouterLink>
+              <p class="text-sm text-text-secondary">{{ notification.delivery_status }}</p>
               <p class="mt-2 text-sm text-text-secondary">{{ formatDate(notification.created_at) }}</p>
             </div>
             <div class="flex items-center space-x-2 ml-4">
@@ -65,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useStudentStore } from '@/stores/student';
 
 const studentStore = useStudentStore();
@@ -73,6 +91,21 @@ const studentStore = useStudentStore();
 const notifications = ref({ data: [], current_page: 1, last_page: 1, from: 0, to: 0, total: 0 });
 const loading = ref(true);
 const filterUnread = ref('false');
+const upcomingDeadlines = ref<Array<{ id: number; title: string; deadline: string }>>([]);
+const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+const now = ref(Date.now());
+const clock = window.setInterval(() => { now.value = Date.now(); }, 30000);
+onUnmounted(() => window.clearInterval(clock));
+
+function timeRemaining(deadline: string) {
+  const minutes = Math.ceil((new Date(deadline).getTime() - now.value) / 60000);
+  if (minutes <= 0) return 'Deadline reached';
+  if (minutes < 60) return `Due in ${minutes} minute${minutes === 1 ? '' : 's'}`;
+  const hours = Math.ceil(minutes / 60);
+  if (hours < 24) return `Due in ${hours} hour${hours === 1 ? '' : 's'}`;
+  const days = Math.ceil(hours / 24);
+  return `Due in ${days} day${days === 1 ? '' : 's'}`;
+}
 
 onMounted(async () => {
   await fetchNotifications();
@@ -84,6 +117,7 @@ async function fetchNotifications(params = {}) {
     const query = { ...params, unread: filterUnread.value === 'true' };
     const response = await studentStore.fetchNotifications(query);
     notifications.value = response;
+    upcomingDeadlines.value = (response as typeof response & { upcoming_deadlines?: typeof upcomingDeadlines.value }).upcoming_deadlines ?? [];
   } catch (err) {
     console.error('Failed to load notifications:', err);
   } finally {

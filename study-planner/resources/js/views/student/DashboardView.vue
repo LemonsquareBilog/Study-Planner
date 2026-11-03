@@ -121,10 +121,8 @@ const levelStatus = computed(() => {
 });
 
 onMounted(async () => {
-    console.log('[DashboardView] onMounted - fetching dashboard');
     try {
       await studentStore.fetchDashboard();
-      console.log('[DashboardView] fetchDashboard completed');
       progress.value = studentStore.progress;
       upcomingTasks.value = studentStore.upcomingTasks;
       upcomingSessions.value = studentStore.upcomingSessionsList;

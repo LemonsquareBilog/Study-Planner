@@ -14,8 +14,8 @@ class NotificationController extends Controller
      */
     public function count(Request $request): JsonResponse
     {
-        $unread = $request->user()->notifications()->whereNull('read_at')->count();
-        $total = $request->user()->notifications()->count();
+        $unread = $request->user()->notifications()->whereNull('cancelled_at')->where(fn ($q) => $q->whereNull('scheduled_at')->orWhere('scheduled_at', '<=', now()))->whereNull('read_at')->count();
+        $total = $request->user()->notifications()->whereNull('cancelled_at')->where(fn ($q) => $q->whereNull('scheduled_at')->orWhere('scheduled_at', '<=', now()))->count();
 
         return response()->json([
             'data' => [
@@ -32,16 +32,21 @@ class NotificationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = $request->user()->notifications();
+        $query = $request->user()->notifications()->whereNull('cancelled_at')->where(fn ($q) => $q->whereNull('scheduled_at')->orWhere('scheduled_at', '<=', now()));
 
         if ($request->boolean('unread')) {
             $query->whereNull('read_at');
         }
 
         $notifications = $query->latest()->paginate(30);
+        $upcoming = $request->user()->tasks()
+            ->whereIn('status', ['pending', 'in_progress'])
+            ->where('deadline', '>', now())
+            ->orderBy('deadline')->orderBy('id')
+            ->limit(5)->get(['id', 'title', 'deadline', 'status']);
 
         return response()->json([
-            'data' => $notifications,
+            'data' => array_merge($notifications->toArray(), ['upcoming_deadlines' => $upcoming]),
             'message' => 'Notifications retrieved successfully.',
         ]);
     }
@@ -52,7 +57,7 @@ class NotificationController extends Controller
     public function read(Request $request, string $notification): JsonResponse
     {
         $item = $request->user()
-            ->notifications()
+            ->notifications()->whereNull('cancelled_at')->where(fn ($q) => $q->whereNull('scheduled_at')->orWhere('scheduled_at', '<=', now()))
             ->whereKey($notification)
             ->firstOrFail();
 
@@ -70,7 +75,7 @@ class NotificationController extends Controller
     public function readAll(Request $request): JsonResponse
     {
         $count = $request->user()
-            ->notifications()
+            ->notifications()->whereNull('cancelled_at')->where(fn ($q) => $q->whereNull('scheduled_at')->orWhere('scheduled_at', '<=', now()))
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 

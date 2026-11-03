@@ -22,6 +22,10 @@
 
     <div v-else class="bg-brand-navbar-cards-alt border border-brand-borders rounded-xl overflow-hidden">
       <div class="px-6 py-4 border-b border-brand-borders flex flex-wrap gap-4">
+        <select v-model="filters.view" @change="fetchTasks" class="form-select" aria-label="Task lifecycle">
+          <option value="active">Active tasks</option>
+          <option value="history">Expired task history</option>
+        </select>
         <select v-model="filters.status" @change="fetchTasks" class="form-select" aria-label="Filter by status">
           <option value="">All Statuses</option>
           <option value="pending">Pending</option>
@@ -104,17 +108,18 @@
     <div v-if="showCreateModal" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div class="flex min-h-full items-center justify-center p-4">
         <div class="fixed inset-0 bg-black/50" @click="closeModal" aria-hidden="true"></div>
-        <div class="relative bg-brand-navbar-cards-alt border border-brand-borders rounded-xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-          <div class="flex items-center justify-between mb-4">
+        <div class="relative flex flex-col bg-brand-navbar-cards-alt border border-brand-borders rounded-xl shadow-xl max-w-2xl w-full max-h-[90dvh] overflow-hidden">
+          <div class="flex shrink-0 items-center justify-between px-6 pt-4 pb-2">
             <h2 id="modal-title" class="text-lg font-semibold text-text-primary">{{ editingTask ? 'Edit Task' : 'Create Task' }}</h2>
-            <button @click="closeModal" class="text-text-secondary hover:text-text-primary transition-colors" aria-label="Close modal">
+            <button type="button" @click="closeModal" class="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-text-secondary hover:text-text-primary transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" aria-label="Close modal">
               <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          <form @submit.prevent="submitForm" class="space-y-4" novalidate>
+          <form @submit.prevent="submitForm" class="min-h-0 overflow-y-auto px-6 pt-2 pb-[max(1.5rem,env(safe-area-inset-bottom))] space-y-4" novalidate>
+            <p v-if="saveError" role="alert" class="input-error-message">{{ saveError }}</p>
             <div>
               <label for="title" class="input-label">Title <span class="text-status-urgent">*</span></label>
               <input id="title" v-model="form.title" type="text" required class="input-field-glass" aria-describedby="title-error" />
@@ -218,11 +223,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { localDeadline, deadlineInstant } from '@/services/taskDeadline';
 import { useStudentStore } from '@/stores/student';
 import type { Task } from '@/types';
 
 const studentStore = useStudentStore();
+const route = useRoute();
 
 const tasks = ref({ data: [] as Task[], current_page: 1, last_page: 1, from: 0, to: 0, total: 0 });
 const loading = ref(true);
@@ -232,7 +240,11 @@ const deletingTask = ref<Task | null>(null);
 const submitting = ref(false);
 const deleting = ref(false);
 const errors = ref<Record<string, string>>({});
-const filters = ref({ status: '', priority: '', subject_id: '' });
+const filters = ref({ status: '', priority: '', subject_id: '', view: 'active' });
+const expiryRefresh = window.setInterval(() => {
+  if (!document.hidden && !loading.value) void fetchTasks({}, true);
+}, 60000);
+onUnmounted(() => window.clearInterval(expiryRefresh));
 const currentTopics = ref([]);
 
 function createEmptyTaskForm() {
@@ -244,16 +256,20 @@ function createEmptyTaskForm() {
     start_date: '',
     task_type: 'assignment',
     priority: 'medium',
-    deadline: new Date(Date.now() + 86400000).toISOString().slice(0, 16),
+    deadline: localDeadline(new Date(Date.now() + 86400000)),
     estimated_minutes: 60,
   };
 }
 
 const form = ref(createEmptyTaskForm());
+const saveError = ref('');
+let initialForm = JSON.stringify(form.value);
 
 onMounted(async () => {
-  await studentStore.fetchSubjects();
-  await fetchTasks();
+  await Promise.all([
+    fetchTasks(),
+    studentStore.fetchSubjects().catch(err => console.error('Failed to load subject options:', err)),
+  ]);
 });
 
 watch(() => studentStore.subjects, (newSubjects) => {
@@ -267,10 +283,10 @@ watch(() => studentStore.subjects, (newSubjects) => {
   }
 });
 
-async function fetchTasks(params = {}) {
-  loading.value = true;
+async function fetchTasks(params = {}, background = false) {
+  if (!background) loading.value = true;
   try {
-    const query = { ...filters.value, ...params };
+    const query = { ...filters.value, ...params, ...(route.query.task_id ? { task_id: route.query.task_id, view: 'all' } : {}) };
     Object.keys(query).forEach(key => query[key] === '' && delete query[key]);
     const response = await studentStore.fetchTasks(query);
     tasks.value = response;
@@ -329,17 +345,21 @@ function formatDate(dateString: string) {
 }
 
 function openCreateModal() {
+  saveError.value = '';
   editingTask.value = null;
   form.value = createEmptyTaskForm();
+  initialForm = JSON.stringify(form.value);
   errors.value = {};
   currentTopics.value = [];
   showCreateModal.value = true;
 }
 
 function editTask(task: Task) {
+  saveError.value = '';
   editingTask.value = task;
-  form.value = { title: task.title, description: task.description || '', subject_id: task.subject_id.toString(), topic_id: task.topic_id?.toString() || '', start_date: task.start_date ? new Date(task.start_date).toISOString().slice(0, 10) : '', task_type: task.task_type, priority: task.priority, deadline: new Date(task.deadline).toISOString().slice(0, 16), estimated_minutes: task.estimated_minutes };
+  form.value = { title: task.title, description: task.description || '', subject_id: task.subject_id.toString(), topic_id: task.topic_id?.toString() || '', start_date: task.start_date ? new Date(task.start_date).toISOString().slice(0, 10) : '', task_type: task.task_type, priority: task.priority, deadline: localDeadline(task.deadline), estimated_minutes: task.estimated_minutes };
   errors.value = {};
+  initialForm = JSON.stringify(form.value);
   if (task.subject_id) {
     studentStore.fetchTopics(task.subject_id).then(topics => {
       currentTopics.value = topics;
@@ -348,7 +368,8 @@ function editTask(task: Task) {
   showCreateModal.value = true;
 }
 
-function closeModal() {
+function closeModal(force: unknown = false) {
+  if (force !== true && (submitting.value || (JSON.stringify(form.value) !== initialForm && !window.confirm('Discard unsaved task changes?')))) return;
   showCreateModal.value = false;
   editingTask.value = null;
   form.value = createEmptyTaskForm();
@@ -365,21 +386,26 @@ function cancelDelete() {
 }
 
 async function submitForm() {
+  saveError.value = '';
   errors.value = {};
   submitting.value = true;
 
   try {
-    const data = { ...form.value, subject_id: Number(form.value.subject_id), topic_id: form.value.topic_id ? Number(form.value.topic_id) : undefined, estimated_minutes: Number(form.value.estimated_minutes) };
+    const data = { ...form.value, deadline: deadlineInstant(form.value.deadline), subject_id: Number(form.value.subject_id), topic_id: form.value.topic_id ? Number(form.value.topic_id) : undefined, estimated_minutes: Number(form.value.estimated_minutes) };
     if (editingTask.value) {
       await studentStore.updateTask(editingTask.value.id, data);
     } else {
       await studentStore.createTask(data);
     }
-    closeModal();
+    closeModal(true);
     await fetchTasks();
   } catch (err: any) {
     if (err.response?.data?.errors) {
       errors.value = err.response.data.errors;
+    } else if (err instanceof Error && err.message.startsWith('Choose a valid local deadline')) {
+      errors.value = { deadline: err.message };
+    } else {
+      saveError.value = 'Unable to save your task. Your changes are still here. Please try again; if this continues, contact support.';
     }
   } finally {
     submitting.value = false;
@@ -409,3 +435,5 @@ async function deleteTask() {
   }
 }
 </script>
+
+

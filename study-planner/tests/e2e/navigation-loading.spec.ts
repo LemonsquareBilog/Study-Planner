@@ -1,0 +1,192 @@
+import { test, expect, type Page } from '@playwright/test';
+
+// Controlled API delays make these navigation checks reproducible and keep
+// the suite independent of real accounts and production data.
+const user = { id: 1, name: 'Navigation Student', email: 'nav@example.test', role: 'student', is_active: true };
+const summary = {
+  tasks: { total: 3, completed: 1, completion_rate: 33.33 },
+  study_sessions: { total: 2, completed: 1, minutes_completed: 50 },
+  quizzes: { attempts: 1, average_percentage: 70 },
+};
+const task = { id: 1, title: 'Navigation assignment', subject_id: 1, priority: 'high', status: 'pending', deadline: '2030-01-10T18:00:00Z', estimated_minutes: 50, subject: { id: 1, name: 'Mathematics', color: 'blue' } };
+const dashboard = { progress: summary, recommendations: [], upcoming_tasks: [task], upcoming_sessions: [], unread_notifications: 0 };
+const subjects = [{ id: 1, name: 'Mathematics', color: 'blue', difficulty: 2, topics_count: 1, is_active: true }];
+const pagination = (data: unknown[]) => ({ data, current_page: 1, last_page: 1, total: data.length, from: 1, to: data.length });
+
+async function restoreSession(page: Page) {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.addInitScript(() => localStorage.setItem('token', JSON.stringify({ token: 'cookie-session', refreshToken: 'cookie-session' })));
+}
+
+function nav(page: Page, name: string) {
+  return page.getByRole('navigation', { name: 'Student navigation', exact: true }).getByRole('link', { name, exact: true });
+}
+
+test('recent dashboard, subjects, and progress reopen without another API wait; refresh bypasses reuse', async ({ page }, testInfo) => {
+  await restoreSession(page);
+  const counts: Record<string, number> = {};
+  await page.route('**/api/**', async route => {
+    const path = new URL(route.request().url()).pathname;
+    counts[path] = (counts[path] || 0) + 1;
+    const data = path.endsWith('/auth/me') ? user
+      : path.endsWith('/student/dashboard') ? dashboard
+      : path.endsWith('/student/subjects') ? subjects
+      : path.endsWith('/student/progress') ? { summary, topic_performance: [] } : null;
+    if (path.endsWith('/student/dashboard')) await new Promise(resolve => setTimeout(resolve, 700));
+    await route.fulfill({ json: { data } });
+  });
+  await page.goto('/dashboard');
+  await expect(page.getByText(task.title, { exact: true })).toBeVisible();
+  await nav(page, 'Subjects').click();
+  await expect(page.getByRole('heading', { name: 'Mathematics', exact: true })).toBeVisible();
+  await nav(page, 'Progress').click();
+  await expect(page.getByRole('heading', { name: 'Overview', exact: true })).toBeVisible();
+
+  const started = Date.now();
+  await nav(page, 'Dashboard').click();
+  await expect(page.getByText(task.title, { exact: true })).toBeVisible();
+  const revisitMs = Date.now() - started;
+  expect(counts['/api/student/dashboard']).toBe(1);
+  await nav(page, 'Subjects').click();
+  await expect(page.getByRole('heading', { name: 'Mathematics', exact: true })).toBeVisible();
+  expect(counts['/api/student/subjects']).toBe(1);
+  await nav(page, 'Progress').click();
+  await expect(page.getByRole('heading', { name: 'Overview', exact: true })).toBeVisible();
+  expect(counts['/api/student/progress']).toBe(1);
+  await page.getByRole('button', { name: 'Refresh progress' }).click();
+  await expect.poll(() => counts['/api/student/progress']).toBe(2);
+  await expect(page.getByRole('heading', { name: 'Overview', exact: true })).toBeVisible();
+  await testInfo.attach('navigation-measurement', { body: JSON.stringify({ injectedDashboardDelayMs: 700, cachedDashboardRevisitMs: revisitMs, counts }), contentType: 'application/json' });
+});
+
+test('tasks render while subject options are still pending and edits invalidate the dashboard', async ({ page }) => {
+  await restoreSession(page);
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  let completed = false;
+  let dashboards = 0;
+  await page.route('**/api/**', async route => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith('/auth/me')) return route.fulfill({ json: { data: user } });
+    if (path.endsWith('/student/dashboard')) {
+      dashboards++;
+      return route.fulfill({ json: { data: { ...dashboard, upcoming_tasks: completed ? [] : [task] } } });
+    }
+    if (path.endsWith('/student/subjects')) {
+      await held;
+      return route.fulfill({ json: { data: subjects } });
+    }
+    if (path.endsWith('/tasks/1/complete')) {
+      completed = true;
+      return route.fulfill({ json: { data: { ...task, status: 'completed' } } });
+    }
+    if (path.endsWith('/student/tasks')) return route.fulfill({ json: pagination([{ ...task, status: completed ? 'completed' : 'pending' }]) });
+    return route.fulfill({ status: 404, json: {} });
+  });
+  try {
+    await page.goto('/dashboard');
+    await expect(page.getByText(task.title, { exact: true })).toBeVisible();
+    await nav(page, 'Tasks').click();
+    await expect(page.getByRole('cell', { name: task.title, exact: true })).toBeVisible();
+  } finally {
+    release();
+  }
+  await page.getByRole('button', { name: 'Mark complete' }).click();
+  await expect(page.getByRole('cell', { name: 'Completed', exact: true })).toBeVisible();
+  await nav(page, 'Dashboard').click();
+  await expect(page.getByText(/No upcoming tasks/)).toBeVisible();
+  expect(dashboards).toBe(2);
+});
+
+test('available quizzes render before the larger history response completes', async ({ page }) => {
+  await restoreSession(page);
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  await page.route('**/api/**', async route => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith('/auth/me')) return route.fulfill({ json: { data: user } });
+    if (path.endsWith('/student/quiz-attempts')) {
+      await held;
+      return route.fulfill({ json: { data: [] } });
+    }
+    return route.fulfill({ json: { data: [{ id: 1, title: 'Algebra practice', questions_count: 5, passing_score: 60, topic: { name: 'Algebra', subject: { name: 'Mathematics' } } }] } });
+  });
+  try {
+    await page.goto('/quizzes');
+    await expect(page.getByRole('heading', { name: 'Algebra practice', exact: true })).toBeVisible();
+    await page.getByRole('tab', { name: /Completed Quizzes/ }).click();
+    await expect(page.getByRole('status', { name: 'Loading quiz history' })).toBeVisible();
+  } finally {
+    release();
+  }
+  await expect(page.getByText('No completed quizzes yet')).toBeVisible();
+});
+
+test('signing out and signing in as another student never reuses the previous dashboard', async ({ page }) => {
+  await restoreSession(page);
+  let secondAccount = false;
+  let dashboards = 0;
+  await page.route('**/api/**', async route => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith('/auth/me')) return route.fulfill({ json: { data: user } });
+    if (path.endsWith('/auth/logout')) return route.fulfill({ status: 204 });
+    if (path.endsWith('/auth/login')) {
+      secondAccount = true;
+      return route.fulfill({ json: { data: { token: 'cookie-session', refresh_token: 'cookie-session', user: { ...user, id: 2, name: 'Second Student' } } } });
+    }
+    dashboards++;
+    return route.fulfill({ json: { data: { ...dashboard, upcoming_tasks: [{ ...task, title: secondAccount ? 'Second account task' : task.title }] } } });
+  });
+  await page.goto('/dashboard');
+  await expect(page.getByText(task.title, { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Log out', exact: true }).click();
+  await page.getByLabel('Email').fill('second@example.test');
+  await page.getByLabel('Password', { exact: true }).fill('A long test password');
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page.getByText('Second account task', { exact: true })).toBeVisible();
+  await expect(page.getByText(task.title, { exact: true })).toHaveCount(0);
+  expect(dashboards).toBe(2);
+});
+
+for (const section of ['subjects', 'resources']) {
+  test(`admin ${section} appear without waiting for edit-form options`, async ({ page }) => {
+    await restoreSession(page);
+    let release!: () => void;
+    const held = new Promise<void>(resolve => { release = resolve; });
+    await page.route('**/api/**', async route => {
+      const path = new URL(route.request().url()).pathname;
+      if (path.endsWith('/auth/me')) return route.fulfill({ json: { data: { ...user, role: 'admin' } } });
+      if (path.endsWith('/subjects/options') || path.endsWith('/resource-options')) {
+        await held;
+        return route.fulfill({ json: { data: path.endsWith('/resource-options') ? { subjects: [], topics: [] } : [] } });
+      }
+      if (section === 'subjects') return route.fulfill({ json: { data: [{ ...subjects[0], user, topics: [] }] } });
+      return route.fulfill({ json: pagination([{ id: 1, title: 'Fast resource', resource_type: 'tutorial', difficulty: 'beginner', url: 'https://example.test/resource', is_active: true, subjects: [], topics: [] }]) });
+    });
+    try {
+      await page.goto(`/admin/${section}`);
+      await expect(page.getByText(section === 'subjects' ? 'Mathematics' : 'Fast resource', { exact: true }).first()).toBeVisible();
+    } finally {
+      release();
+    }
+  });
+}
+
+test('subject details appear before secondary topic/session requests finish', async ({ page }) => {
+  await restoreSession(page);
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  await page.route('**/api/**', async route => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith('/auth/me')) return route.fulfill({ json: { data: user } });
+    if (path.endsWith('/subjects/1')) return route.fulfill({ json: { data: { ...subjects[0], topics: [], tasks: [], resources: [] } } });
+    await held;
+    return route.fulfill({ json: { data: [] } });
+  });
+  try {
+    await page.goto('/subjects/1');
+    await expect(page.getByRole('heading', { name: 'Mathematics', exact: true })).toBeVisible();
+  } finally {
+    release();
+  }
+});

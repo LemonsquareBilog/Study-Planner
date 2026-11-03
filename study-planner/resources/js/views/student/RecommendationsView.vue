@@ -5,7 +5,7 @@
         <h1 class="text-2xl font-bold text-text-primary">Recommendations</h1>
         <p class="mt-1 text-sm text-text-secondary">Personalized learning resources based on your quiz performance.</p>
       </div>
-      <button @click="fetchRecommendations" :disabled="loading" class="btn-secondary text-sm" aria-label="Refresh recommendations">
+      <button @click="fetchRecommendations(true)" :disabled="loading" class="btn-secondary text-sm" aria-label="Refresh recommendations">
         <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
@@ -76,6 +76,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useStudentStore } from '@/stores/student';
+import { api } from '@/services/api';
 import ResourceCard from '@/components/ResourceCard.vue';
 
 const studentStore = useStudentStore();
@@ -101,10 +102,14 @@ onMounted(async () => {
   ]);
 });
 
-async function fetchRecommendations() {
+async function fetchRecommendations(force = false) {
+  if (force) api.invalidateReadCache();
   loading.value = true;
   try {
-    await studentStore.fetchRecommendations();
+    await Promise.all([
+      studentStore.fetchRecommendations(),
+      ...(force ? [studentStore.fetchProgress()] : []),
+    ]);
     recommendations.value = studentStore.recommendations;
   } catch (err) {
     console.error('Failed to load recommendations:', err);

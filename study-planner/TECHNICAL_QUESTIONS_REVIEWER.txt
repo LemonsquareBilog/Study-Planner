@@ -1,0 +1,869 @@
+======================================================================
+                 STUDY PLANNER - TECHNICAL REVIEWER
+                 Possible Questions + Simple Answers
+======================================================================
+
+HOW TO USE THIS FILE
+  1. Read the FIRST-GLANCE REVIEW before reviewing the full questions.
+  2. Review the TECH STACK, WORKFLOW, and FUNCTIONALITIES sections.
+  3. Practice the [TOP] questions first.
+  4. Cover each A: line and answer the Q: aloud.
+  5. Use the checklists at the end before your presentation or defense.
+
+Based on the project's source code and configuration, October 27, 2026.
+Questions are possible review/defense questions, not a guaranteed list.
+Suggested design reasons are explanations you can adapt to your own work.
+Deployment settings describe configuration, not a fresh live-site check.
+
+======================================================================
+FIRST-GLANCE REVIEW - REMEMBER THESE FIRST
+======================================================================
+
+PURPOSE        : Organize tasks, plan study time, and review weak topics.
+USERS          : Students and administrators.
+FRONTEND       : Vue 3 + TypeScript + Tailwind CSS.
+STATE / PAGES  : Pinia / Vue Router.
+BACKEND        : Laravel 13 + PHP; JSON API.
+DATABASE       : PostgreSQL in Vercel config; SQLite is the config default.
+AUTH           : Laravel Sanctum; access and refresh tokens.
+WEB SESSION    : Encrypted HttpOnly cookies; real tokens hidden from JS.
+ANDROID AUTH   : Encrypted native storage using Android Keystore.
+PASSWORDS      : Argon2id default; 15-128 characters; breach checking.
+SCHEDULING     : Rule-based, priority-first, then earliest deadline.
+RECOMMENDATION : Rule-based, using average quiz scores per topic.
+DEFAULT LEVELS : Weak <60%; review 60-79%; strong >79%.
+QUIZ SCORE     : Correct answers / total questions x 100.
+MOBILE         : Capacitor packages the web interface for native use.
+HOSTING CONFIG : Vercel; Laravel PHP entry point + built web assets.
+TEST TOOLS     : PHPUnit, Playwright, and Node's test runner.
+MAIN LIMITS    : Needs accurate inputs, quiz data, and backend access.
+
+ONE-SENTENCE EXPLANATION
+  "Study Planner helps students organize academic tasks, generate study
+   sessions, assess topic performance, and find relevant review resources."
+
+MAIN FLOW
+  Sign in -> Add subjects/topics -> Add tasks -> Generate study plan
+  -> Study -> Take quizzes -> Check progress -> Review recommendations.
+
+======================================================================
+TECH STACK - WHAT EACH TECHNOLOGY DOES
+======================================================================
+
+MEMORY GUIDE
+  Vue = screens | Laravel = logic | Database = records
+  Axios = requests | Pinia = shared state | Capacitor = mobile package
+
+LAYER             TECHNOLOGY              SIMPLE PURPOSE
+----------------  ----------------------  ----------------------------
+Interface         Vue 3                    Builds interactive screens.
+Frontend language TypeScript               Checks types in app code.
+Page structure    HTML / Vue templates     Defines what appears on screen.
+Styling           CSS / Tailwind CSS 4     Controls appearance and layout.
+Icons             Heroicons                Supplies interface icons.
+Shared state      Pinia                    Shares data between screens.
+Navigation        Vue Router               Opens pages and guards routes.
+HTTP client       Axios                    Sends requests to the API.
+Backend language  PHP 8.3+ requirement     Runs server-side application code.
+Backend framework Laravel 13               Handles routes and business logic.
+Database access   Eloquent ORM             Uses models and relationships.
+Authentication    Laravel Sanctum          Manages API authentication tokens.
+Password strength zxcvbn                   Estimates strength in the UI.
+Password storage  Argon2id default         Hashes account passwords.
+Password safety   Pwned Passwords API      Checks for known breached passwords.
+Hosted DB config  PostgreSQL               Stores persistent application data.
+Default/local DB  SQLite                   Supports a local database setup.
+Mobile framework  Capacitor 8              Packages web screens for native use.
+Android security  Keystore + AES-GCM       Protects stored mobile auth tokens.
+Native alerts     Capacitor notifications  Schedules device-local alerts.
+Native UI tools   Capacitor plugins        Keyboard, splash screen, status bar,
+                                          app lifecycle, and haptics.
+Frontend tooling  Node.js 22 / npm         Runs build and frontend tools.
+Asset builder     Vite 8                   Serves and bundles frontend files.
+PHP packages      Composer                 Manages backend dependencies.
+Hosting config    Vercel / vercel-php      Serves assets and runs Laravel PHP.
+Backend tests     PHPUnit                  Checks backend behavior.
+Browser tests     Playwright               Checks browser user workflows.
+Config/API tests  Node test runner         Checks mobile/API setup behavior.
+PHP formatting    Laravel Pint             Keeps PHP formatting consistent.
+
+Versions above describe declared dependency families or requirements.
+The exact installed version depends on the lockfiles and environment.
+Capacitor iOS packages are also declared; this alone does not establish
+that an iOS release has been built, tested, or published.
+
+HOW THE PARTS CONNECT
+  User -> Vue screen -> Axios request -> Laravel API -> Database
+  User <- Updated screen <- JSON response <- Laravel <- Stored records
+
+READY-TO-SAY ANSWER
+  "Our frontend uses Vue, TypeScript, and Tailwind. Laravel handles the
+   backend API, Sanctum handles authentication, and the hosting config
+   uses PostgreSQL. Capacitor packages the interface for mobile use."
+
+======================================================================
+WORKFLOW - HOW THE SYSTEM IS USED AND PROCESSES DATA
+======================================================================
+
+1. STUDENT WORKFLOW
+  REGISTER / SIGN IN
+    -> Backend validates credentials and account status.
+    -> Student opens the dashboard.
+
+  ORGANIZE ACADEMIC WORK
+    -> Create subjects and their topics.
+    -> Add tasks with priority, deadline, and estimated study minutes.
+    -> Set daily limits, session length, breaks, and preferred hours.
+
+  PLAN AND STUDY
+    -> Choose a date range and generate a study plan.
+    -> System schedules eligible tasks using available time.
+    -> View sessions, use the timer, and update task/session statuses.
+
+  ASSESS AND REVIEW
+    -> Open an available quiz and submit answers.
+    -> Backend grades the attempt and saves results.
+    -> Review answers, topic performance, and progress.
+    -> Open resources recommended for weak or review topics.
+    -> Study again, retake available quizzes, and check updated results.
+
+  STAY INFORMED
+    -> Check notifications and mark them as read.
+    -> Receive device-local alerts when supported and permitted.
+
+2. ADMINISTRATOR WORKFLOW
+  Sign in with an administrator account
+    -> Review dashboard metrics.
+    -> Find users and update supported account details/status.
+    -> Manage subjects and topics.
+    -> Add or edit learning resources and their subject/topic links.
+    -> Update settings such as performance thresholds.
+    -> Sign out when finished.
+
+  Public registration creates student accounts. Administrator access
+  requires an account already assigned the administrator role.
+
+3. TECHNICAL REQUEST WORKFLOW
+  Example: A student creates a task.
+    Step 1: The student fills in the Vue task form.
+    Step 2: Axios sends POST /api/student/tasks.
+    Step 3: Middleware checks authentication, active status, and role.
+    Step 4: Request validation checks required fields and allowed values.
+    Step 5: The controller checks subject ownership/topic relationship.
+    Step 6: Eloquent saves the task in the database.
+    Step 7: Laravel returns the created task as JSON with status 201.
+    Step 8: The frontend uses the response to update the display.
+
+4. STUDY PLAN GENERATION WORKFLOW
+  Date range + preferences + pending/in-progress tasks
+    -> Keep tasks with deadlines inside the selected range.
+    -> Sort urgent/high/medium/low, then earliest deadline.
+    -> Subtract already allocated task minutes.
+    -> Check daily capacity and available time slots.
+    -> Save suitable study sessions in a transaction.
+    -> Return the session count, list, and result message.
+
+5. QUIZ-TO-RECOMMENDATION WORKFLOW
+  Submit quiz answers
+    -> Grade answers on the backend.
+    -> Save the attempt and individual answers.
+    -> Calculate average percentages per topic.
+    -> Classify topics using configured thresholds.
+    -> Match active resources by topic or subject.
+    -> Show recommendations and record resource views.
+
+6. BUILD AND RELEASE WORKFLOW
+  Web:    Source -> npm run build:web -> public/build assets
+          -> Hosting serves assets and runs the Laravel entry point.
+  Mobile: Source -> npm run mobile:build -> www assets
+          -> Capacitor syncs Android -> Native build/install process.
+
+  Mobile still connects to the hosted API. Building mobile assets and
+  syncing Android are preparation steps, not publication to an app store.
+
+READY-TO-SAY ANSWER
+  "The student organizes tasks, generates a study plan, studies, and
+   takes quizzes. Quiz results update topic performance and guide the
+   resource recommendations, creating a repeatable review cycle."
+
+======================================================================
+FUNCTIONALITIES - WHAT USERS CAN DO
+======================================================================
+
+STUDENT FUNCTIONS
+  [01] Dashboard       View a summary of study activity and upcoming work.
+  [02] Subjects        Create, view, update, and delete personal subjects.
+  [03] Topics          Organize topics under their related subjects.
+  [04] Tasks           Create, edit, delete, and complete academic tasks.
+  [05] Task search     Find tasks by title/description and apply filters.
+  [06] Task sorting    Order tasks by deadline, priority, or creation.
+  [07] Task status     Set pending, in-progress, completed, or cancelled.
+  [08] Preferences     Set study hours, daily minutes, sessions, and breaks.
+  [09] Plan generation Generate study sessions for eligible tasks.
+  [10] Plan viewing    View scheduled sessions and filter by dates/status.
+  [11] Session status  Set scheduled, in-progress, completed, or missed.
+  [12] Study timer     Start/pause a study timer and keep local timer state.
+  [13] Quiz browsing   Find available active quizzes for owned subjects.
+  [14] Quiz taking     Answer quiz questions and submit them for grading.
+  [15] Quiz results    See the score, percentage, and reviewed answers.
+  [16] Attempt history Review previous attempts and performance records.
+  [17] Topic analysis  Identify weak, review, and strong topic averages.
+  [18] Recommendations Open resources matched to weak/review areas.
+  [19] Progress        Review task completion, study minutes, quiz averages.
+  [20] Notifications   View alerts, unread counts, and mark items as read.
+
+ADMINISTRATOR FUNCTIONS
+  [01] Dashboard       View system-level metrics and recent user activity
+                       provided by the administrator dashboard.
+  [02] User list       Search/filter users and inspect account details.
+  [03] User updates    Update permitted user fields and active status.
+  [04] Subjects        Create, list, update, and remove subjects.
+  [05] Topics          Add, update, and remove topics within subjects.
+  [06] Resources       Create, view, edit, and remove learning resources.
+  [07] Resource links  Associate resources with subjects and topics.
+  [08] Resource status Control which resources are active.
+  [09] Settings        View and update supported system setting values,
+                       including recommendation thresholds.
+
+SHARED ACCOUNT / PLATFORM FUNCTIONS
+  [01] Account access  Student registration, sign-in, and sign-out.
+  [02] Profile API     Retrieve/update supported profile information.
+  [03] Password API    Change password after checking the current one.
+  [04] Session renewal Renew an expired access session using refresh.
+  [05] Access control  Apply roles, ownership rules, and active checks.
+  [06] Input checks    Reject invalid fields and show validation feedback.
+  [07] Responsive UI   Adapt navigation and layouts to screen sizes.
+  [08] Native support  Use device plugins through the Capacitor package.
+
+  Profile/password operations are implemented API capabilities; their
+  presence does not imply a dedicated visible page in every app build.
+  Native alerts depend on device support and notification permission.
+  Server reminders require a running scheduler trigger.
+
+FUNCTION -> INPUT -> OUTPUT: EASY EXAMPLES
+  Task creation   -> Title, subject, deadline, priority -> Saved task.
+  Plan generation -> Tasks, date range, preferences     -> Study sessions.
+  Quiz grading    -> Submitted answer choices          -> Score/percentage.
+  Recommendation -> Topic quiz averages + resource links -> Review resources.
+  Progress report -> Tasks, sessions, quiz attempts    -> Learning metrics.
+
+READY-TO-SAY ANSWER
+  "The main functions are task management, automated study scheduling,
+   quizzes, progress tracking, recommendations, and notifications.
+   Administrators manage users, academic structure, resources, and settings."
+
+======================================================================
+A. SYSTEM PURPOSE AND SCOPE                              Questions 1-10
+======================================================================
+
+01. [TOP] Q: What is the purpose of the system?
+    A: It helps students organize tasks, schedule study sessions, and
+       identify topics that need more review.
+
+02. Q: What problem does it address?
+    A: Students may struggle with deadlines, time allocation, and knowing
+       which topics need attention. The system brings these into one app.
+
+03. [TOP] Q: Who are its users?
+    A: Students manage their learning activities. Administrators manage
+       users, subjects/topics, resources, and system settings.
+
+04. Q: What are the main student features?
+    A: Dashboard, subjects/topics, tasks, study plans, quizzes,
+       recommendations, progress reports, and notifications.
+
+05. Q: What are the main administrator features?
+    A: Dashboard metrics, user management, subject/topic management,
+       resource management, and system setting updates.
+
+06. Q: How does it differ from a simple to-do list?
+    A: It connects tasks with study sessions, quiz results, topic
+       performance, and relevant learning resources.
+
+07. Q: Does it guarantee better grades?
+    A: No. It supports planning and review, but results depend on student
+       effort, content quality, and use of the system.
+
+08. Q: What information does a task contain?
+    A: Subject, optional topic, title, description, task type, priority,
+       optional start date, deadline, estimated minutes, and status.
+
+09. Q: Which task types are supported?
+    A: Assignment, project, exam, quiz, reading, review, and other.
+
+10. Q: Which learning resource types are supported?
+    A: Article, video, documentation, tutorial, ebook, website, and other.
+
+======================================================================
+B. TECHNOLOGY AND ARCHITECTURE                          Questions 11-22
+======================================================================
+
+11. [TOP] Q: What technology stack does the system use?
+    A: Vue 3, TypeScript, and Tailwind CSS on the frontend; Laravel and
+       PHP on the backend; a relational database; Capacitor for mobile.
+
+12. Q: Why is Laravel suitable for this system?
+    A: It provides routing, validation, authentication tools, database
+       models, migrations, and testing support in one framework.
+
+13. Q: Why is Vue suitable for the interface?
+    A: It supports reusable components and reactive screens that update
+       when task, session, or quiz data changes.
+
+14. Q: What does TypeScript contribute?
+    A: It checks data types during development and helps catch mistakes
+       such as passing the wrong data structure to a component.
+
+15. Q: What is Tailwind CSS used for?
+    A: It styles the interface using utility classes, including styles
+       for different screen sizes.
+
+16. Q: What is Pinia used for?
+    A: It holds shared frontend state, such as authentication and
+       student/admin data used across screens.
+
+17. Q: What is Vue Router used for?
+    A: It maps URLs to screens and checks navigation requirements,
+       such as whether the user is signed in.
+
+18. [TOP] Q: How do the frontend and backend communicate?
+    A: The frontend uses Axios to send HTTP requests to Laravel's API.
+       The backend validates requests and returns JSON responses.
+
+19. Q: What is a single-page application, or SPA?
+    A: An app that changes screens in the browser without loading a
+       completely new HTML page for every navigation.
+
+20. Q: How is backend responsibility divided?
+    A: Routes select controllers; controllers handle requests; services
+       contain key logic; models communicate with the database.
+
+21. Q: Why separate services from controllers?
+    A: It keeps scheduling, grading, recommendations, and progress logic
+       organized and easier to reuse and test.
+
+22. Q: What is Vite used for?
+    A: It serves frontend assets during development and builds the
+       JavaScript and CSS files used by web and mobile releases.
+
+======================================================================
+C. DATABASE AND DATA RELATIONSHIPS                      Questions 23-34
+======================================================================
+
+23. [TOP] Q: Which database does the system use?
+    A: Vercel configuration selects PostgreSQL. Laravel's database config
+       defaults to SQLite when no connection override is supplied.
+
+24. Q: What are the main application tables?
+    A: Users, study preferences, subjects, topics, tasks, study sessions,
+       quizzes, questions, quiz attempts, quiz answers, resources,
+       notifications, recommendation views, and system settings.
+
+25. Q: How are users, subjects, and topics related?
+    A: A user can have many subjects; a subject can have many topics.
+
+26. Q: How are tasks and study sessions related?
+    A: A task can have several study sessions that divide its estimated
+       work into smaller scheduled blocks.
+
+27. Q: How are quizzes, attempts, and answers related?
+    A: A quiz has questions. A student can submit multiple attempts.
+       Each attempt stores the student's answers and score.
+
+28. Q: Why are resource links stored in separate relationship tables?
+    A: A resource can relate to several subjects or topics, and each
+       subject or topic can have several resources.
+
+29. Q: What is a primary key?
+    A: A value that uniquely identifies a record, such as a task ID.
+
+30. Q: What is a foreign key?
+    A: A field that references another table, such as tasks.subject_id
+       referencing the subject connected to a task.
+
+31. Q: What are migrations?
+    A: Versioned files that create or change database tables consistently
+       across development and deployment environments.
+
+32. Q: What is Eloquent ORM?
+    A: Laravel's tool for working with database records through PHP
+       models and relationships instead of writing every SQL statement.
+
+33. Q: What is soft deletion?
+    A: A deleted_at timestamp hides a record from normal queries without
+       immediately removing its row. Tasks use this feature.
+
+34. Q: Why use transactions and indexes?
+    A: Transactions keep related writes together. Indexes speed up common
+       lookups, such as finding one user's tasks by status or deadline.
+
+======================================================================
+D. STUDY PLAN AND SCHEDULING                            Questions 35-48
+======================================================================
+
+35. [TOP] Q: How does the system generate a study plan?
+    A: It selects pending/in-progress tasks due in the chosen range,
+       sorts them by priority then deadline, and assigns study sessions
+       using available study time and the student's preferences.
+
+36. [TOP] Q: What scheduling algorithm is used?
+    A: A rule-based greedy approach: schedule higher-priority tasks first,
+       then earlier deadlines. It does not search every possible plan.
+
+37. Q: What is the priority order?
+    A: Urgent -> High -> Medium -> Low.
+
+38. Q: What preferences control the plan?
+    A: Maximum daily minutes, session duration, break duration, preferred
+       study start time, and preferred study end time.
+
+39. Q: What are the default study preferences?
+    A: 120 minutes per day, 50-minute sessions, 10-minute breaks, and a
+       preferred study window of 18:00-22:00.
+
+40. Q: How is the length of a session decided?
+    A: It takes the smallest of the task's remaining minutes, available
+       daily minutes, and preferred session duration.
+       Example: min(80 remaining, 30 available, 50 preferred) = 30 minutes.
+
+41. Q: How does it account for already scheduled task time?
+    A: It subtracts scheduled, in-progress, and completed session minutes
+       from the task's estimated minutes before creating more sessions.
+
+42. Q: How does it choose a start date?
+    A: It starts no earlier than the selected range, today, the task's
+       start date when present, or the task's creation date.
+
+43. Q: How does it find a time slot?
+    A: It checks existing active sessions for that day and looks for a
+       usable gap or time after them within the preferred study window.
+
+44. Q: Does it support an overnight study window?
+    A: It extends the end boundary to the next day when the preferred
+       end time is earlier than or equal to the start time. Overnight
+       edge cases still need careful testing.
+
+45. Q: What if there are no suitable tasks?
+    A: It returns zero created sessions and a reason, such as no pending
+       tasks or no tasks with deadlines in the chosen range.
+
+46. [TOP] Q: Can the algorithm always finish every task before its deadline?
+    A: No. Available time may be insufficient. The current greedy
+       algorithm does not guarantee a complete or optimal schedule.
+
+47. Q: What are task statuses and study-session statuses?
+    A: Tasks: pending, in_progress, completed, cancelled.
+       Sessions: scheduled, in_progress, completed, missed.
+
+48. Q: Is completing a task the same as completing a session?
+    A: No. A task represents the work; a session represents a scheduled
+       time block. They have separate status fields and endpoints.
+
+======================================================================
+E. QUIZZES, RECOMMENDATIONS, AND PROGRESS                Questions 49-62
+======================================================================
+
+49. [TOP] Q: How are quizzes graded?
+    A: The backend compares submitted choices with stored correct answers
+       and calculates the result on the server.
+
+50. Q: What is the quiz percentage formula?
+    A: Correct answers / total questions x 100, rounded to two decimals.
+       Example: 8 correct out of 10 = 80%.
+
+51. Q: What happens to unanswered questions?
+    A: They are stored with a null selected answer and earn no point.
+       They still count in the total number of questions.
+
+52. Q: Why are correct answers hidden before submission?
+    A: To avoid exposing the answer key in the normal quiz response.
+       Answers are revealed in the graded attempt and review history.
+
+53. Q: Why store quiz attempts and individual answers?
+    A: They support result review, attempt history, topic performance,
+       and recommendations based on a student's results.
+
+54. [TOP] Q: How are learning resources recommended?
+    A: The backend averages quiz percentages per topic, identifies weak
+       or review topics, then finds active resources linked to those
+       topics or their subjects.
+
+55. [TOP] Q: Does the recommendation feature use machine learning?
+    A: The current backend uses explicit rules and thresholds. It does
+       not train a machine-learning model to produce recommendations.
+
+56. Q: How are topic performance levels classified?
+    A: By default: below 60% = weak; 60% through 79% = needs review;
+       above 79% = strong. Administrators can change the thresholds.
+       Example: 55% = weak; 75% = review; 90% = strong.
+
+57. Q: Does it use only the most recent quiz result?
+    A: No. It averages recorded quiz-attempt percentages for each topic.
+       Earlier attempts can still affect the classification.
+
+58. Q: What happens if the student has not taken any quizzes?
+    A: The backend recommendation service returns an empty collection
+       because there is no quiz performance data to evaluate.
+
+59. Q: Why might a student receive no recommendations?
+    A: There may be no attempts, no weak/review topics, or no active
+       resources connected to the relevant topics or subjects.
+
+60. Q: Why record resource views?
+    A: To track when a student opens a recommended resource. A recorded
+       view alone does not prove that the student learned the material.
+
+61. [TOP] Q: How does the system measure progress?
+    A: It reports task completion rate, completed sessions, completed
+       session minutes, quiz attempt count, and average quiz percentage.
+
+62. Q: What are the main progress formulas?
+    A: Task completion = completed tasks / total tasks x 100.
+       Average quiz score = sum of attempt percentages / attempt count.
+       With no tasks or attempts, the summary returns zero for the rate.
+       Completed study minutes sum the durations of completed sessions.
+
+======================================================================
+F. AUTHENTICATION, AUTHORIZATION, AND SECURITY           Questions 63-78
+======================================================================
+
+63. [TOP] Q: How does login work?
+    A: The backend validates the email/password, checks the password hash
+       and account status, then issues a Sanctum access/refresh pair.
+
+64. Q: What is authentication versus authorization?
+    A: Authentication checks who you are. Authorization checks what
+       you are allowed to access or change.
+
+65. Q: How are student and administrator permissions separated?
+    A: Backend role middleware protects student/admin endpoint groups.
+       Frontend route guards also direct users to suitable screens.
+
+66. Q: Why are frontend route guards insufficient by themselves?
+    A: Someone can send API requests directly. The backend must enforce
+       roles and record ownership regardless of the visible interface.
+
+67. Q: How is one student's data protected from another student?
+    A: User-scoped queries, policies, and ownership checks restrict
+       access. Task creation also checks subject and topic relationships.
+
+68. [TOP] Q: How are passwords stored?
+    A: As one-way hashes using Laravel's hashing tools. The configured
+       default is Argon2id; older bcrypt hashes can be upgraded on login.
+
+69. Q: What are the registration password requirements?
+    A: 15-128 characters, matching confirmation, and a successful safety
+       check that rejects passwords found in known breaches.
+
+70. Q: Does the password breach check send the actual password?
+    A: No. The server sends a five-character SHA-1 hash prefix, then
+       compares returned suffixes locally. SHA-1 here is for lookup;
+       stored account passwords use the configured password hasher.
+
+71. Q: What if the password safety service cannot be reached?
+    A: The current validation rejects the password submission and asks
+       the user to try again. It does not silently skip the safety check.
+
+72. [TOP] Q: How are browser authentication tokens protected?
+    A: Browser middleware stores real tokens in encrypted HttpOnly
+       cookies with SameSite=Strict. It returns a cookie-session marker
+       to JavaScript; production cookies are marked Secure.
+
+73. Q: How are Android authentication tokens protected?
+    A: A native plugin encrypts token data with AES-GCM using an Android
+       Keystore key, rather than relying on browser local storage.
+
+74. Q: How long do access and refresh tokens last?
+    A: The service issues access tokens for one hour and refresh tokens
+       for 30 days. Global Sanctum expiration can also restrict validity.
+
+75. Q: What happens when an access token expires?
+    A: The client attempts refresh and retries the failed request.
+       Successful refresh replaces the old access/refresh pair; an
+       invalid refresh session requires the user to sign in again.
+
+76. Q: What happens on logout or password change?
+    A: Logout revokes the current access token and its refresh partner.
+       Password change revokes all of that user's device tokens.
+
+77. Q: How are repeated login attempts limited?
+    A: Public authentication routes use a throttle of 10 requests per
+       minute under Laravel's limiter rules. Excess requests get 429.
+
+78. Q: What other security controls are present?
+    A: Input validation, allowed CORS origins, browser origin checks,
+       strict cookies, active-account checks, and security headers.
+       These reduce risk; they do not prove that every attack is blocked.
+
+======================================================================
+G. API, MOBILE, AND DEPLOYMENT                          Questions 79-90
+======================================================================
+
+79. Q: What does CRUD mean?
+    A: Create, Read, Update, Delete. Task and resource management are
+       examples of CRUD operations.
+
+80. Q: Which HTTP methods are used?
+    A: GET reads; POST creates or triggers an action; PUT/PATCH updates;
+       DELETE removes a resource.
+
+81. Q: Which HTTP status codes should you recognize?
+    A: 200 success; 201 created; 204 success with no body;
+       401 unauthenticated; 403 forbidden; 404 not found;
+       422 validation error; 429 too many requests; 500 server error.
+
+82. Q: Why validate data on the server if the form already validates it?
+    A: Browser checks can be bypassed. Server validation protects the
+       database even when a request comes from outside the interface.
+
+83. Q: How does task listing avoid returning every record at once?
+    A: The backend paginates tasks in groups of 20 and supports filters
+       such as status, priority, subject, search, and dates.
+
+84. [TOP] Q: How does the mobile app work?
+    A: Capacitor packages the Vue interface in a native app and exposes
+       device features through plugins. It connects to the Laravel API.
+
+85. Q: Does the Android app contain a running Laravel server?
+    A: No. It contains built frontend files. The PHP backend runs on a
+       server reached through the configured API URL.
+
+86. Q: How are web and mobile builds different?
+    A: The web build outputs assets to public/build. The mobile build
+       outputs to www, which Capacitor copies into the native project.
+
+87. Q: Why does mobile use hash navigation?
+    A: Native mode uses hash history so internal routes work inside the
+       packaged app. Browser mode uses normal web history routing.
+
+88. [TOP] Q: Can the production system work fully offline?
+    A: Backend operations need connectivity. Some timer state is stored
+       locally, and a separate preview mode simulates data locally.
+       Preview mode is not production offline database synchronization.
+
+89. Q: Where is the system configured to be hosted?
+    A: Vercel configuration serves built frontend assets and sends app
+       requests to api/index.php, which boots Laravel. Its configured
+       database connection is PostgreSQL with SSL required.
+
+90. Q: How do notifications and scheduled reminders work?
+    A: The app stores in-app notifications and includes Capacitor local
+       alerts. Laravel schedules session reminders every 15 minutes and
+       deadline reminders hourly. An active scheduler trigger is needed;
+       declaring schedules alone does not run them on a hosted platform.
+
+======================================================================
+H. TESTING, LIMITATIONS, AND IMPROVEMENTS               Questions 91-100
+======================================================================
+
+91. [TOP] Q: What testing tools are included?
+    A: PHPUnit for backend tests, Playwright for browser flows, and
+       Node's test runner for mobile configuration/API checks.
+
+92. Q: Which important workflows have test files?
+    A: Authentication, password security, token renewal, task-to-plan
+       flow, quiz history, recommendations, admin/student screens,
+       and responsive layouts. Test files alone do not prove they pass.
+
+93. Q: What is the difference between unit and end-to-end testing?
+    A: Unit testing checks a small part in isolation. End-to-end testing
+       checks a user workflow through the interface and connected parts.
+
+94. Q: Which negative cases should be demonstrated?
+    A: Invalid login, short/breached password, unauthorized access,
+       another user's record ID, invalid dates, empty quiz data,
+       insufficient scheduling time, and an unavailable backend.
+
+95. [TOP] Q: What are the main limitations?
+    A: Scheduling depends on estimates and available time; recommendations
+       depend on quiz/resource data; live features require the backend;
+       reminder delivery depends on platform permissions and setup.
+
+96. Q: What scheduling behavior deserves further improvement?
+    A: The current loop creates at most one session per task per day.
+       Capacity shortages, concurrent generation, and overnight/deadline
+       boundaries deserve stronger handling and dedicated checks.
+
+97. Q: Does a zero-session response always explain the exact cause?
+    A: No. The final response can say all tasks are already scheduled
+       even when lack of usable capacity prevented creating sessions.
+       More precise shortage reporting would improve this.
+
+98. Q: How could recommendation quality be improved?
+    A: Proposed improvements include weighting recent attempts,
+       considering resource usefulness feedback, and evaluating whether
+       recommended materials help students improve on later quizzes.
+
+99. Q: How could the system support more users?
+    A: Measure bottlenecks first, then improve database queries, indexing,
+       pagination, caching, and background jobs where appropriate.
+       Load testing is needed before claiming a supported user count.
+
+100. [TOP] Q: How would you prove the system is useful?
+     A: Demonstrate correct workflows and gather user feedback. For
+        learning claims, compare relevant outcomes using a planned study.
+        Only report test results and measurements actually collected.
+
+======================================================================
+EXTRA LIST 1 - FOLLOW-UP QUESTIONS TO PRACTICE
+======================================================================
+
+Use: rule -> example -> limitation when answering these.
+
+[ ] Why is urgent priority considered before an earlier low-priority task?
+[ ] What if a task needs 300 minutes but only 100 minutes are available?
+[ ] What if an estimated task duration is inaccurate?
+[ ] What if the student generates the same plan twice?
+[ ] What if two plan-generation requests arrive at the same time?
+[ ] What if an existing plan remains after a task deadline changes?
+[ ] What if the preferred study period crosses midnight?
+[ ] What if a task deadline falls during a scheduled session?
+[ ] What if the student skips a session or cancels a task?
+[ ] What if an administrator changes recommendation thresholds?
+[ ] What if a topic average is exactly 60%, 79%, or 79.5%?
+[ ] What if a student improves after several earlier low quiz scores?
+[ ] What if a resource link becomes unavailable?
+[ ] What if a student changes a record ID in an API request?
+[ ] What if mobile notification permission is denied?
+[ ] What if the app is closed while a timer is running?
+[ ] What if a refresh token is reused after successful renewal?
+[ ] What if the database or password safety service is unavailable?
+[ ] How would you restore data after accidental deletion?
+[ ] Which features are implemented, and which are proposed improvements?
+
+======================================================================
+EXTRA LIST 2 - QUICK TECHNICAL TERMS
+======================================================================
+
+Frontend       = Interface the user sees and interacts with.
+Backend        = Server logic that validates, processes, and stores data.
+API            = Interface through which software requests data/actions.
+JSON           = Structured data format used in API requests/responses.
+HTTP           = Request/response protocol used by the web.
+HTTPS          = HTTP protected by transport encryption.
+SPA            = Single-page application.
+MVC            = Model, View, Controller organization.
+ORM            = Tool that maps program models to database records.
+CRUD           = Create, Read, Update, Delete.
+Middleware     = Request-processing layer, such as an access check.
+Policy         = Rules deciding whether a user can act on a record.
+Validation     = Checking that submitted data follows required rules.
+Authentication = Verifying the user's identity.
+Authorization  = Checking the user's allowed actions.
+Hashing        = One-way transformation used to verify passwords.
+Encryption     = Reversible protection using a key.
+Token          = Credential representing an authenticated session.
+Refresh token  = Credential used to obtain a renewed access token.
+HttpOnly       = Cookie flag that blocks JavaScript from reading it.
+CORS           = Browser rules for requests between different origins.
+CSRF           = An attack that tricks a browser into unwanted requests.
+XSS            = Injected scripts running in another user's page.
+Transaction    = Related database writes that commit or roll back together.
+Index          = Database structure that speeds up suitable lookups.
+Pagination     = Returning records in smaller groups or pages.
+Migration      = Versioned database schema change.
+Seeder         = Code that inserts initial or development data.
+Soft delete    = Hiding a record using a deletion timestamp.
+Greedy method  = Making the next suitable choice without exploring all plans.
+Rule-based     = Decisions made using explicit conditions and thresholds.
+Regression     = A previously working behavior broken by a later change.
+
+======================================================================
+EXTRA LIST 3 - FORMULAS AND SMALL EXAMPLES
+======================================================================
+
+QUIZ RESULT
+  7 correct / 10 questions x 100 = 70%.
+
+TASK COMPLETION
+  6 completed / 8 total tasks x 100 = 75%.
+
+TOPIC AVERAGE
+  Attempts of 50%, 70%, and 90% -> (50 + 70 + 90) / 3 = 70%.
+  Default classification: needs review.
+
+REMAINING TASK TIME
+  120 estimated - 50 already allocated = 70 minutes remaining.
+  Allocated here includes scheduled, in-progress, and completed sessions.
+
+NEXT SESSION LENGTH
+  min(70 remaining, 40 daily capacity, 50 preferred) = 40 minutes.
+
+DEFAULT PERFORMANCE BOUNDARIES
+  59%   -> Weak.
+  60%   -> Needs review.
+  79%   -> Needs review.
+  79.5% -> Strong, because the current comparison is above 79.
+
+======================================================================
+EXTRA LIST 4 - SHORT PRESENTATION / DEMO CHECKLIST
+======================================================================
+
+[ ] Explain the purpose in one sentence.
+[ ] Name the two user roles.
+[ ] Show a student signing in.
+[ ] Show subjects and topics.
+[ ] Create a task with priority, deadline, and estimated minutes.
+[ ] Show study preferences and generate a plan.
+[ ] Explain why a particular task was scheduled first.
+[ ] Show a session status update or timer.
+[ ] Submit a quiz and explain the percentage.
+[ ] Open attempt history and review answers.
+[ ] Show topic classification and a matching recommended resource.
+[ ] Show task completion and study progress.
+[ ] Show notifications and unread/read behavior.
+[ ] Show administrator management screens.
+[ ] Explain backend access controls and password protection.
+[ ] Explain one limitation and one realistic improvement.
+
+======================================================================
+EXTRA LIST 5 - ANSWER ACCURACY CHECKLIST
+======================================================================
+
+[ ] Describe recommendations as rule-based.
+[ ] Distinguish configured PostgreSQL from the SQLite default/local setup.
+[ ] Distinguish browser cookies from Android secure token storage.
+[ ] Distinguish completed session minutes from proof of actual study.
+[ ] Distinguish local preview data from production offline support.
+[ ] State that reminder schedules require a running trigger.
+[ ] Avoid promising an optimal schedule or guaranteed grade improvement.
+[ ] Do not claim load capacity or passing tests without measured results.
+[ ] Label future features as proposals.
+[ ] Explain what your own contribution was using truthful examples.
+
+======================================================================
+SOURCE MAP - WHERE TO LOOK IF ASKED TO SHOW THE CODE
+======================================================================
+
+Dependencies       : composer.json; package.json
+API routes         : routes/api.php
+Page routes        : resources/js/router/index.ts
+Scheduling         : app/Services/StudyPlanService.php
+Quiz grading       : app/Services/QuizService.php
+Recommendations    : app/Services/RecommendationService.php
+Progress formulas  : app/Services/ProgressService.php
+Login/token issue  : app/Http/Controllers/Auth/AuthController.php
+                     app/Services/AuthSessionService.php
+Browser cookies    : app/Http/Middleware/BrowserSession.php
+Role/access checks : app/Http/Middleware/RoleMiddleware.php
+                     app/Http/Middleware/AccessTokenOnly.php
+Ownership rules    : app/Policies/; student controllers
+Password policy    : app/Rules/SafePassword.php; config/hashing.php
+Frontend requests : resources/js/services/api.ts
+Token storage      : resources/js/services/tokenStorage.ts
+Android encryption : android/app/src/main/java/com/studyplanner/app/
+                     AuthTokenStoragePlugin.java
+Timer behavior     : resources/js/services/studyTimerService.ts
+Mobile alerts      : resources/js/services/notificationService.ts
+Scheduled commands : routes/console.php
+Database structure : database/migrations/
+Database config    : config/database.php
+Mobile settings    : capacitor.config.ts
+Build settings     : vite.config.js
+Hosting settings   : vercel.json; api/index.php
+Backend tests      : tests/Feature/
+Browser tests      : tests/e2e/
+
+======================================================================
+END OF REVIEWER
+======================================================================

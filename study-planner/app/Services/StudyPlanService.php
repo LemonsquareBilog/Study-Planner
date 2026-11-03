@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Models\StudyPreference;
-use App\Models\StudySession;
-use App\Models\Task;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -27,8 +25,8 @@ class StudyPlanService
             'preferred_end_time' => '22:00',
         ]);
 
-        $allPendingTasks = $user->tasks()->whereIn('status', ['pending', 'in_progress'])->get();
-        if ($allPendingTasks->isEmpty()) {
+        $hasPendingTasks = $user->tasks()->where('deadline', '>', now())->whereIn('status', ['pending', 'in_progress'])->exists();
+        if (! $hasPendingTasks) {
             return [
                 'created_sessions_count' => 0,
                 'created_sessions' => [],
@@ -37,7 +35,7 @@ class StudyPlanService
             ];
         }
 
-        $tasks = $user->tasks()
+        $tasks = $user->tasks()->where('deadline', '>', now())
             ->whereIn('status', ['pending', 'in_progress'])
             ->whereBetween('deadline', [$from->copy()->startOfDay(), $to->copy()->endOfDay()])
             ->orderByRaw("CASE priority WHEN 'urgent' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 ELSE 4 END")

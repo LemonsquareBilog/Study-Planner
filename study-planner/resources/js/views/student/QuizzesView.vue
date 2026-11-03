@@ -12,7 +12,7 @@
       <button role="tab" :aria-selected="activeTab === 'history'" @click="selectTab('history')" :class="tabClass('history')">Completed Quizzes <span class="ml-1 text-xs">({{ quizAttempts.length }})</span></button>
     </div>
 
-    <div v-if="loading" class="flex justify-center py-12" role="status" aria-label="Loading quizzes">
+    <div v-if="activeTab === 'available' ? loading : historyLoading" class="flex justify-center py-12" role="status" :aria-label="activeTab === 'available' ? 'Loading quizzes' : 'Loading quiz history'">
       <svg class="animate-spin h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" aria-hidden="true">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
@@ -120,16 +120,24 @@ const studentStore = useStudentStore();
 
 const quizzes = ref<Quiz[]>([]);
 const loading = ref(true);
+const historyLoading = ref(true);
 const loadingAttempt = ref(false);
 const activeTab = ref<'available' | 'history'>('available');
 const selectedAttempt = ref<QuizAttempt | null>(null);
 const quizAttempts = ref<QuizAttempt[]>([]);
 
 onMounted(async () => {
+  // History contains answer details and can be much larger than the quiz
+  // list. Load both independently so it cannot hold up available quizzes.
+  void studentStore.fetchQuizHistory().then(attempts => {
+    quizAttempts.value = attempts;
+  }).catch(err => {
+    console.error('Failed to load quiz history:', err);
+  }).finally(() => {
+    historyLoading.value = false;
+  });
   try {
-    await Promise.all([studentStore.fetchQuizzes(), studentStore.fetchQuizHistory()]);
-    quizzes.value = studentStore.quizzes;
-    quizAttempts.value = studentStore.quizAttempts;
+    quizzes.value = await studentStore.fetchQuizzes();
   } catch (err) {
     console.error('Failed to load quizzes:', err);
   } finally {

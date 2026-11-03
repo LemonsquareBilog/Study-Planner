@@ -120,8 +120,13 @@ const subjectForm = ref({ user_id: 0, name: '', description: '', difficulty: 3, 
 const topicForm = ref({ name: '', description: '', difficulty: 3, is_active: true });
 
 onMounted(async () => {
+  void adminStore.fetchSubjectOptions().then(options => {
+    students.value = options;
+  }).catch(err => console.error('Failed to load student options:', err));
   try {
-    [subjects.value, students.value] = await Promise.all([adminStore.fetchSubjects(), adminStore.fetchSubjectOptions()]);
+    subjects.value = await adminStore.fetchSubjects();
+  } catch (err) {
+    console.error('Failed to load subjects:', err);
   } finally {
     loading.value = false;
   }

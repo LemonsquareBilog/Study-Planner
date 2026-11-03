@@ -15,7 +15,17 @@ use App\Http\Controllers\Student\StudyPreferenceController;
 use App\Http\Controllers\Student\SubjectController;
 use App\Http\Controllers\Student\TaskController;
 use App\Http\Controllers\Student\TopicController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/internal/task-reminders', function (Request $request) {
+    $secret = config('task_reminders.cron_secret');
+    abort_unless(is_string($secret) && strlen($secret) >= 32 && hash_equals($secret, $request->bearerToken() ?? ''), 403);
+    Artisan::call('reminders:tasks');
+
+    return response()->json(['ok' => true])->header('Cache-Control', 'no-store');
+})->middleware('throttle:5,1');
 
 /*
 |--------------------------------------------------------------------------

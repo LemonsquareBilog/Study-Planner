@@ -283,7 +283,8 @@ async function loadSubject() {
   try {
     subject.value = await studentStore.fetchSubject(Number(route.params.id));
     if (subject.value) {
-      await Promise.all([
+      // These sections have their own loaders; show the subject immediately.
+      void Promise.all([
         loadTopics(),
         loadStudySessions(),
       ]);

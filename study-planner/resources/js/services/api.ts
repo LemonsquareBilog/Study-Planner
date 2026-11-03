@@ -1,8 +1,9 @@
 import { Capacitor } from '@capacitor/core';
-import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 // Compile demo accounts out of every real backend build.
 const localApi = import.meta.env.MODE === 'preview' ? (await import('./localApi')).localApi : undefined!;
 import { tokenStorage } from './tokenStorage';
+import { ReadCache, readCacheKey } from './readCache';
 import type {
   ApiResponse,
   PaginatedResponse,
@@ -45,6 +46,7 @@ class ApiService {
   private refreshToken: string | null = null;
   private refreshing: Promise<void> | null = null;
   private sessionVersion = 0;
+  private reads = new ReadCache();
 
   constructor() {
     this.token = null;
@@ -64,6 +66,7 @@ class ApiService {
 
     this.httpClient.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
+        if (config.method !== 'get') apiService.invalidateReadCache();
         if (apiService.token) {
           config.headers.Authorization = `Bearer ${apiService.token}`;
         }
@@ -75,7 +78,10 @@ class ApiService {
     );
 
     this.httpClient.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        if (response.config.method !== 'get') apiService.invalidateReadCache();
+        return response;
+      },
       async (error: AxiosError) => {
         const config = error.config as (InternalAxiosRequestConfig & { retried?: boolean }) | undefined;
         const authenticated = config?.headers.Authorization != null;
@@ -106,6 +112,19 @@ class ApiService {
     return isLocalPlatform();
   }
 
+  public invalidateReadCache() {
+    this.reads.clear();
+  }
+
+  private async get<T>(url: string, config?: AxiosRequestConfig): Promise<{ data: T }> {
+    if (url.startsWith('/auth/')) return this.httpClient!.get<T>(url, config);
+    const data = await this.reads.get(readCacheKey(url, config?.params), async () => {
+      const response = await this.httpClient!.get<T>(url, config);
+      return response.data;
+    });
+    return { data };
+  }
+
   async setToken(token: string, refreshToken: string | null = null) {
     await tokenStorage.set(JSON.stringify({ token, refreshToken }));
     this.refreshToken = refreshToken;
@@ -114,6 +133,7 @@ class ApiService {
   }
 
   async clearToken() {
+    this.invalidateReadCache();
     this.sessionVersion++;
     this.refreshToken = null;
     this.token = null;
@@ -158,6 +178,7 @@ class ApiService {
   }
 
   async login(email: string, password: string) {
+    this.invalidateReadCache();
     this.sessionVersion++;
     if (this.isLocal) {
       const response = await localApi.login(email, password);
@@ -170,6 +191,7 @@ class ApiService {
   }
 
   async register(name: string, email: string, password: string, password_confirmation: string) {
+    this.invalidateReadCache();
     this.sessionVersion++;
     if (this.isLocal) {
       const response = await localApi.register(name, email, password);
@@ -200,7 +222,7 @@ class ApiService {
       const response = await localApi.me();
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<User>>('/auth/me');
+    const response = await this.get<ApiResponse<User>>('/auth/me');
     return response.data.data;
   }
 
@@ -227,7 +249,7 @@ class ApiService {
       const response = await localApi.getDashboard();
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<any>>('/student/dashboard');
+    const response = await this.get<ApiResponse<any>>('/student/dashboard');
     return response.data.data;
   }
 
@@ -236,7 +258,7 @@ class ApiService {
       const response = await localApi.getSubjects();
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<Subject[]>>('/student/subjects');
+    const response = await this.get<ApiResponse<Subject[]>>('/student/subjects');
     return response.data.data;
   }
 
@@ -245,7 +267,7 @@ class ApiService {
       const response = await localApi.getSubject(id);
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<Subject>>(`/student/subjects/${id}`);
+    const response = await this.get<ApiResponse<Subject>>(`/student/subjects/${id}`);
     return response.data.data;
   }
 
@@ -280,7 +302,7 @@ class ApiService {
       const response = await localApi.getTopics(subjectId);
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<Topic[]>>(`/student/subjects/${subjectId}/topics`);
+    const response = await this.get<ApiResponse<Topic[]>>(`/student/subjects/${subjectId}/topics`);
     return response.data.data;
   }
 
@@ -289,7 +311,7 @@ class ApiService {
       const response = await localApi.getTopic(subjectId, topicId);
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<Topic>>(`/student/subjects/${subjectId}/topics/${topicId}`);
+    const response = await this.get<ApiResponse<Topic>>(`/student/subjects/${subjectId}/topics/${topicId}`);
     return response.data.data;
   }
 
@@ -323,7 +345,7 @@ class ApiService {
     if (this.isLocal) {
       return await localApi.getTasks(params);
     }
-    const response = await this.httpClient!.get<PaginatedResponse<Task>>('/student/tasks', { params });
+    const response = await this.get<PaginatedResponse<Task>>('/student/tasks', { params });
     return response.data;
   }
 
@@ -376,7 +398,7 @@ class ApiService {
       const response = await localApi.getStudySessions(params);
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<StudySession[]>>('/student/study-plan', { params });
+    const response = await this.get<ApiResponse<StudySession[]>>('/student/study-plan', { params });
     return response.data.data;
   }
 
@@ -403,7 +425,7 @@ class ApiService {
       const response = await localApi.getQuizzes();
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<Quiz[]>>('/student/quizzes');
+    const response = await this.get<ApiResponse<Quiz[]>>('/student/quizzes');
     return response.data.data;
   }
 
@@ -412,7 +434,7 @@ class ApiService {
       const response = await localApi.getQuiz(id);
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<Quiz>>(`/student/quizzes/${id}`);
+    const response = await this.get<ApiResponse<Quiz>>(`/student/quizzes/${id}`);
     return response.data.data;
   }
 
@@ -430,7 +452,7 @@ class ApiService {
       const response = await localApi.getQuizHistory();
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<QuizAttempt[]>>('/student/quiz-attempts');
+    const response = await this.get<ApiResponse<QuizAttempt[]>>('/student/quiz-attempts');
     return response.data.data;
   }
 
@@ -439,7 +461,7 @@ class ApiService {
       const response = await localApi.getQuizAttempt(id);
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<QuizAttempt>>(`/student/quiz-attempts/${id}`);
+    const response = await this.get<ApiResponse<QuizAttempt>>(`/student/quiz-attempts/${id}`);
     return response.data.data;
   }
 
@@ -448,7 +470,7 @@ class ApiService {
       const response = await localApi.getRecommendations();
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<Resource[]>>('/student/recommendations');
+    const response = await this.get<ApiResponse<Resource[]>>('/student/recommendations');
     return response.data.data;
   }
 
@@ -466,7 +488,7 @@ class ApiService {
       const response = await localApi.getStudyPreference();
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<StudyPreference>>('/student/study-preference');
+    const response = await this.get<ApiResponse<StudyPreference>>('/student/study-preference');
     return response.data.data;
   }
 
@@ -484,7 +506,7 @@ class ApiService {
       const response = await localApi.getProgress();
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<{ summary: ProgressSummary; topic_performance: TopicPerformance[] }>>('/student/progress');
+    const response = await this.get<ApiResponse<{ summary: ProgressSummary; topic_performance: TopicPerformance[] }>>('/student/progress');
     return response.data.data;
   }
 
@@ -492,7 +514,7 @@ class ApiService {
     if (this.isLocal) {
       return await localApi.getNotifications(params);
     }
-    const response = await this.httpClient!.get<ApiResponse<PaginatedResponse<Notification>>>('/student/notifications', { params });
+    const response = await this.get<ApiResponse<PaginatedResponse<Notification>>>('/student/notifications', { params });
     return response.data.data;
   }
 
@@ -501,7 +523,7 @@ class ApiService {
       const response = await localApi.getNotificationCount();
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<{ unread: number; total: number }>>('/student/notifications/count');
+    const response = await this.get<ApiResponse<{ unread: number; total: number }>>('/student/notifications/count');
     return response.data.data;
   }
 
@@ -527,7 +549,7 @@ class ApiService {
     if (this.isLocal) {
       return await localApi.getAdminResources(params);
     }
-    const response = await this.httpClient!.get<PaginatedResponse<Resource>>('/admin/resources', { params });
+    const response = await this.get<PaginatedResponse<Resource>>('/admin/resources', { params });
     return response.data;
   }
 
@@ -536,7 +558,7 @@ class ApiService {
       const response = await localApi.getAdminResourceOptions();
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<{ subjects: Subject[]; topics: (Topic & { subject?: Subject })[] }>>('/admin/resource-options');
+    const response = await this.get<ApiResponse<{ subjects: Subject[]; topics: (Topic & { subject?: Subject })[] }>>('/admin/resource-options');
     return response.data.data;
   }
 
@@ -545,7 +567,7 @@ class ApiService {
       const response = await localApi.getAdminSubjects();
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<Subject[]>>('/admin/subjects');
+    const response = await this.get<ApiResponse<Subject[]>>('/admin/subjects');
     return response.data.data;
   }
 
@@ -554,7 +576,7 @@ class ApiService {
       const response = await localApi.getAdminSubjectOptions();
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<User[]>>('/admin/subjects/options');
+    const response = await this.get<ApiResponse<User[]>>('/admin/subjects/options');
     return response.data.data;
   }
 
@@ -640,7 +662,7 @@ class ApiService {
     if (this.isLocal) {
       return await localApi.getAdminUsers(params);
     }
-    const response = await this.httpClient!.get<PaginatedResponse<User>>('/admin/users', { params });
+    const response = await this.get<PaginatedResponse<User>>('/admin/users', { params });
     return response.data;
   }
 
@@ -658,7 +680,7 @@ class ApiService {
       const response = await localApi.getSystemSettings();
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<SystemSetting[]>>('/admin/system-settings');
+    const response = await this.get<ApiResponse<SystemSetting[]>>('/admin/system-settings');
     return response.data.data;
   }
 
@@ -676,7 +698,7 @@ class ApiService {
       const response = await localApi.getAdminDashboard();
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<any>>('/admin/dashboard');
+    const response = await this.get<ApiResponse<any>>('/admin/dashboard');
     return response.data.data;
   }
 
@@ -685,7 +707,7 @@ class ApiService {
       const response = await localApi.getAdminUser(id);
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<User>>(`/admin/users/${id}`);
+    const response = await this.get<ApiResponse<User>>(`/admin/users/${id}`);
     return response.data.data;
   }
 
@@ -694,7 +716,7 @@ class ApiService {
       const response = await localApi.getSetupStatus();
       return response.data;
     }
-    const response = await this.httpClient!.get<ApiResponse<SetupStatus>>('/student/setup-status');
+    const response = await this.get<ApiResponse<SetupStatus>>('/student/setup-status');
     return response.data.data;
   }
 }

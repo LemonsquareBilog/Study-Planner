@@ -289,29 +289,11 @@ const form = ref({
 const debounceTimer = ref<ReturnType<typeof setTimeout> | null>(null);
 
 onMounted(async () => {
-  try {
-    const [optionsData, resourcesRes] = await Promise.all([
-      adminStore.fetchResourceOptions(),
-      adminStore.fetchResources(filters.value),
-    ]);
-
+  void adminStore.fetchResourceOptions().then(optionsData => {
     allSubjects.value = optionsData?.subjects || [];
     allTopics.value = (optionsData?.topics || []).map((topic: any) => ({ ...topic, subject_name: topic.subject?.name }));
-
-    const resourcesData = resourcesRes?.data || [];
-    resources.value = {
-      data: resourcesData,
-      current_page: resourcesRes?.current_page || 1,
-      last_page: resourcesRes?.last_page || 1,
-      from: resourcesRes?.from || (resourcesData.length > 0 ? 1 : 0),
-      to: resourcesRes?.to || resourcesData.length,
-      total: resourcesRes?.total || resourcesData.length,
-    };
-  } catch (err) {
-    console.error('Failed to load resource management data:', err);
-  } finally {
-    loading.value = false;
-  }
+  }).catch(err => console.error('Failed to load resource options:', err));
+  await fetchResources();
 });
 
 watch(() => adminStore.resources, (newResources) => {

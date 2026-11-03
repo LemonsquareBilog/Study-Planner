@@ -18,4 +18,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('reminders:study-sessions')->everyFifteenMinutes();
-Schedule::command('reminders:deadlines')->hourly();
+Schedule::command('reminders:tasks')->everyMinute();

@@ -5,7 +5,7 @@
         <h1 class="text-2xl font-bold text-text-primary">Progress</h1>
         <p class="mt-1 text-sm text-text-secondary">Track your learning progress and performance analytics.</p>
       </div>
-      <button @click="fetchProgress" :disabled="loading" class="btn-secondary text-sm" aria-label="Refresh progress">
+      <button @click="fetchProgress(true)" :disabled="loading" class="btn-secondary text-sm" aria-label="Refresh progress">
         <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
         </svg>
@@ -77,6 +77,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useStudentStore } from '@/stores/student';
+import { api } from '@/services/api';
 import StatCard from '@/components/StatCard.vue';
 
 const studentStore = useStudentStore();
@@ -89,7 +90,8 @@ onMounted(async () => {
   await fetchProgress();
 });
 
-async function fetchProgress() {
+async function fetchProgress(force = false) {
+  if (force) api.invalidateReadCache();
   loading.value = true;
   try {
     const data = await studentStore.fetchProgress();

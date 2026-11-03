@@ -18,13 +18,13 @@ class DashboardController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $studentsCount = User::where('role', 'student')->count();
-        $activeStudentsCount = User::where('role', 'student')->where('is_active', true)->count();
+        $students = User::where('role', 'student')
+            ->selectRaw('COUNT(*) as total, COUNT(CASE WHEN is_active THEN 1 END) as active')
+            ->first();
         $resourcesCount = Resource::count();
         $subjectsCount = Subject::count();
         $quizzesCount = Quiz::count();
-        $quizAttemptsCount = QuizAttempt::count();
-        $avgScore = round(QuizAttempt::avg('percentage') ?? 0, 1);
+        $attempts = QuizAttempt::selectRaw('COUNT(*) as total, AVG(percentage) as average')->first();
 
         $recentUsers = User::latest()
             ->limit(5)
@@ -38,13 +38,13 @@ class DashboardController extends Controller
         return response()->json([
             'data' => [
                 'metrics' => [
-                    'total_students' => $studentsCount,
-                    'active_students' => $activeStudentsCount,
+                    'total_students' => (int) $students->total,
+                    'active_students' => (int) $students->active,
                     'total_resources' => $resourcesCount,
                     'total_subjects' => $subjectsCount,
                     'total_quizzes' => $quizzesCount,
-                    'total_quiz_attempts' => $quizAttemptsCount,
-                    'average_quiz_score' => $avgScore,
+                    'total_quiz_attempts' => (int) $attempts->total,
+                    'average_quiz_score' => round((float) $attempts->average, 1),
                 ],
                 'recent_users' => $recentUsers,
                 'recent_attempts' => $recentAttempts,

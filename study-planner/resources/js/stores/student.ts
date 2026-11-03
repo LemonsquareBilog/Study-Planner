@@ -32,11 +32,9 @@ export const useStudentStore = defineStore('student', () => {
   const unreadNotifications = computed(() => notifications.value.filter(n => !n.read_at).length);
 
   async function fetchDashboard() {
-    console.log('[StudentStore] fetchDashboard() called');
     loading.value = true;
     try {
       const data = await api.getDashboard();
-      console.log('[StudentStore] Dashboard data received:', data);
       progress.value = data.progress;
       recommendations.value = data.recommendations;
       upcomingTasks.value = data.upcoming_tasks || [];
